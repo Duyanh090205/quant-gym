@@ -322,13 +322,34 @@ test("tip cards avoid the same jargon, in both languages", () => {
   for (const t of TIPS) {
     for (const lang of ["en", "vi"]) {
       const card = getTip(t.id, lang);
-      const all = [card.title, card.why, card.example.ask, card.example.work, ...card.steps].join(" ");
+      const all = [card.title, card.why, ...card.examples.flatMap((e) => [e.ask, e.work]), ...card.steps].join(" ");
       for (const re of BANNED) {
         if (re.test(all)) offenders.push(`${t.id} (${lang}): ${all.match(re)[0]}`);
       }
     }
   }
   assert.deepEqual(offenders, [], "jargon in tip cards");
+});
+
+test("a worked solution arrives at the answer it claims", () => {
+  // A solution that walks through numbers and never reaches the right one has
+  // drifted from its question. Catch it by requiring the answer to appear.
+  let checked = 0;
+  for (const skill of REAL_SKILLS) {
+    for (const level of LEVELS) {
+      const { questions } = generateSet({ skill, level, count: 40, seed: `arrive|${skill}|${level}` });
+      for (const q of questions) {
+        if (typeof q.answer !== "number" || q.approx) continue;
+        if (!Number.isInteger(q.answer)) continue;      // decimals get rounded in prose
+        const shown = q.answer.toString();
+        const withComma = q.answer.toLocaleString("en-US");
+        assert.ok(q.solution.includes(shown) || q.solution.includes(withComma),
+          `${skill}: solution never reaches ${q.answer} — ${q.prompt} — ${q.solution}`);
+        checked++;
+      }
+    }
+  }
+  assert.ok(checked > 800, `only ${checked} solutions checked`);
 });
 
 /* ── sequences ───────────────────────────────────────────────────────────── */
@@ -406,17 +427,24 @@ test("every tip exists in both languages and every referenced tip resolves", () 
   for (const t of TIPS) {
     for (const lang of ["en", "vi"]) {
       const card = getTip(t.id, lang);
-      assert.ok(card.title && card.steps.length && card.example && card.why, `${t.id} incomplete in ${lang}`);
-      // An example that shows only working is an answer key, readable only by
-      // someone who already knows the puzzle. State the question first.
-      assert.ok(card.example.ask, `${t.id} (${lang}): example does not state the question`);
-      assert.ok(card.example.work, `${t.id} (${lang}): example does not show the working`);
-      assert.match(card.example.ask, /\?/, `${t.id} (${lang}): the example is not a question - ${card.example.ask}`);
-      // The question mark above is the real guard: working alone never carries
-      // one. Length is a weak backstop, kept low because a good question can be
-      // short ("What is 823 - 467?", "On average, what total do two dice show?").
-      assert.ok(card.example.ask.length > 15,
-        `${t.id} (${lang}): question too terse to stand on its own - ${card.example.ask}`);
+      assert.ok(card.title && card.steps.length && card.examples?.length, `${t.id} incomplete in ${lang}`);
+      assert.ok(card.why, `${t.id} (${lang}): no "why it works"`);
+      for (const ex of card.examples) {
+        // Working on its own is an answer key, readable only by someone who
+        // already knows the puzzle. State the question first.
+        assert.ok(ex.ask, `${t.id} (${lang}): example does not state the question`);
+        assert.ok(ex.work, `${t.id} (${lang}): example does not show the working`);
+        // The question mark is the real guard: working alone never carries one.
+        assert.match(ex.ask, /\?/, `${t.id} (${lang}): the example is not a question - ${ex.ask}`);
+        // No length rule. Splitting the welded examples made the arithmetic
+        // questions shorter, and "What is 48 x 5?" is a complete question.
+        // One block, one question. Two question marks means two questions welded
+        // together, which asks a beginner to track both at once.
+        assert.equal((ex.ask.match(/\?/g) || []).length, 1,
+          `${t.id} (${lang}): more than one question in a block - ${ex.ask}`);
+        // A worked answer has to arrive at a number, not merely reject one.
+        assert.match(ex.work, /[0-9]/, `${t.id} (${lang}): the working has no numbers - ${ex.work}`);
+      }
     }
   }
   const ids = new Set(TIPS.map((t) => t.id));

@@ -211,13 +211,15 @@ function levelScreen(app) {
     const ol = el("ol");
     for (const step of tip.steps) ol.appendChild(el("li", "", step));
     card.appendChild(ol);
-    // The question first, in ordinary words, then the working in figures.
-    // Working on its own is an answer key: it only reads to someone who already
-    // knows which puzzle it belongs to.
-    const ex = el("div", "ex");
-    ex.appendChild(el("p", "exask", tip.example.ask));
-    ex.appendChild(el("p", "exwork", tip.example.work));
-    card.appendChild(ex);
+    // One block per question. The question first in ordinary words, then the
+    // working in figures. Working on its own is an answer key: it only reads to
+    // someone who already knows which puzzle it belongs to.
+    for (const ex of tip.examples) {
+      const box = el("div", "ex");
+      box.appendChild(el("p", "exask", ex.ask));
+      box.appendChild(el("p", "exwork", ex.work));
+      card.appendChild(box);
+    }
     card.appendChild(el("p", "small muted", `${t().whyItWorks}: ${tip.why}`));
     stack.appendChild(card);
   }

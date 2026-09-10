@@ -138,9 +138,16 @@ node scripts/build-demo.mjs       rebuild demo/standalone.html
 ```
 
 Tests check the things that would quietly ruin a lesson: that a seed reproduces
-its paper, that no trap can be confused with a right answer, that every trap has
-an explanation, and that answers agree with formulas written separately from the
-generators.
+its paper, that no trap can be confused with a right answer, that every trap and
+every worked solution reaches the answer it claims, and that the writing stays
+inside a beginner's vocabulary.
+
+Correctness is checked twice over, because a formula and a generator can be wrong
+in the same way. `engine.test.js` re-derives each answer algebraically. Then
+`simulate.test.js` throws the question away and plays the game: it rolls the dice,
+draws the balls, walks the walks and runs the duels, a hundred thousand times each,
+and compares what happens against what the engine claims. Every probability
+question shape the engine can produce, 265 of them, is covered.
 
 ## Status
 
