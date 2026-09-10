@@ -9,6 +9,28 @@
 /** Round to 4 decimal places, dropping float noise like 0.30000000000000004. */
 export const round4 = (x) => Math.round(x * 10000) / 10000;
 
+/**
+ * Write a number the way the reader's language writes it.
+ *
+ * Vietnamese marks the decimal with a comma, so 0.545 is 0,545. Grading accepts
+ * either, but a card that shows one form while the questions show the other
+ * looks careless, and to a student who is already unsure it looks like a
+ * different number.
+ *
+ * The thousands separator is deliberately left out in both languages. English
+ * 5,832 and Vietnamese 5.832 are each ambiguous with the other's decimal mark,
+ * and a student reading fast does not need that.
+ */
+export function num(x, lang = "en") {
+  if (typeof x === "string") return x;
+  if (!isFinite(x)) return String(x);
+  const text = Number.isInteger(x) ? String(x) : String(round4(x));
+  return lang === "vi" ? text.replace(".", ",") : text;
+}
+
+/** The separator for a list of coordinates. A comma reads as a decimal in Vietnamese. */
+export const pairSep = (lang = "en") => (lang === "vi" ? ";" : ",");
+
 /** Display a number the way a person would write it. */
 export function fmt(x) {
   if (typeof x === "string") return x;

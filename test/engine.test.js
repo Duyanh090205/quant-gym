@@ -353,6 +353,30 @@ test("a worked solution arrives at the answer it claims", () => {
   assert.ok(checked > 800, `only ${checked} solutions checked`);
 });
 
+test("an estimation solution's own suggested estimate is inside the tolerance", () => {
+  // These questions accept anything within 5%. A worked solution that rounds too
+  // hard produces a number the same question would mark wrong, which is worse
+  // than no solution at all.
+  let checked = 0;
+  const bad = [];
+  for (const level of LEVELS) {
+    const { questions } = generateSet({ skill: "arith.estimate", level, count: 60, seed: `est|${level}` });
+    for (const q of questions) {
+      // Every number the solution prints, in order.
+      const shown = (q.solution.match(/[0-9]+(?:\.[0-9]+)?/g) || []).map(Number);
+      // The estimate it recommends is the last one it states before the true value.
+      const near = shown.filter((v) => Math.abs(v - q.answer) <= 0.5 * Math.abs(q.answer));
+      assert.ok(near.length, `no estimate anywhere in: ${q.solution}`);
+      const best = near.reduce((a, b) => (Math.abs(a - q.answer) < Math.abs(b - q.answer) ? a : b));
+      const err = Math.abs(best - q.answer) / Math.abs(q.answer);
+      if (err > 0.05) bad.push(`${q.prompt}: best figure offered is ${best}, true ${q.answer.toFixed(2)}, ${(err * 100).toFixed(1)}% out`);
+      checked++;
+    }
+  }
+  assert.deepEqual(bad.slice(0, 5), [], `${bad.length} estimation solutions land outside the 5% they are graded on`);
+  assert.ok(checked > 150, `only ${checked} checked`);
+});
+
 /* ── sequences ───────────────────────────────────────────────────────────── */
 
 test("odd one out has exactly one defensible answer", () => {

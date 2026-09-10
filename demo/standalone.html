@@ -156,6 +156,28 @@ const __shared = {};
 /** Round to 4 decimal places, dropping float noise like 0.30000000000000004. */
 const round4 = (x) => Math.round(x * 10000) / 10000;
 
+/**
+ * Write a number the way the reader's language writes it.
+ *
+ * Vietnamese marks the decimal with a comma, so 0.545 is 0,545. Grading accepts
+ * either, but a card that shows one form while the questions show the other
+ * looks careless, and to a student who is already unsure it looks like a
+ * different number.
+ *
+ * The thousands separator is deliberately left out in both languages. English
+ * 5,832 and Vietnamese 5.832 are each ambiguous with the other's decimal mark,
+ * and a student reading fast does not need that.
+ */
+function num(x, lang = "en") {
+  if (typeof x === "string") return x;
+  if (!isFinite(x)) return String(x);
+  const text = Number.isInteger(x) ? String(x) : String(round4(x));
+  return lang === "vi" ? text.replace(".", ",") : text;
+}
+
+/** The separator for a list of coordinates. A comma reads as a decimal in Vietnamese. */
+const pairSep = (lang = "en") => (lang === "vi" ? ";" : ",");
+
 /** Display a number the way a person would write it. */
 function fmt(x) {
   if (typeof x === "string") return x;
@@ -247,7 +269,7 @@ function ordinal(n) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
-Object.assign(__shared, { fmt, frac, parseAnswer, near, fact, choose, ordinal, round4, normal, ALPHA, LETTERS });
+Object.assign(__shared, { num, fmt, frac, parseAnswer, near, fact, choose, ordinal, round4, pairSep, normal, ALPHA, LETTERS });
 })();
 
 /* ── src/engine/rng.js ─────────────────────────────────── */
@@ -1371,10 +1393,13 @@ Object.assign(__shared, { nextSkill, skillName, CURRICULUM, EXAMS, ALL_SKILLS, g
 /**
  * Mental arithmetic generators.
  *
- * Every generator takes `(rng, level)` and returns a question. Levels run 1 to 3
- * and mean the same thing everywhere: 1 is where a beginner starts and should
- * mostly succeed, 2 is the working level, 3 is where the trick in the tip card
- * stops being optional.
+ * Every generator takes `(rng, level, t)` and returns a question. `t` is the
+ * phrasebook resolved to the reader's language, so the same generator produces
+ * English or Vietnamese without knowing which.
+ *
+ * Levels run 1 to 3 and mean the same thing everywhere: 1 is where a beginner
+ * starts and should mostly succeed, 2 is the working level, 3 is where the trick
+ * in the tip card stops being optional.
  *
  * Two kinds of feedback ride along with each question. `solution` is the worked
  * line for these exact numbers and is shown whenever the student is wrong, no
@@ -1385,18 +1410,19 @@ Object.assign(__shared, { nextSkill, skillName, CURRICULUM, EXAMS, ALL_SKILLS, g
 const { round4 } = __shared;
 
 const q = (o) => ({ traps: [], ...o });
+const gcd = (a, b) => (b ? gcd(b, a % b) : a);
 
 /** "17 × 54 = 17 × 50 + 17 × 4 = 850 + 68 = 918" — the split every tip card teaches. */
-function splitMul(a, b) {
+function splitMul(a, b, t) {
   const tens = Math.floor(b / 10) * 10;
   const units = b % 10;
-  if (units === 0 && b >= 10) return `Drop the zero: ${a} × ${b / 10} = ${(a * b) / 10}, then put it back: ${a * b}`;
-  if (b < 10) return `${a} × ${b} = ${a * b}`;
-  return `${a} × ${b} = ${a} × ${tens} + ${a} × ${units} = ${a * tens} + ${a * units} = ${a * b}`;
+  if (units === 0 && b >= 10) return t.aTimesDropZero(a, b / 10, (a * b) / 10, a * b);
+  if (b < 10) return t.aPlainMul(a, b);
+  return t.aSplitMul(a, b, tens, units);
 }
 
 /** Left to right, saying each intermediate number: the method that stops dropped hundreds. */
-function runningSteps(a, b, sign) {
+function runningSteps(a, b, sign, t) {
   const parts = [];
   let running = a;
   const digits = String(b).split("").map(Number);
@@ -1404,10 +1430,12 @@ function runningSteps(a, b, sign) {
     const place = d * 10 ** (digits.length - 1 - i);
     if (!place) return;
     running = sign === "+" ? running + place : running - place;
-    parts.push(`${sign} ${place} = ${running}`);
+    parts.push(t.aStep(sign, place, running));
   });
-  return `${a} ${parts.join(", ")}`;
+  return parts.join(", ");
 }
+
+/* ── 1. Times tables ─────────────────────────────────────────────────────── */
 
 /**
  * A route to the answer that is worth more than the answer.
@@ -1416,19 +1444,17 @@ function runningSteps(a, b, sign) {
  * already know does, and it is what a student actually does under time when a
  * single entry in the table slips.
  */
-function timesTableRoute(a, b) {
+function timesTableRoute(a, b, t) {
   const big = Math.max(a, b);
   const small = Math.min(a, b);
-  if (big % 10 === 0) return `Drop the zero: ${big / 10} × ${small} = ${(big / 10) * small}, then put it back: ${a * b}`;
-  if (big === 11) return `11 × ${small} = ${small} × 10 + ${small} = ${small * 10} + ${small} = ${a * b}`;
-  if (big === 12) return `12 × ${small} = ${small} × 10 + ${small} × 2 = ${small * 10} + ${small * 2} = ${a * b}`;
-  if (big > 12) return splitMul(small, big);
-  // Both single digits: reach it from the ten-times fact, which nobody forgets.
-  return `${small} × ${big} = ${a * b}. If it slips, come at it from ${small} × 10 = ${small * 10}, then take off ${small} × ${10 - big} = ${small * (10 - big)}: ${small * 10} − ${small * (10 - big)} = ${a * b}`;
+  if (big % 10 === 0) return t.aTimesDropZero(big / 10, small, (big / 10) * small, a * b);
+  if (big === 11) return t.aTimesEleven(small, a * b);
+  if (big === 12) return t.aTimesTwelve(small, a * b);
+  if (big > 12) return splitMul(small, big, t);
+  return t.aTimesFromTen(small, big, a * b);
 }
 
-/* ── 1. Times tables ─────────────────────────────────────────────────────── */
-function timesTables(rng, level) {
+function timesTables(rng, level, t) {
   const hi = level === 1 ? 9 : level === 2 ? 12 : 19;
   const lo = level === 3 ? 11 : 2;
   const a = rng.int(lo, hi);
@@ -1436,18 +1462,18 @@ function timesTables(rng, level) {
   return q({
     prompt: `${a} × ${b}`,
     answer: a * b,
-    solution: timesTableRoute(a, b),
+    solution: timesTableRoute(a, b, t),
     traps: [
-      { value: a * (b - 1), why: `That is ${a} × ${b - 1}. One row too early in the table.` },
-      { value: a * (b + 1), why: `That is ${a} × ${b + 1}. One row too far down the table.` },
-      { value: a + b, why: "Added instead of multiplied." },
+      { value: a * (b - 1), why: t.ttRowEarly(a, b - 1) },
+      { value: a * (b + 1), why: t.ttRowLate(a, b + 1) },
+      { value: a + b, why: t.ttAddedNotMultiplied() },
     ],
     tip: "split-and-add",
   });
 }
 
 /* ── 2. Addition and subtraction ─────────────────────────────────────────── */
-function addSubtract(rng, level) {
+function addSubtract(rng, level, t) {
   const range = [[23, 99], [100, 999], [1000, 9999]][level - 1];
   const isAdd = rng.chance(0.5);
   const a = rng.int(range[0], range[1]);
@@ -1457,10 +1483,10 @@ function addSubtract(rng, level) {
     return q({
       prompt: `${a} + ${b}`,
       answer: a + b,
-      solution: `Add the big part first and say each number out loud: ${runningSteps(a, b, "+")}`,
+      solution: t.aRunningAdd(a, runningSteps(a, b, "+", t)),
       traps: [
-        { value: a + b - 10, why: "A ten went missing while carrying." },
-        { value: a + b - 100, why: "A hundred went missing while carrying. Say the running total out loud at each step and it stops happening." },
+        { value: a + b - 10, why: t.ttTenDropped() },
+        { value: a + b - 100, why: t.ttHundredDropped() },
       ],
       tip: "subtract-hundreds-first",
     });
@@ -1472,18 +1498,18 @@ function addSubtract(rng, level) {
   return q({
     prompt: `${a} − ${b}`,
     answer: a - b,
-    solution: `Take the big part away first and say each number out loud: ${runningSteps(a, b, "−")}`,
+    solution: t.aRunningSub(a, runningSteps(a, b, "−", t)),
     traps: [
-      { value: a - b + 100, why: "A hundred was left in. This is what rounding up and adding back tends to do when you are rushed; going left to right never does it." },
-      { value: a - b - 100, why: "A hundred was taken away twice." },
-      { value: a - b + 10, why: "A borrow was missed in the tens." },
+      { value: a - b + 100, why: t.ttHundredLeftIn() },
+      { value: a - b - 100, why: t.ttHundredTwice() },
+      { value: a - b + 10, why: t.ttBorrowMissed() },
     ],
     tip: "subtract-hundreds-first",
   });
 }
 
 /* ── 3. Multiplication ───────────────────────────────────────────────────── */
-function multiply(rng, level) {
+function multiply(rng, level, t) {
   if (level === 1) {
     const a = rng.int(12, 99);
     const b = rng.int(3, 9);
@@ -1491,10 +1517,10 @@ function multiply(rng, level) {
     return q({
       prompt: `${a} × ${b}`,
       answer: a * b,
-      solution: `Split the bigger number: ${a} × ${b} = ${tens} × ${b} + ${a % 10} × ${b} = ${tens * b} + ${(a % 10) * b} = ${a * b}`,
+      solution: t.aSplitBigger(a, b, tens, a % 10),
       traps: [
-        { value: tens * b, why: `That is only ${tens} × ${b}. The units, ${a % 10} × ${b} = ${(a % 10) * b}, still have to be added.` },
-        { value: (a % 10) * b + Math.floor(a / 10) * b, why: "The two halves were added without their place value: the tens part is worth ten times what it looks." },
+        { value: tens * b, why: t.ttOnlyTens(a, tens, a % 10, (a % 10) * b) },
+        { value: (a % 10) * b + Math.floor(a / 10) * b, why: t.ttNoPlaceValue() },
       ],
       tip: "split-and-add",
     });
@@ -1504,20 +1530,20 @@ function multiply(rng, level) {
     const a = rng.int(12, 49);
     const b = rng.pick([5, 11, 15, 20, 25, 50, 12, 9, 99]);
     const shortcut =
-      b === 5 ? `${a} × 10 = ${a * 10}, then halve: ${a * 5}`
-      : b === 50 ? `${a} × 100 = ${a * 100}, then halve: ${a * 50}`
-      : b === 11 && a < 100 ? `Outer digits ${Math.floor(a / 10)} and ${a % 10}, their sum ${Math.floor(a / 10) + (a % 10)} goes in the middle: ${a * 11}`
-      : b === 9 ? `${a} × 10 = ${a * 10}, then take one ${a} off: ${a * 9}`
-      : b === 99 ? `${a} × 100 = ${a * 100}, then take one ${a} off: ${a * 99}`
-      : b === 25 ? `${a} × 100 = ${a * 100}, then quarter it: ${a * 25}`
-      : splitMul(a, b);
+      b === 5 ? t.aHalveTen(a, a * 10, a * 5)
+      : b === 50 ? t.aHalveHundred(a, a * 100, a * 50)
+      : b === 11 && a < 100 ? t.aElevenDigits(Math.floor(a / 10), a % 10, Math.floor(a / 10) + (a % 10), a * 11)
+      : b === 9 ? t.aTakeOneOff(a, 10, a * 9)
+      : b === 99 ? t.aTakeOneOff(a, 100, a * 99)
+      : b === 25 ? t.aQuarter(a, a * 100, a * 25)
+      : splitMul(a, b, t);
     return q({
       prompt: `${a} × ${b}`,
       answer: a * b,
       solution: shortcut,
       traps: [
-        { value: a * b - a, why: `One copy of ${a} is missing. Check the last step of the split.` },
-        { value: a * b + a, why: `One copy of ${a} too many. Count the parts of the split again.` },
+        { value: a * b - a, why: t.ttOneCopyShort(a) },
+        { value: a * b + a, why: t.ttOneCopyOver(a) },
       ],
       tip: "times-five-and-eleven",
     });
@@ -1533,10 +1559,10 @@ function multiply(rng, level) {
     return q({
       prompt: `${lo} × ${hi}`,
       answer: lo * hi,
-      solution: `They sit either side of ${centre}, ${d} away each. So ${centre}² − ${d}² = ${centre * centre} − ${d * d} = ${lo * hi}`,
+      solution: t.aStraddle(lo, hi, centre, d, centre * centre, d * d, lo * hi),
       traps: [
-        { value: centre * centre, why: `That is ${centre}², the halfway point. You still have to take off the gap squared, ${d}² = ${d * d}.` },
-        { value: centre * centre + d * d, why: "The correction was added instead of taken off. The product of two numbers either side of a centre is always below the centre squared." },
+        { value: centre * centre, why: t.ttCentreOnly(centre, d, d * d) },
+        { value: centre * centre + d * d, why: t.ttCentreAdded() },
       ],
       tip: "difference-of-squares",
     });
@@ -1548,38 +1574,37 @@ function multiply(rng, level) {
   return q({
     prompt: `${a} × ${b}`,
     answer: a * b,
-    solution: splitMul(a, b),
+    solution: splitMul(a, b, t),
     traps: [
-      { value: a * tens, why: `That is only ${a} × ${tens}. The units part, ${a} × ${b % 10} = ${a * (b % 10)}, still has to be added.` },
-      { value: a * (b % 10), why: `That is only ${a} × ${b % 10}. The tens part, ${a} × ${tens} = ${a * tens}, is missing.` },
+      { value: a * tens, why: t.ttOnlyTens(a, tens, b % 10, a * (b % 10)) },
+      { value: a * (b % 10), why: t.ttOnlyUnits(a, b % 10, tens, a * tens) },
       // Recorded misses on this exact question type were 3315 typed as 3355,
       // 6348 as 6388, 4539 as 4549, 3432 as 3462, 555 as 655, 7722 as 7822:
       // every one a carry slipping while the two partial products were added.
-      { value: a * b + 10, why: `A ten too many while adding ${a * tens} and ${a * (b % 10)}. This is the single most common way this question is lost.` },
-      { value: a * b - 10, why: `A ten short while adding ${a * tens} and ${a * (b % 10)}.` },
-      { value: a * b + 100, why: `A hundred too many while adding ${a * tens} and ${a * (b % 10)}. Say the running total out loud.` },
+      { value: a * b + 10, why: t.ttCarryOver(a * tens, a * (b % 10)) },
+      { value: a * b - 10, why: t.ttCarryUnder(a * tens, a * (b % 10)) },
+      { value: a * b + 100, why: t.ttCarryHundred(a * tens, a * (b % 10)) },
     ],
     tip: "split-and-add",
   });
 }
 
 /* ── 4. Division ─────────────────────────────────────────────────────────── */
-function divisionSteps(total, b, ans) {
+function divisionSteps(total, b, ans, t) {
   const chunk = Math.floor(ans / 10) * 10;
-  if (!chunk) return `${b} × ${ans} = ${total}, so the answer is ${ans}`;
-  const rest = ans - chunk;
-  return `${b} × ${chunk} = ${b * chunk}, leaving ${total} − ${b * chunk} = ${total - b * chunk}, and ${total - b * chunk} ÷ ${b} = ${rest}. So ${chunk} + ${rest} = ${ans}`;
+  if (!chunk) return t.aDivideDirect(b, ans, total);
+  return t.aDivideSteps(total, b, chunk, ans - chunk, ans);
 }
 
-function divide(rng, level) {
+function divide(rng, level, t) {
   if (level === 1) {
     const b = rng.int(2, 9);
     const ans = rng.int(4, 20);
     return q({
       prompt: `${b * ans} ÷ ${b}`,
       answer: ans,
-      solution: `Ask what times ${b} makes ${b * ans}: ${b} × ${ans} = ${b * ans}`,
-      traps: [{ value: ans * b, why: "Multiplied instead of divided. Check by multiplying back: the answer times the divisor has to give the number you started with." }],
+      solution: t.aDivideAsk(b, b * ans, ans),
+      traps: [{ value: ans * b, why: t.ttMultipliedNotDivided() }],
       tip: "reduce-before-dividing",
     });
   }
@@ -1590,10 +1615,10 @@ function divide(rng, level) {
     return q({
       prompt: `${b * ans} ÷ ${b}`,
       answer: ans,
-      solution: divisionSteps(b * ans, b, ans),
+      solution: divisionSteps(b * ans, b, ans, t),
       traps: [
-        { value: ans + 1, why: `One too high. Multiply back to check: ${b} times your answer should return the number you started with.` },
-        { value: ans - 1, why: `One too low. Multiply back to check: ${b} times your answer should return the number you started with.` },
+        { value: ans + 1, why: t.ttQuotientHigh(b) },
+        { value: ans - 1, why: t.ttQuotientLow(b) },
       ],
       tip: "reduce-before-dividing",
     });
@@ -1604,53 +1629,53 @@ function divide(rng, level) {
   return q({
     prompt: `${b * ans} ÷ ${b}`,
     answer: ans,
-    solution: divisionSteps(b * ans, b, ans),
+    solution: divisionSteps(b * ans, b, ans, t),
     traps: [
-      { value: ans + 10, why: "A ten too many in the answer; the place value slipped." },
-      { value: ans - 10, why: "A ten short in the answer; the place value slipped." },
+      { value: ans + 10, why: t.ttQuotientTen() },
+      { value: ans - 10, why: t.ttQuotientTenLow() },
       // Recorded misses: 49 typed as 44, 86 as 82, 99 as 94. Every one an
       // opening estimate pitched low and then never corrected upward.
-      { value: ans - 5, why: `Too low by 5. A first guess at the quotient is usually low; multiply it back by ${b} and you will see how much is left over.` },
-      { value: ans - 4, why: `Too low by 4. Multiply your answer back by ${b}: whatever is left over is still to be divided.` },
+      { value: ans - 5, why: t.ttQuotientFive(b) },
+      { value: ans - 4, why: t.ttQuotientFour(b) },
     ],
     tip: "reduce-before-dividing",
   });
 }
 
 /* ── 5. Squares ──────────────────────────────────────────────────────────── */
-function squares(rng, level) {
+function squares(rng, level, t) {
   const range = [[11, 25], [21, 40], [26, 59]][level - 1];
   const n = rng.int(range[0], range[1]);
   const d = n % 10 <= 5 ? n % 10 : n % 10 - 10;
   const slid = (n - d) * (n + d); // the rule-of-one product, before adding d²
+  const front = Math.floor(n / 10);
   return q({
     prompt: `${n}²`,
     answer: n * n,
     solution: n % 10 === 5
-      ? `It ends in 5, so take the front, ${Math.floor(n / 10)}, times the next number up, ${Math.floor(n / 10) + 1}: ` +
-        `${Math.floor(n / 10)} × ${Math.floor(n / 10) + 1} = ${Math.floor(n / 10) * (Math.floor(n / 10) + 1)}. Write 25 after it: ${n * n}`
+      ? t.aSquareEndsFive(front, front + 1, front * (front + 1), n * n)
       : d === 0
-      ? `${n} ends in 0, so square the ${n / 10} and add two zeros: ${n * n}`
-      : `Slide ${Math.abs(d)} ${d > 0 ? "down" : "up"} to reach a round number, then pay it back: ` +
-        `${n}² = ${Math.min(n - d, n + d)} × ${Math.max(n - d, n + d)} + ${Math.abs(d)}² = ${slid} + ${d * d} = ${n * n}`,
+      ? t.aSquareRound(n, n / 10, n * n)
+      : t.aSquareSlide(Math.abs(d), d > 0 ? t.aSlideDown : t.aSlideUp, n,
+                       Math.min(n - d, n + d), Math.max(n - d, n + d), slid, d * d, n * n),
     traps: [
-      { value: slid, why: `The correction was never added. ${n - d} × ${n + d} = ${slid}, and you still owe ${d}² = ${d * d}.` },
-      { value: n * n - 2 * n + 1, why: `That is ${n - 1}². Off by one before squaring.` },
-      { value: n * 2, why: "Doubled instead of squared." },
+      { value: slid, why: t.ttNoCorrection(Math.min(n - d, n + d), Math.max(n - d, n + d), slid, Math.abs(d), d * d) },
+      { value: n * n - 2 * n + 1, why: t.ttOffByOneSquare(n - 1) },
+      { value: n * 2, why: t.ttDoubled() },
     ],
     tip: n % 10 === 5 ? "ends-in-five" : "squares-rule-of-one",
   });
 }
 
 /* ── 6. Roots and powers ─────────────────────────────────────────────────── */
-function roots(rng, level) {
+function roots(rng, level, t) {
   if (level === 1) {
     const n = rng.int(11, 30);
     return q({
       prompt: `√${n * n}`,
       answer: n,
-      solution: `Ask what squares to ${n * n}: ${n}² = ${n * n}, so the root is ${n}`,
-      traps: [{ value: (n * n) / 2, why: "Halved instead of taking a square root. A square root asks what number times itself gives this." }],
+      solution: t.aSqrtAsk(n * n, n),
+      traps: [{ value: (n * n) / 2, why: t.ttHalvedNotRooted() }],
       tip: "squares-rule-of-one",
     });
   }
@@ -1661,10 +1686,10 @@ function roots(rng, level) {
       return q({
         prompt: `${n}³`,
         answer: n ** 3,
-        solution: `Cubing means three copies multiplied together: ${n} × ${n} = ${n * n}, then ${n * n} × ${n} = ${n ** 3}`,
+        solution: t.aCubeSteps(n, n * n, n ** 3),
         traps: [
-          { value: n * n, why: `That is ${n}², one multiplication short. Cubing means three copies multiplied together.` },
-          { value: n * 3, why: "Multiplied by 3 instead of raising to the third power. The 3 counts the copies, it is not a factor." },
+          { value: n * n, why: t.ttSquaredNotCubed(n) },
+          { value: n * 3, why: t.ttTimesThree() },
         ],
         tip: "cube-root-last-digit",
       });
@@ -1673,10 +1698,10 @@ function roots(rng, level) {
     return q({
       prompt: `${b}^${e}`,
       answer: b ** e,
-      solution: `${e} copies of ${b} multiplied together: ${Array(e).fill(b).join(" × ")} = ${b ** e}`,
+      solution: t.aPowerSteps(b, e, Array(e).fill(b).join(" × "), b ** e),
       traps: [
-        { value: b ** (e - 1), why: `That is ${b}^${e - 1}. One factor short; the exponent counts the copies, so there are ${e} of them.` },
-        { value: b * e, why: "Multiplied the base by the exponent. The exponent counts how many copies to multiply, it is not one of them." },
+        { value: b ** (e - 1), why: t.ttOneFactorShort(b, e - 1, e) },
+        { value: b * e, why: t.ttBaseTimesExp() },
       ],
       tip: "cube-root-last-digit",
     });
@@ -1686,19 +1711,14 @@ function roots(rng, level) {
   const cube = n ** 3;
   const tens = Math.floor(n / 10);
   const lastDigitTrap = { 2: 2, 3: 3, 7: 7, 8: 8 }[n % 10];
-  const traps = [{ value: Math.round(cube / 3), why: "Divided by 3 instead of taking a cube root. A cube root asks what number, multiplied by itself three times, gives this." }];
+  const traps = [{ value: Math.round(cube / 3), why: t.ttDividedByThree() }];
   if (lastDigitTrap != null) {
-    traps.unshift({
-      value: n - (n % 10) + lastDigitTrap,
-      why: `The last digit of a cube does not stay put for 2, 3, 7 and 8: 2 and 8 swap, and 3 and 7 swap. A cube ending in ${cube % 10} has a root ending in ${n % 10}.`,
-    });
+    traps.unshift({ value: n - (n % 10) + lastDigitTrap, why: t.ttCubeLastDigit(cube % 10, n % 10) });
   }
   return q({
-    prompt: `∛${cube.toLocaleString("en-US")}`,
+    prompt: t.aCubeRoot(cube),
     answer: n,
-    solution:
-      `Two clues pin it down. The size: ${cube.toLocaleString("en-US")} sits between ${tens * 10}³ = ${(tens * 10) ** 3} and ${(tens + 1) * 10}³ = ${((tens + 1) * 10) ** 3}, ` +
-      `so the answer starts with ${tens}. The last digit: a cube ending in ${cube % 10} can only come from a root ending in ${n % 10}. That gives ${n}.`,
+    solution: t.aCubeRootSol(cube, tens, (tens * 10) ** 3, ((tens + 1) * 10) ** 3, cube % 10, n % 10, n),
     traps,
     tip: "cube-root-last-digit",
   });
@@ -1706,17 +1726,16 @@ function roots(rng, level) {
 
 /* ── 7. Fractions ────────────────────────────────────────────────────────── */
 const DENOMS = [2, 4, 5, 8, 10, 16, 20, 25, 40, 50];
-const gcd = (a, b) => (b ? gcd(b, a % b) : a);
 
-function fractions(rng, level) {
+function fractions(rng, level, t) {
   if (level === 1) {
     const d = rng.pick([2, 4, 5, 8, 10]);
     const n = rng.int(1, d - 1);
     return q({
-      prompt: `${n}/${d} as a decimal`,
+      prompt: t.aFracToDec(n, d),
       answer: round4(n / d),
-      solution: `1/${d} = ${round4(1 / d)}, so ${n}/${d} = ${n} × ${round4(1 / d)} = ${round4(n / d)}`,
-      traps: [{ value: round4(d / n), why: "The fraction was read upside down. The top number is how many parts you have, the bottom is how many make a whole." }],
+      solution: t.aOneOverD(d, t.n(round4(1 / d)), n, t.n(round4(n / d))),
+      traps: [{ value: round4(d / n), why: t.ttUpsideDown() }],
       tip: "fraction-anchors",
     });
   }
@@ -1733,11 +1752,11 @@ function fractions(rng, level) {
     return q({
       prompt: `${n1}/${d1} × ${n2}/${d2}`,
       answer: round4(top / bot),
-      solution: `Multiplying is straight across: tops ${n1} × ${n2} = ${top}, bottoms ${d1} × ${d2} = ${bot}` +
-        (g > 1 ? `, which cancels to ${top / g}/${bot / g} = ${round4(top / bot)}` : ` = ${round4(top / bot)}`),
+      solution: t.aFracMul(n1, n2, top, d1, d2, bot,
+                           g > 1 ? `${top / g}/${bot / g}` : null, t.n(round4(top / bot))),
       traps: [
-        { value: round4(n1 / d1 + n2 / d2), why: "Added instead of multiplied." },
-        { value: round4(top / (d1 + d2)), why: "The bottoms were added. When multiplying, the bottoms multiply too." },
+        { value: round4(n1 / d1 + n2 / d2), why: t.ttAddedNotMultipliedFrac() },
+        { value: round4(top / (d1 + d2)), why: t.ttBottomsAdded() },
       ],
       tip: "fraction-anchors",
     });
@@ -1747,36 +1766,34 @@ function fractions(rng, level) {
   return q({
     prompt: `${n1}/${d1} + ${n2}/${d2}`,
     answer: round4(n1 / d1 + n2 / d2),
-    solution:
-      `Adding needs the same bottom. Both fit into ${lcm}: ${n1}/${d1} = ${(n1 * lcm) / d1}/${lcm} and ${n2}/${d2} = ${(n2 * lcm) / d2}/${lcm}. ` +
-      `Now add the tops: ${(n1 * lcm) / d1 + (n2 * lcm) / d2}/${lcm} = ${round4(n1 / d1 + n2 / d2)}`,
+    solution: t.aFracAdd(n1, d1, (n1 * lcm) / d1, n2, d2, (n2 * lcm) / d2, lcm,
+                         (n1 * lcm) / d1 + (n2 * lcm) / d2, t.n(round4(n1 / d1 + n2 / d2))),
     traps: [
-      { value: round4((n1 + n2) / (d1 + d2)), why: "Tops added and bottoms added. That is not how adding works: a half plus a half would come out as a half. Give them the same bottom first." },
-      { value: round4((n1 * n2) / (d1 * d2)), why: "Multiplied instead of added." },
+      { value: round4((n1 + n2) / (d1 + d2)), why: t.ttTopsAndBottoms() },
+      { value: round4((n1 * n2) / (d1 * d2)), why: t.ttMultipliedNotAdded() },
     ],
     tip: "fraction-anchors",
   });
 }
 
 /* ── 8. Percentages ──────────────────────────────────────────────────────── */
-function percent(rng, level) {
+function percent(rng, level, t) {
   if (level === 1) {
     const p = rng.pick([10, 20, 25, 50, 5]);
     const y = rng.pick([40, 60, 80, 120, 200, 240, 400, 500]);
     const ten = y / 10;
     const solution =
-      p === 50 ? `Per cent means per hundred, and 50 per hundred is half. Halve ${y}: ${y / 2}`
-      : p === 25 ? `25 per hundred is a quarter. Halve ${y} to get ${y / 2}, then halve again: ${y / 4}`
-      : p === 10 ? `10 per hundred is one tenth, so shift the digits one place: ${y} becomes ${ten}`
-      : p === 20 ? `Start from 10%, which is one tenth of ${y} = ${ten}. Then 20% is twice that: ${2 * ten}`
-      : `Start from 10%, which is one tenth of ${y} = ${ten}. Then 5% is half of that: ${ten / 2}`;
+      p === 50 ? t.aPctHalf(y, y / 2)
+      : p === 25 ? t.aPctQuarter(y, y / 2, y / 4)
+      : p === 10 ? t.aPctTenth(y, t.n(ten))
+      : t.aPctFromTen(p, y, t.n(ten), t.n(round4((p * y) / 100)));
     return q({
-      prompt: `${p}% of ${y}`,
+      prompt: t.aPercentOf(p, y),
       answer: round4((p * y) / 100),
       solution,
       traps: [
-        { value: round4((p * y) / 10), why: "Out by a factor of ten. Per cent means per hundred, so divide by 100." },
-        { value: round4(y / p), why: `Divided by ${p} instead of taking ${p} hundredths of ${y}.` },
+        { value: round4((p * y) / 10), why: t.ttFactorOfTen() },
+        { value: round4(y / p), why: t.ttDividedByPercent(p, y) },
       ],
       tip: "percent-flip",
     });
@@ -1787,10 +1804,10 @@ function percent(rng, level) {
     const y = rng.pick([64, 96, 150, 160, 250, 320, 360, 480, 640, 800, 1200]);
     const ten = y / 10;
     return q({
-      prompt: `${p}% of ${y}`,
+      prompt: t.aPercentOf(t.n(p), y),
       answer: round4((p * y) / 100),
-      solution: `Build it from 10% = ${round4(ten)}: ${p}% is ${round4(p / 10)} of those, so ${round4(ten)} × ${round4(p / 10)} = ${round4((p * y) / 100)}`,
-      traps: [{ value: round4((p * y) / 1000), why: "Out by a factor of ten. Check against 10%, which is easy to see." }],
+      solution: t.aPctBuild(t.n(round4(ten)), t.n(round4(p / 10)), t.n(p), t.n(round4((p * y) / 100))),
+      traps: [{ value: round4((p * y) / 1000), why: t.ttFactorOfTenCheck() }],
       tip: "percent-flip",
     });
   }
@@ -1799,50 +1816,62 @@ function percent(rng, level) {
   let x = rng.pick([2, 4, 5, 8, 10, 16, 20, 25, 32, 40, 50, 60, 75, 100, 120, 150, 200]);
   x = Math.min(x, y);
   return q({
-    prompt: `${x} is what % of ${y}`,
+    prompt: t.aWhatPercent(x, y),
     answer: round4((100 * x) / y),
-    solution: `Put it over the whole and turn it into hundredths: ${x}/${y} = ${round4(x / y)}, and ${round4(x / y)} × 100 = ${round4((100 * x) / y)}%`,
+    solution: t.aPctOfWhole(x, y, t.n(round4(x / y)), t.n(round4((100 * x) / y))),
     traps: [
-      { value: round4((100 * y) / x), why: "The two numbers were swapped. Whatever follows the word 'of' is the whole, and goes on the bottom." },
-      { value: round4(x / y), why: "The share is right but it never became a percentage. Multiply by 100." },
+      { value: round4((100 * y) / x), why: t.ttSwapped() },
+      { value: round4(x / y), why: t.ttNotAPercent() },
     ],
     tip: "percent-flip",
   });
 }
 
 /* ── 9. Estimation ───────────────────────────────────────────────────────── */
-function estimate(rng, level) {
+function estimate(rng, level, t) {
   const kind = level === 1 ? rng.pick(["div", "div", "sqrt"]) : rng.pick(["div", "mul", "sqrt"]);
   if (kind === "div") {
     const a = rng.int(1000, 9999);
     const b = rng.int(11, 97);
     const rb = Math.round(b / 10) * 10 || 10;
+    // Rounding the divisor alone can miss by 10%, which the 5% tolerance rejects.
+    // So state the correction as well, which is what a person does out loud.
+    const first = a / rb;
+    const pct = Math.round((Math.abs(rb - b) / b) * 100);
+    const est = Math.round((a / b) * 10) / 10;
     return q({
       prompt: `≈ ${a} ÷ ${b}`,
       answer: a / b,
       approx: true,
-      solution: `Round the divisor to ${rb}: ${a} ÷ ${rb} ≈ ${Math.round((a / rb) * 10) / 10}. The true value is ${Math.round((a / b) * 10) / 10}, and anything within 5% counts.`,
+      solution: t.aEstDiv(a, rb, t.n(Math.round(first * 10) / 10), b, pct,
+                          b < rb ? t.aEstLess : t.aEstMore, t.n(est), t.n(est)),
       tip: "reduce-before-dividing",
     });
   }
   if (kind === "mul") {
     const a = rng.int(101, 999);
     const b = rng.int(11, 99) / 100;
+    // Round the three-digit number, never the two-decimal one: rounding 0.23 to
+    // 0.2 is a 13% move, while rounding 227 to 230 is a 1% move.
+    const ra = Math.round(a / 10) * 10;
     return q({
-      prompt: `≈ ${a} × ${b}`,
+      prompt: `≈ ${a} × ${t.n(b)}`,
       answer: a * b,
       approx: true,
-      solution: `${b} is close to ${Math.round(b * 10) / 10}, and ${a} × ${Math.round(b * 10) / 10} = ${Math.round(a * Math.round(b * 10) / 10 * 10) / 10}. The true value is ${Math.round(a * b * 10) / 10}.`,
+      solution: t.aEstMul(a, ra, t.n(b), t.n(Math.round(ra * b * 10) / 10), t.n(Math.round(a * b * 10) / 10)),
       tip: "percent-flip",
     });
   }
   const a = rng.int(150, 9000);
   const lo = Math.floor(Math.sqrt(a));
+  const nearer = a - lo * lo < (lo + 1) ** 2 - a;
   return q({
     prompt: `≈ √${a}`,
     answer: Math.sqrt(a),
     approx: true,
-    solution: `${lo}² = ${lo * lo} and ${lo + 1}² = ${(lo + 1) ** 2}, and ${a} sits between them, so the root is a little ${a - lo * lo < (lo + 1) ** 2 - a ? "above" : "below"} ${a - lo * lo < (lo + 1) ** 2 - a ? lo : lo + 1}: about ${Math.round(Math.sqrt(a) * 10) / 10}`,
+    solution: t.aEstSqrt(lo, lo * lo, lo + 1, (lo + 1) ** 2, a,
+                         nearer ? t.aAbove : t.aBelow, nearer ? lo : lo + 1,
+                         t.n(Math.round(Math.sqrt(a) * 10) / 10)),
     tip: "sqrt-anchors",
   });
 }
@@ -1854,14 +1883,12 @@ function maskDigit(rng, n) {
   return [s.slice(0, i) + "□" + s.slice(i + 1), +s[i], s.length - 1 - i];
 }
 
-const PLACE = ["units", "tens", "hundreds", "thousands"];
-
-function puzzles(rng, level) {
+function puzzles(rng, level, t) {
   const kinds = level === 1 ? ["balance"] : level === 2 ? ["balance", "missing"] : ["missing", "relation", "largest"];
   const kind = rng.pick(kinds);
 
   if (kind === "balance") {
-    for (let t = 0; t < 60; t++) {
+    for (let attempt = 0; attempt < 60; attempt++) {
       const a = rng.pick([2, 3, 4, 5, 6, 8]);
       const c = rng.pick([8, 12, 15, 16, 20, 24, 25, 32, 40, 45]);
       const ans = rng.int(11, 99);
@@ -1873,16 +1900,21 @@ function puzzles(rng, level) {
         prompt: `${a} × ${b} = ${c} × ?`,
         answer: ans,
         solution: g > 1
-          ? `Cancel the ${g} shared by ${a} and ${c} first: ${a / g} × ${b} = ${c / g} × ?, so ? = ${(a / g) * b} ÷ ${c / g} = ${ans}`
-          : `Work out the left side, ${a} × ${b} = ${a * b}, then divide by ${c}: ${a * b} ÷ ${c} = ${ans}`,
+          ? t.aBalanceCancel(g, a, c, `${(a / g) * b}`, c / g, ans)
+          : t.aBalanceDirect(a, b, a * b, c, ans),
         traps: [
-          { value: round4((a * b) / c + 1), why: "Off by one in the final division. Multiply back to check." },
-          { value: a * b, why: `That is the left side, ${a} × ${b}. It still has to be divided by ${c}.` },
+          { value: round4((a * b) / c + 1), why: t.ttOffByOneDiv() },
+          { value: a * b, why: t.ttLeftSideOnly(a, b, c) },
         ],
         tip: "reduce-before-dividing",
       });
     }
-    return q({ prompt: "2 × 232 = 16 × ?", answer: 29, solution: "Cancel the 2: 232 = 8 × ?, so ? = 29", tip: "reduce-before-dividing" });
+    return q({
+      prompt: "2 × 232 = 16 × ?",
+      answer: 29,
+      solution: t.aBalanceCancel(2, 2, 16, "232", 8, 29),
+      tip: "reduce-before-dividing",
+    });
   }
 
   if (kind === "missing") {
@@ -1894,7 +1926,7 @@ function puzzles(rng, level) {
         prompt: `${a} × ${masked} = ${a * b}`,
         answer: digit,
         hint: "digit",
-        solution: `Divide back: ${a * b} ÷ ${a} = ${b}, so the ${PLACE[place]} digit is ${digit}`,
+        solution: t.aMissingMul(a * b, a, b, t.aPlaces[place], digit),
         tip: "split-and-add",
       });
     }
@@ -1907,14 +1939,14 @@ function puzzles(rng, level) {
       answer: digit,
       hint: "digit",
       solution: plus
-        ? `Undo the addition: ${a + b} − ${b} = ${a}, so the ${PLACE[place]} digit is ${digit}`
-        : `Undo the subtraction: ${a - b} + ${b} = ${a}, so the ${PLACE[place]} digit is ${digit}`,
+        ? t.aMissingAdd(a + b, b, a, t.aPlaces[place], digit)
+        : t.aMissingSub(a - b, b, a, t.aPlaces[place], digit),
       tip: "subtract-hundreds-first",
     });
   }
 
   if (kind === "relation") {
-    for (let t = 0; t < 80; t++) {
+    for (let attempt = 0; attempt < 80; attempt++) {
       const b1 = rng.pick([160, 200, 240, 320, 400, 480]);
       const fr = rng.pick([[1, 4], [3, 8], [1, 2], [5, 8], [3, 4], [2, 5], [1, 5]]);
       const b2 = rng.pick([120, 160, 200, 240, 260, 300, 400]);
@@ -1923,18 +1955,23 @@ function puzzles(rng, level) {
       const B = (b2 * p) / 100;
       if (A - B < 1) continue;
       return q({
-        prompt: `A = ${fr[0]}/${fr[1]} of ${b1},  B = ${p}% of ${b2}.  A − B`,
+        prompt: t.aRelation(fr[0], fr[1], b1, p, b2),
         answer: round4(A - B),
-        solution: `A: ${b1} ÷ ${fr[1]} = ${b1 / fr[1]}, times ${fr[0]} = ${A}. B: 10% of ${b2} is ${b2 / 10}, so ${p}% is ${round4(B)}. Then ${A} − ${round4(B)} = ${round4(A - B)}`,
+        solution: t.aRelationSol(b1, fr[1], b1 / fr[1], fr[0], A, b2, t.n(b2 / 10), t.n(round4(B)), t.n(round4(A - B))),
         traps: [
-          { value: round4(B - A), why: "Subtracted the wrong way round." },
-          { value: round4(A + B), why: "Added instead of subtracted." },
-          { value: A, why: "That is A on its own. B still has to come off." },
+          { value: round4(B - A), why: t.ttWrongWayRound() },
+          { value: round4(A + B), why: t.ttAddedNotSubtracted() },
+          { value: A, why: t.ttAOnly() },
         ],
         tip: "fraction-anchors",
       });
     }
-    return q({ prompt: "A = 3/4 of 200,  B = 35% of 260.  A − B", answer: 59, solution: "A = 150, B = 91, so A − B = 59", tip: "fraction-anchors" });
+    return q({
+      prompt: t.aRelation(3, 4, 200, 35, 260),
+      answer: 59,
+      solution: t.aRelationSol(200, 4, 50, 3, 150, 260, "26", "91", "59"),
+      tip: "fraction-anchors",
+    });
   }
 
   // largest: comparing powers, answered by letter
@@ -1947,13 +1984,13 @@ function puzzles(rng, level) {
   let best = 0;
   for (let i = 1; i < items.length; i++) if (items[i][1] > items[best][1]) best = i;
   return q({
-    prompt: "Which is largest?",
+    prompt: t.aWhichLargest(),
     options: items.map((it) => it[0]),
     answer: "abcde"[best],
     format: "letter",
-    solution: `Work each one out: ${items.map(([lab, v]) => `${lab} = ${v}`).join(", ")}. The largest is ${items[best][0]}.`,
+    solution: t.aLargestSol(items.map(([lab, v]) => `${lab} = ${v}`).join(", "), items[best][0]),
     traps: [],
-    note: "Comparing the bases alone does not work: a smaller base with a bigger exponent often wins, as 4^7 beats both 3^7 and 6^5. Work each one out.",
+    note: t.ttLargestNote(),
     tip: null,
   });
 }
@@ -1992,35 +2029,34 @@ Object.assign(__shared, { timesTables, addSubtract, multiply, divide, squares, r
 
 const { ALPHA } = __shared;
 
-const signed = (d) => (d >= 0 ? `add ${d}` : `subtract ${-d}`);
 const gapsOf = (s) => s.slice(1).map((v, i) => v - s[i]);
 
 /* ── the families, easiest first ─────────────────────────────────────────── */
 
-const arithmetic = (rng) => {
+const arithmetic = (rng, t) => {
   const a = rng.int(-20, 60);
   const d = rng.pick([-9, -7, -6, -4, -3, 3, 4, 6, 7, 8, 9, 11, 12, 13, 15, 17]);
   const s = [...Array(6)].map((_, i) => a + d * i);
-  return { terms: s.slice(0, 5), next: s[5], family: "arithmetic", rule: `${signed(d)} each time` };
+  return { terms: s.slice(0, 5), next: s[5], family: "arithmetic", rule: t.ruleAdd(d) };
 };
 
-const geometric = (rng) => {
+const geometric = (rng, t) => {
   if (rng.chance(0.5)) {
     const a = rng.pick([1, 2, 3, 4, 5, 6, 7]);
     const r = rng.pick([2, 3, 4, -2, -3]);
     const s = [...Array(6)].map((_, i) => a * r ** i);
     return {
       terms: s.slice(0, 5), next: s[5], family: "geometric",
-      rule: r < 0 ? `multiply by ${r} each time, so the sign flips every step` : `multiply by ${r} each time`,
+      rule: r < 0 ? t.ruleMulNeg(r) : t.ruleMul(r),
     };
   }
   const r = rng.pick([2, 3]);
   const a = r ** 5 * rng.pick([1, 2, 3]);
   const s = [...Array(6)].map((_, i) => a / r ** i);
-  return { terms: s.slice(0, 5), next: s[5], family: "geometric", rule: `divide by ${r} each time` };
+  return { terms: s.slice(0, 5), next: s[5], family: "geometric", rule: t.ruleDiv(r) };
 };
 
-const quadratic = (rng) => {
+const quadratic = (rng, t) => {
   const a = rng.pick([1, 1, 2, 3, -1]);
   const b = rng.int(-5, 6);
   const c = rng.int(-10, 15);
@@ -2028,25 +2064,25 @@ const quadratic = (rng) => {
   const g = gapsOf(s.slice(0, 5));
   return {
     terms: s.slice(0, 5), next: s[5], family: "quadratic",
-    rule: `the gaps are ${g.join(", ")}, and they themselves ${signed(2 * a)} each time`,
+    rule: t.ruleQuad(g, 2 * a),
   };
 };
 
-const fibonacci = (rng) => {
+const fibonacci = (rng, t) => {
   const s = [rng.int(1, 9), rng.int(1, 12)];
   while (s.length < 6) s.push(s[s.length - 1] + s[s.length - 2]);
-  return { terms: s.slice(0, 5), next: s[5], family: "Fibonacci", rule: "each term is the two before it added together" };
+  return { terms: s.slice(0, 5), next: s[5], family: "Fibonacci", rule: t.ruleFib() };
 };
 
-const affine = (rng) => {
+const affine = (rng, t) => {
   const a = rng.pick([2, 2, 3, 3, -2]);
   const b = rng.pick([-3, -1, 1, 2, 3, 5, -5]);
   const s = [rng.int(1, 8)];
   while (s.length < 6) s.push(s[s.length - 1] * a + b);
-  return { terms: s.slice(0, 5), next: s[5], family: "affine", rule: `multiply by ${a}, then ${signed(b)}` };
+  return { terms: s.slice(0, 5), next: s[5], family: "affine", rule: t.ruleAffine(a, b) };
 };
 
-const interleaved = (rng) => {
+const interleaved = (rng, t) => {
   const a1 = rng.int(1, 30);
   const d1 = rng.pick([2, 3, 4, 5, 7, -3, -2]);
   const a2 = rng.int(1, 60);
@@ -2056,11 +2092,11 @@ const interleaved = (rng) => {
   const n = rng.pick([6, 7]);
   return {
     terms: s.slice(0, n), next: s[n], family: "interleaved",
-    rule: `two sequences taking turns: the 1st, 3rd, 5th terms ${signed(d1)}, and the 2nd, 4th, 6th ${signed(d2)}`,
+    rule: t.ruleInter(d1, d2),
   };
 };
 
-const alternatingOps = (rng) => {
+const alternatingOps = (rng, t) => {
   const add = rng.int(1, 5);
   const mul = rng.pick([2, 3]);
   const s = [rng.int(1, 9)];
@@ -2070,11 +2106,11 @@ const alternatingOps = (rng) => {
   }
   return {
     terms: s.slice(0, 6), next: s[6], family: "alternating ops",
-    rule: `two operations taking turns: multiply by ${mul}, then add ${add}, then multiply by ${mul} again`,
+    rule: t.ruleAltOps(mul, add),
   };
 };
 
-const specials = (rng) => {
+const specials = (rng, t) => {
   const kind = rng.pick(["sq", "cb", "pr", "tri", "fac"]);
   const off = rng.pick([0, 0, 1, -1, 2, 3]);
   // "fac" only has seven entries, so it cannot start as late as the others.
@@ -2087,15 +2123,15 @@ const specials = (rng) => {
     tri: (n) => (n * (n + 1)) / 2,
     fac: (n) => [1, 2, 6, 24, 120, 720, 5040][n - 1],
   }[kind];
-  const name = { sq: "square numbers", cb: "cube numbers", pr: "prime numbers", tri: "triangular numbers", fac: "factorials 1, 2, 6, 24, 120" }[kind];
+  const name = t.specialNames[kind];
   const s = [...Array(6)].map((_, i) => f(st + i) + off);
   return {
     terms: s.slice(0, 5), next: s[5], family: "special numbers",
-    rule: off === 0 ? `the ${name}, starting from the ${st}${st === 1 ? "st" : st === 2 ? "nd" : st === 3 ? "rd" : "th"}` : `the ${name} with ${off > 0 ? off + " added" : -off + " taken off"} each time`,
+    rule: off === 0 ? t.ruleSpecial(name, st) : t.ruleSpecialOff(name, off),
   };
 };
 
-const growingDiff = (rng) => {
+const growingDiff = (rng, t) => {
   let x = rng.int(1, 15);
   let step = rng.int(1, 5);
   const first = step;
@@ -2108,18 +2144,18 @@ const growingDiff = (rng) => {
   }
   return {
     terms: s.slice(0, 5), next: s[5], family: "growing differences",
-    rule: `the gaps start at ${first} and grow by ${dd} each time`,
+    rule: t.ruleGrowing(first, dd),
   };
 };
 
-const letters = (rng) => {
+const letters = (rng, t) => {
   const kind = rng.pick(["step", "step", "grow", "pair", "mix"]);
   let s, rule;
   if (kind === "step") {
     const st = rng.int(0, 12);
     const d = rng.pick([2, 3, 4, 5, -2, -3]);
     s = [...Array(6)].map((_, i) => ALPHA[(((st + d * i) % 26) + 26) % 26]);
-    rule = `move ${Math.abs(d)} letter${Math.abs(d) > 1 ? "s" : ""} ${d > 0 ? "forward" : "back"} through the alphabet each time`;
+    rule = t.ruleLetterStep(d);
   } else if (kind === "grow") {
     let p = rng.int(0, 6);
     let d = rng.int(1, 3);
@@ -2130,21 +2166,21 @@ const letters = (rng) => {
       d++;
       s.push(ALPHA[p % 26]);
     }
-    rule = `the jump through the alphabet starts at ${first} and grows by 1 each time`;
+    rule = t.ruleLetterGrow(first);
   } else if (kind === "pair") {
     const st = rng.int(0, 10);
     s = [...Array(6)].map((_, i) => ALPHA[(st + i) % 26] + ALPHA[(25 - st - i + 26) % 26]);
-    rule = "the first letter moves forward one at a time and the second moves back one at a time";
+    rule = t.ruleLetterPair();
   } else {
     const st = rng.int(0, 12);
     const d = rng.pick([2, 3, 4]);
     s = [...Array(6)].map((_, i) => ALPHA[(st + d * i) % 26] + String(i + 1));
-    rule = `the letter moves ${d} forward each time and the number counts up 1, 2, 3`;
+    rule = t.ruleLetterMix(d);
   }
   return { terms: s.slice(0, 5), next: s[5], family: "letters", rule };
 };
 
-const cubic = (rng) => {
+const cubic = (rng, t) => {
   const a = rng.pick([1, 1, 2, -1]);
   const b = rng.int(-4, 5);
   const c = rng.int(-6, 8);
@@ -2152,54 +2188,54 @@ const cubic = (rng) => {
   const g = gapsOf(s.slice(0, 5));
   return {
     terms: s.slice(0, 5), next: s[5], family: "cubic",
-    rule: `the gaps are ${g.join(", ")}; take gaps of those and they grow steadily, which means a cubic pattern`,
+    rule: t.ruleCubic(g),
   };
 };
 
-const productOfPrev = (rng) => {
+const productOfPrev = (rng, t) => {
   const s = [rng.int(2, 4), rng.int(2, 4)];
   while (s.length < 6) {
     const v = s[s.length - 1] * s[s.length - 2];
     if (v > 2e6) break;
     s.push(v);
   }
-  if (s.length < 6) return fibonacci(rng);
-  return { terms: s.slice(0, 5), next: s[5], family: "product of previous two", rule: "each term is the two before it multiplied together" };
+  if (s.length < 6) return fibonacci(rng, t);
+  return { terms: s.slice(0, 5), next: s[5], family: "product of previous two", rule: t.ruleProduct() };
 };
 
-const digitSum = (rng) => {
+const digitSum = (rng, t) => {
   const dsum = (n) => String(Math.abs(n)).split("").reduce((a, d) => a + +d, 0);
   const s = [rng.int(10, 60)];
   while (s.length < 6) s.push(s[s.length - 1] + dsum(s[s.length - 1]));
   const a = s[0];
   return {
     terms: s.slice(0, 5), next: s[5], family: "add digit sum",
-    rule: `add the term's own digits to itself: ${a} + ${String(a).split("").join(" + ")} = ${s[1]}, and so on`,
+    rule: t.ruleDigitSum(a, String(a).split(""), s[1]),
   };
 };
 
-const threeInterleaved = (rng) => {
+const threeInterleaved = (rng, t) => {
   const starts = [rng.int(1, 20), rng.int(20, 60), rng.int(60, 99)];
   const ds = [rng.pick([3, 5, 7]), rng.pick([-4, -6, 8]), rng.pick([2, -3, 6])];
   const s = [];
   for (let i = 0; i < 4; i++) for (let k = 0; k < 3; k++) s.push(starts[k] + ds[k] * i);
   return {
     terms: s.slice(0, 9), next: s[9], family: "three interleaved",
-    rule: `three sequences taking turns: every 3rd term from the 1st ${signed(ds[0])}, from the 2nd ${signed(ds[1])}, from the 3rd ${signed(ds[2])}`,
+    rule: t.ruleThree(ds[0], ds[1], ds[2]),
   };
 };
 
-const letterSquare = (rng) => {
+const letterSquare = (rng, t) => {
   const st = rng.int(0, 8);
   const d = rng.pick([2, 3]);
   const s = [...Array(6)].map((_, i) => ALPHA[(st + d * i) % 26] + String((i + 1) ** 2));
   return {
     terms: s.slice(0, 5), next: s[5], family: "letter + square",
-    rule: `the letter moves ${d} forward each time and the number runs through the squares 1, 4, 9, 16, 25`,
+    rule: t.ruleLetterSquare(d),
   };
 };
 
-const geometricDiff = (rng) => {
+const geometricDiff = (rng, t) => {
   const a = rng.int(2, 12);
   const d0 = rng.pick([2, 3, 4, 5]);
   const r = rng.pick([2, 3, -2, -3]);
@@ -2213,24 +2249,24 @@ const geometricDiff = (rng) => {
   }
   return {
     terms: s.slice(0, 6), next: s[6], family: "geometric differences",
-    rule: `the gaps are ${gaps.slice(0, 5).join(", ")} — each gap is the one before it multiplied by ${r}`,
+    rule: t.ruleGeomDiff(gaps.slice(0, 5), r),
   };
 };
 
-const affineBig = (rng) => {
-  for (let t = 0; t < 40; t++) {
+const affineBig = (rng, t) => {
+  for (let attempt = 0; attempt < 40; attempt++) {
     const a = rng.pick([2, 3]);
     const b = rng.pick([7, 9, 11, 13, 17, 19, 23]);
     const s = [rng.int(4, 19)];
     while (s.length < 5) s.push(s[s.length - 1] * a + b);
     if (s.every((v) => v > 0 && v < 6000)) {
-      return { terms: s.slice(0, 4), next: s[4], family: "affine, large coefficients", rule: `multiply by ${a}, then add ${b}` };
+      return { terms: s.slice(0, 4), next: s[4], family: "affine, large coefficients", rule: t.ruleAffine(a, b) };
     }
   }
-  return { terms: [19, 28, 55, 136], next: 379, family: "affine, large coefficients", rule: "multiply by 3, then subtract 29" };
+  return { terms: [19, 28, 55, 136], next: 379, family: "affine, large coefficients", rule: t.ruleAffine(3, -29) };
 };
 
-const skipList = (rng) => {
+const skipList = (rng, t) => {
   const PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101];
   const kind = rng.pick(["prime", "square", "tri", "cube"]);
   const list =
@@ -2241,30 +2277,34 @@ const skipList = (rng) => {
   const skip = rng.pick([2, 2, 3]);
   const st = rng.int(0, Math.max(0, list.length - 1 - skip * 5));
   const s = [...Array(6)].map((_, i) => list[st + i * skip]).filter((v) => v != null);
-  if (s.length < 6) return { terms: [37, 43, 53, 61, 71], next: 79, family: "skip · primes", rule: "prime numbers, taking every other one" };
+  if (s.length < 6) {
+    return { terms: [37, 43, 53, 61, 71], next: 79, family: "skip · primes", rule: t.ruleSkip(t.skipNames.prime, 2) };
+  }
   const label = { prime: "primes", square: "squares", tri: "triangular", cube: "cubes" }[kind];
-  const word = { prime: "prime numbers", square: "square numbers", tri: "triangular numbers", cube: "cube numbers" }[kind];
   return {
     terms: s.slice(0, 5), next: s[5], family: "skip · " + label,
-    rule: `${word}, taking every ${skip === 2 ? "other one" : skip + "rd one"}`,
+    rule: t.ruleSkip(t.skipNames[kind], skip),
   };
 };
 
+// The words themselves stay English in both languages, because the real paper is
+// in English and recognising "January, February, March" is the skill being
+// tested. Only the sentence around them is translated.
 const WORD_LISTS = [
-  { name: "the numbers spelled out: One, Two, Three, Four…", items: ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve"] },
-  { name: "the positions spelled out: First, Second, Third…", items: ["First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth"] },
-  { name: "the months of the year", items: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"] },
-  { name: "the days of the week", items: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] },
+  { key: "numbers", items: ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve"] },
+  { key: "ordinals", items: ["First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth"] },
+  { key: "months", items: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"] },
+  { key: "days", items: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] },
 ];
 
-const wordInitials = (rng) => {
+const wordInitials = (rng, t) => {
   const list = rng.pick(WORD_LISTS);
   const st = rng.int(0, list.items.length - 6);
   const s = [...Array(6)].map((_, i) => list.items[st + i][0]);
   const shown = list.items.slice(st, st + 6).join(", ");
   return {
     terms: s.slice(0, 5), next: s[5], family: "word initials",
-    rule: `these are not alphabet steps at all — they are the first letters of ${list.name}. Here: ${shown}`,
+    rule: t.ruleWords(t.wordListNames[list.key], shown),
   };
 };
 
@@ -2279,29 +2319,29 @@ const HARD = [
 
 const POOLS = { 1: EASY, 2: MEDIUM, 3: HARD };
 
-function drawFamily(rng, level) {
-  return rng.pick(POOLS[level] || MEDIUM)(rng);
+function drawFamily(rng, level, t) {
+  return rng.pick(POOLS[level] || MEDIUM)(rng, t);
 }
 
 /* ── question type 1: what comes next ────────────────────────────────────── */
-function findRule(rng, level) {
-  const s = drawFamily(rng, level);
+function findRule(rng, level, t) {
+  const s = drawFamily(rng, level, t);
   const isLetters = typeof s.next === "string";
   return {
-    prompt: s.terms.join(",  ") + ",  ?",
+    prompt: t.seqNext(s.terms),
     answer: s.next,
     format: isLetters ? "letter-term" : "number",
     family: s.family,
-    solution: `The rule: ${s.rule}. Carrying it on from ${s.terms[s.terms.length - 1]} gives ${s.next}.`,
+    solution: t.seqSolution(s.rule, s.terms[s.terms.length - 1], s.next),
     traps: [],
     tip: "sequence-differences",
   };
 }
 
 /* ── question type 2: which term breaks the rule ─────────────────────────── */
-function oddOneOut(rng, level) {
+function oddOneOut(rng, level, t) {
   for (let attempt = 0; attempt < 60; attempt++) {
-    const s = drawFamily(rng, level);
+    const s = drawFamily(rng, level, t);
     const full = [...s.terms, s.next].slice(0, 10);
     if (full.length < 6) continue;
 
@@ -2330,9 +2370,7 @@ function oddOneOut(rng, level) {
       position: i,
       shouldBe: String(full[i]),
       family: s.family,
-      solution:
-        `Find the rule most of them follow: ${s.rule}. ` +
-        `Every term fits it except position ${i + 1}, which shows ${broken} where the rule needs ${full[i]}.`,
+      solution: t.oddSolution(s.rule, i + 1, broken, full[i]),
       traps: [],
       tip: "odd-one-out-majority",
     };
@@ -2345,7 +2383,7 @@ function oddOneOut(rng, level) {
     position: 2,
     shouldBe: "9",
     family: "arithmetic",
-    solution: "Find the rule most of them follow: add 3 each time. Every term fits it except position 3, which shows 10 where the rule needs 9.",
+    solution: t.oddSolution(t.ruleAdd(3), 3, 10, 9),
     traps: [],
     tip: "odd-one-out-majority",
   };
@@ -2647,7 +2685,7 @@ function bayes(rng, level) {
 
   if (level === 2) {
     const pool = [[3, 1], [1, 3], [2, 2], [1, 1], [4, 1], [1, 4], [2, 1], [1, 2], [3, 2], [2, 3], [5, 1], [1, 5]];
-    for (let t = 0; t < 50; t++) {
+    for (let attempt = 0; attempt < 50; attempt++) {
       const A = rng.pick(pool);
       const B = rng.pick(pool);
       const rA = A[1] / (A[0] + A[1]);
@@ -3137,9 +3175,10 @@ const { ARITHMETIC } = __shared;
 const { SEQUENCES } = __shared;
 const { PROBABILITY } = __shared;
 const { CURRICULUM, EXAMS, ALL_SKILLS, getSkill, nextSkill, skillName, SKILL_ORDER } = __shared;
+const { TEXT } = __shared;
 const { TIPS, getTip, tipsForSkill } = __shared;
 const { grade, gradeSet, displayAnswer } = __shared;
-const { frac, fmt, parseAnswer } = __shared;
+const { frac, fmt, parseAnswer, num } = __shared;
 
 /* Weights inside the two "mixed" pseudo-skills, tuned to the real Maven paper:
    arithmetic is dominated by add/subtract and multiplication, and probability
@@ -3185,17 +3224,19 @@ const GENERATOR_IDS = [...Object.keys(GENERATORS), ...Object.keys(MIXED)];
  * @param {1|2|3} level
  * @param {string|number} seed  same seed, same question
  */
-function generate(skillId, level = 1, seed = Math.random()) {
+function generate(skillId, level = 1, seed = Math.random(), lang = "en") {
   const rng = makeRng(`${skillId}|${level}|${seed}`);
-  return build(skillId, level, rng, 0);
+  return build(skillId, level, rng, 0, lang);
 }
 
-function build(skillId, level, rng, index) {
+function build(skillId, level, rng, index, lang = "en") {
   const resolved = resolve(skillId, rng);
   const gen = GENERATORS[resolved];
   if (!gen) throw new Error(`Unknown skill: ${skillId}`);
   const lv = Math.min(3, Math.max(1, level | 0));
-  const raw = gen(rng, lv);
+  // The third argument is the resolved phrasebook. A generator that has not been
+  // translated yet simply ignores it.
+  const raw = gen(rng, lv, TEXT[lang] || TEXT.en);
   const topic = resolved.split(".")[0];
   const qn = {
     id: `${resolved}.L${lv}#${index}`,
@@ -3206,6 +3247,7 @@ function build(skillId, level, rng, index) {
     format: "number",
     traps: [],
     solution: null,
+    lang,
     ...raw,
   };
   qn.traps = cleanTraps(qn);
@@ -3240,7 +3282,7 @@ function cleanTraps(qn) {
  * @returns {{seed:string, code:string, skill:string, level:number,
  *            seconds:number|null, questions:object[]}}
  */
-function generateSet({ skill, level = 1, count = 10, seed, seconds = null }) {
+function generateSet({ skill, level = 1, count = 10, seed, seconds = null, lang = "en" }) {
   const useSeed = seed ?? makeCode();
   const rng = makeRng(`${skill}|${level}|${useSeed}`);
   const cap = Math.max(2, Math.ceil(count / 6));
@@ -3250,7 +3292,7 @@ function generateSet({ skill, level = 1, count = 10, seed, seconds = null }) {
   const perSkill = {};
 
   for (let guard = 0; questions.length < count && guard < count * 120; guard++) {
-    const qn = build(skill, level, rng, questions.length);
+    const qn = build(skill, level, rng, questions.length, lang);
     if (seen.has(qn.prompt)) continue;
     if (MIXED[skill] && (perSkill[qn.skill] || 0) >= cap) continue;
     seen.add(qn.prompt);
@@ -3259,7 +3301,7 @@ function generateSet({ skill, level = 1, count = 10, seed, seconds = null }) {
   }
   // If the pool ran dry, lift the per-skill cap before giving up on variety.
   for (let guard = 0; questions.length < count && guard < count * 200; guard++) {
-    const qn = build(skill, level, rng, questions.length);
+    const qn = build(skill, level, rng, questions.length, lang);
     if (seen.has(qn.prompt)) continue;
     seen.add(qn.prompt);
     questions.push(qn);
@@ -3269,11 +3311,11 @@ function generateSet({ skill, level = 1, count = 10, seed, seconds = null }) {
   // questions in it. Repeating one is better than handing back a short paper,
   // because a short paper silently changes what the class was scored out of.
   while (questions.length < count) {
-    const qn = build(skill, level, rng, questions.length);
+    const qn = build(skill, level, rng, questions.length, lang);
     questions.push(qn);
   }
 
-  return { seed: String(useSeed), code: makeCode(useSeed), skill, level, seconds, questions, distinct };
+  return { seed: String(useSeed), code: makeCode(useSeed), skill, level, seconds, lang, questions, distinct };
 }
 
 /* ══════ practice aimed at weak spots ═══════════════════════════════════════
@@ -3324,10 +3366,10 @@ function weakSpots(stats = {}, { limit = 6, minSeen = 4 } = {}) {
  *
  * @returns {{ready:boolean, drawnFrom:object[], questions:object[], ...}}
  */
-function generateReview({ stats = {}, count = 12, seed = makeCode(), seconds = null } = {}) {
+function generateReview({ stats = {}, count = 12, seed = makeCode(), seconds = null, lang = "en" } = {}) {
   const weak = weakSpots(stats, { limit: 4 });
   if (!weak.length) {
-    return { ...generateSet({ skill: "arith.mixed", level: 2, count, seed, seconds }), ready: false, drawnFrom: [] };
+    return { ...generateSet({ skill: "arith.mixed", level: 2, count, seed, seconds, lang }), ready: false, drawnFrom: [] };
   }
 
   // Shares proportional to need, but never fewer than one question from a skill
@@ -3341,7 +3383,7 @@ function generateReview({ stats = {}, count = 12, seed = makeCode(), seconds = n
   const seen = new Set();
   weak.forEach((w, i) => {
     const want = shares[i];
-    const part = generateSet({ skill: w.skill, level: w.level, count: want, seed: `${seed}|${w.skill}|${i}` });
+    const part = generateSet({ skill: w.skill, level: w.level, count: want, seed: `${seed}|${w.skill}|${i}`, lang });
     for (const qn of part.questions) {
       if (questions.length >= count || seen.has(qn.prompt)) continue;
       seen.add(qn.prompt);
@@ -3351,7 +3393,7 @@ function generateReview({ stats = {}, count = 12, seed = makeCode(), seconds = n
   // Top up from the weakest skill if rounding left the paper short.
   for (let guard = 0; questions.length < count && guard < count * 40; guard++) {
     const w = weak[0];
-    const qn = generate(w.skill, w.level, `${seed}|top|${guard}`);
+    const qn = generate(w.skill, w.level, `${seed}|top|${guard}`, lang);
     if (seen.has(qn.prompt)) continue;
     seen.add(qn.prompt);
     questions.push(qn);
@@ -3361,7 +3403,7 @@ function generateReview({ stats = {}, count = 12, seed = makeCode(), seconds = n
   rng.shuffle(questions);
   return {
     ready: true,
-    seed: String(seed), code: makeCode(seed), skill: "review", level: null, seconds,
+    seed: String(seed), code: makeCode(seed), skill: "review", level: null, seconds, lang,
     drawnFrom: weak.map((w) => ({ skill: w.skill, level: w.level, rate: Math.round(w.rate * 100) })),
     questions, distinct: questions.length,
   };
@@ -3384,7 +3426,7 @@ function accumulate(stats, questions, results) {
 }
 
 /** Build an exam from `EXAMS`, one generated part per entry. */
-function generateExam(examId, seed = makeCode()) {
+function generateExam(examId, seed = makeCode(), lang = "en") {
   const exam = EXAMS.find((e) => e.id === examId);
   if (!exam) throw new Error(`Unknown exam: ${examId}`);
   return {
@@ -3394,14 +3436,14 @@ function generateExam(examId, seed = makeCode()) {
     seed: String(seed),
     code: makeCode(seed),
     parts: exam.parts.map((p, i) =>
-      generateSet({ ...p, seed: `${seed}|part${i}`, seconds: p.seconds })
+      generateSet({ ...p, seed: `${seed}|part${i}`, seconds: p.seconds, lang })
     ),
   };
 }
 
 
 
-Object.assign(__shared, { generate, generateSet, weakSpots, generateReview, accumulate, generateExam, GENERATOR_IDS, CURRICULUM, EXAMS, ALL_SKILLS, SKILL_ORDER, getSkill, nextSkill, skillName, TIPS, getTip, tipsForSkill, grade, gradeSet, displayAnswer, makeRng, makeCode, hashSeed, frac, fmt, parseAnswer });
+Object.assign(__shared, { generate, generateSet, weakSpots, generateReview, accumulate, generateExam, GENERATOR_IDS, CURRICULUM, EXAMS, ALL_SKILLS, SKILL_ORDER, getSkill, nextSkill, skillName, TIPS, getTip, tipsForSkill, grade, gradeSet, displayAnswer, makeRng, makeCode, hashSeed, frac, fmt, parseAnswer, num, TEXT });
 })();
 
 /* ── demo/app.js ─────────────────────────────────── */

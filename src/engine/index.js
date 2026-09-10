@@ -16,9 +16,10 @@ import { ARITHMETIC } from "./arithmetic.js";
 import { SEQUENCES } from "./sequences.js";
 import { PROBABILITY } from "./probability.js";
 import { CURRICULUM, EXAMS, ALL_SKILLS, getSkill, nextSkill, skillName, SKILL_ORDER } from "./curriculum.js";
+import { TEXT } from "./text.js";
 import { TIPS, getTip, tipsForSkill } from "./tips.js";
 import { grade, gradeSet, displayAnswer } from "./grade.js";
-import { frac, fmt, parseAnswer } from "./format.js";
+import { frac, fmt, parseAnswer, num } from "./format.js";
 
 /* Weights inside the two "mixed" pseudo-skills, tuned to the real Maven paper:
    arithmetic is dominated by add/subtract and multiplication, and probability
@@ -64,17 +65,19 @@ export const GENERATOR_IDS = [...Object.keys(GENERATORS), ...Object.keys(MIXED)]
  * @param {1|2|3} level
  * @param {string|number} seed  same seed, same question
  */
-export function generate(skillId, level = 1, seed = Math.random()) {
+export function generate(skillId, level = 1, seed = Math.random(), lang = "en") {
   const rng = makeRng(`${skillId}|${level}|${seed}`);
-  return build(skillId, level, rng, 0);
+  return build(skillId, level, rng, 0, lang);
 }
 
-function build(skillId, level, rng, index) {
+function build(skillId, level, rng, index, lang = "en") {
   const resolved = resolve(skillId, rng);
   const gen = GENERATORS[resolved];
   if (!gen) throw new Error(`Unknown skill: ${skillId}`);
   const lv = Math.min(3, Math.max(1, level | 0));
-  const raw = gen(rng, lv);
+  // The third argument is the resolved phrasebook. A generator that has not been
+  // translated yet simply ignores it.
+  const raw = gen(rng, lv, TEXT[lang] || TEXT.en);
   const topic = resolved.split(".")[0];
   const qn = {
     id: `${resolved}.L${lv}#${index}`,
@@ -85,6 +88,7 @@ function build(skillId, level, rng, index) {
     format: "number",
     traps: [],
     solution: null,
+    lang,
     ...raw,
   };
   qn.traps = cleanTraps(qn);
@@ -119,7 +123,7 @@ function cleanTraps(qn) {
  * @returns {{seed:string, code:string, skill:string, level:number,
  *            seconds:number|null, questions:object[]}}
  */
-export function generateSet({ skill, level = 1, count = 10, seed, seconds = null }) {
+export function generateSet({ skill, level = 1, count = 10, seed, seconds = null, lang = "en" }) {
   const useSeed = seed ?? makeCode();
   const rng = makeRng(`${skill}|${level}|${useSeed}`);
   const cap = Math.max(2, Math.ceil(count / 6));
@@ -129,7 +133,7 @@ export function generateSet({ skill, level = 1, count = 10, seed, seconds = null
   const perSkill = {};
 
   for (let guard = 0; questions.length < count && guard < count * 120; guard++) {
-    const qn = build(skill, level, rng, questions.length);
+    const qn = build(skill, level, rng, questions.length, lang);
     if (seen.has(qn.prompt)) continue;
     if (MIXED[skill] && (perSkill[qn.skill] || 0) >= cap) continue;
     seen.add(qn.prompt);
@@ -138,7 +142,7 @@ export function generateSet({ skill, level = 1, count = 10, seed, seconds = null
   }
   // If the pool ran dry, lift the per-skill cap before giving up on variety.
   for (let guard = 0; questions.length < count && guard < count * 200; guard++) {
-    const qn = build(skill, level, rng, questions.length);
+    const qn = build(skill, level, rng, questions.length, lang);
     if (seen.has(qn.prompt)) continue;
     seen.add(qn.prompt);
     questions.push(qn);
@@ -148,11 +152,11 @@ export function generateSet({ skill, level = 1, count = 10, seed, seconds = null
   // questions in it. Repeating one is better than handing back a short paper,
   // because a short paper silently changes what the class was scored out of.
   while (questions.length < count) {
-    const qn = build(skill, level, rng, questions.length);
+    const qn = build(skill, level, rng, questions.length, lang);
     questions.push(qn);
   }
 
-  return { seed: String(useSeed), code: makeCode(useSeed), skill, level, seconds, questions, distinct };
+  return { seed: String(useSeed), code: makeCode(useSeed), skill, level, seconds, lang, questions, distinct };
 }
 
 /* ══════ practice aimed at weak spots ═══════════════════════════════════════
@@ -203,10 +207,10 @@ export function weakSpots(stats = {}, { limit = 6, minSeen = 4 } = {}) {
  *
  * @returns {{ready:boolean, drawnFrom:object[], questions:object[], ...}}
  */
-export function generateReview({ stats = {}, count = 12, seed = makeCode(), seconds = null } = {}) {
+export function generateReview({ stats = {}, count = 12, seed = makeCode(), seconds = null, lang = "en" } = {}) {
   const weak = weakSpots(stats, { limit: 4 });
   if (!weak.length) {
-    return { ...generateSet({ skill: "arith.mixed", level: 2, count, seed, seconds }), ready: false, drawnFrom: [] };
+    return { ...generateSet({ skill: "arith.mixed", level: 2, count, seed, seconds, lang }), ready: false, drawnFrom: [] };
   }
 
   // Shares proportional to need, but never fewer than one question from a skill
@@ -220,7 +224,7 @@ export function generateReview({ stats = {}, count = 12, seed = makeCode(), seco
   const seen = new Set();
   weak.forEach((w, i) => {
     const want = shares[i];
-    const part = generateSet({ skill: w.skill, level: w.level, count: want, seed: `${seed}|${w.skill}|${i}` });
+    const part = generateSet({ skill: w.skill, level: w.level, count: want, seed: `${seed}|${w.skill}|${i}`, lang });
     for (const qn of part.questions) {
       if (questions.length >= count || seen.has(qn.prompt)) continue;
       seen.add(qn.prompt);
@@ -230,7 +234,7 @@ export function generateReview({ stats = {}, count = 12, seed = makeCode(), seco
   // Top up from the weakest skill if rounding left the paper short.
   for (let guard = 0; questions.length < count && guard < count * 40; guard++) {
     const w = weak[0];
-    const qn = generate(w.skill, w.level, `${seed}|top|${guard}`);
+    const qn = generate(w.skill, w.level, `${seed}|top|${guard}`, lang);
     if (seen.has(qn.prompt)) continue;
     seen.add(qn.prompt);
     questions.push(qn);
@@ -240,7 +244,7 @@ export function generateReview({ stats = {}, count = 12, seed = makeCode(), seco
   rng.shuffle(questions);
   return {
     ready: true,
-    seed: String(seed), code: makeCode(seed), skill: "review", level: null, seconds,
+    seed: String(seed), code: makeCode(seed), skill: "review", level: null, seconds, lang,
     drawnFrom: weak.map((w) => ({ skill: w.skill, level: w.level, rate: Math.round(w.rate * 100) })),
     questions, distinct: questions.length,
   };
@@ -263,7 +267,7 @@ export function accumulate(stats, questions, results) {
 }
 
 /** Build an exam from `EXAMS`, one generated part per entry. */
-export function generateExam(examId, seed = makeCode()) {
+export function generateExam(examId, seed = makeCode(), lang = "en") {
   const exam = EXAMS.find((e) => e.id === examId);
   if (!exam) throw new Error(`Unknown exam: ${examId}`);
   return {
@@ -273,7 +277,7 @@ export function generateExam(examId, seed = makeCode()) {
     seed: String(seed),
     code: makeCode(seed),
     parts: exam.parts.map((p, i) =>
-      generateSet({ ...p, seed: `${seed}|part${i}`, seconds: p.seconds })
+      generateSet({ ...p, seed: `${seed}|part${i}`, seconds: p.seconds, lang })
     ),
   };
 }
@@ -283,5 +287,6 @@ export {
   TIPS, getTip, tipsForSkill,
   grade, gradeSet, displayAnswer,
   makeRng, makeCode, hashSeed,
-  frac, fmt, parseAnswer,
+  frac, fmt, parseAnswer, num,
+  TEXT,
 };

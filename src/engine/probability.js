@@ -284,7 +284,7 @@ export function bayes(rng, level) {
 
   if (level === 2) {
     const pool = [[3, 1], [1, 3], [2, 2], [1, 1], [4, 1], [1, 4], [2, 1], [1, 2], [3, 2], [2, 3], [5, 1], [1, 5]];
-    for (let t = 0; t < 50; t++) {
+    for (let attempt = 0; attempt < 50; attempt++) {
       const A = rng.pick(pool);
       const B = rng.pick(pool);
       const rA = A[1] / (A[0] + A[1]);
