@@ -354,30 +354,34 @@ const TIPS = [
     id: "subtract-hundreds-first",
     skill: "arith.add-subtract",
     en: {
-      title: "Subtract the hundreds first, then say the middle number out loud",
+      title: "Work from the left, and say each running total out loud",
       when: "Any addition or subtraction with three digits or more.",
       steps: [
-        "Take away the big part before the small part.",
+        "Deal with the big part before the small part: hundreds, then tens, then units.",
         "Say the intermediate number to yourself. That is what stops you dropping a hundred.",
-        "Then take away what is left.",
+        "Then deal with what is left. It works the same way for adding.",
       ],
       examples: [
         { ask: "What is 823 − 467?",
           work: "823 − 400 = 423, then 423 − 60 = 363, then 363 − 7 = 356" },
+        { ask: "What is 4236 + 2891?",
+          work: "4236 + 2000 = 6236, then 6236 + 800 = 7036, then 7036 + 90 = 7126, then 7126 + 1 = 7127" },
       ],
       why: "Rounding up and adding back feels clever but loses a whole hundred when you are rushed. Going left to right never does.",
     },
     vi: {
-      title: "Trừ hàng trăm trước, rồi đọc to số ở giữa",
+      title: "Làm từ trái sang phải, và đọc to từng số trung gian",
       when: "Mọi phép cộng trừ từ ba chữ số trở lên.",
       steps: [
-        "Bỏ phần lớn trước, phần nhỏ sau.",
+        "Xử lý phần lớn trước, phần nhỏ sau: hàng trăm, rồi hàng chục, rồi hàng đơn vị.",
         "Đọc thầm số trung gian. Đó là thứ giữ cho bạn không rơi mất một trăm.",
-        "Rồi trừ nốt phần còn lại.",
+        "Rồi làm nốt phần còn lại. Phép cộng cũng đi y hệt như vậy.",
       ],
       examples: [
         { ask: "823 − 467 bằng bao nhiêu?",
           work: "823 − 400 = 423, rồi 423 − 60 = 363, rồi 363 − 7 = 356" },
+        { ask: "4236 + 2891 bằng bao nhiêu?",
+          work: "4236 + 2000 = 6236, rồi 6236 + 800 = 7036, rồi 7036 + 90 = 7126, rồi 7126 + 1 = 7127" },
       ],
       why: "Cách làm tròn lên rồi cộng bù nghe thông minh nhưng lúc vội rất hay mất nguyên một trăm. Đi từ trái sang phải thì không bao giờ.",
     },
@@ -389,7 +393,7 @@ const TIPS = [
       title: "Split the second number, multiply twice, add",
       when: "Any multiplication where a number has two digits or more.",
       steps: [
-        "Break the smaller factor into tens and units.",
+        "Break one of the two factors into its tens and its units. Pick whichever splits more cleanly.",
         "Multiply each part separately.",
         "Add the two results.",
       ],
@@ -403,7 +407,7 @@ const TIPS = [
       title: "Tách số thứ hai, nhân hai lần, rồi cộng",
       when: "Mọi phép nhân có số từ hai chữ số trở lên.",
       steps: [
-        "Tách thừa số nhỏ hơn thành hàng chục và hàng đơn vị.",
+        "Tách một trong hai thừa số thành hàng chục và hàng đơn vị. Chọn cái nào tách gọn hơn.",
         "Nhân từng phần riêng.",
         "Cộng hai kết quả lại.",
       ],
@@ -418,12 +422,12 @@ const TIPS = [
     id: "times-five-and-eleven",
     skill: "arith.multiply",
     en: {
-      title: "×5 is half of ×10. ×11 is the digits with their sum in the middle",
+      title: "Turn an awkward multiplier into a 10 or a 100, then adjust",
       when: "The moment you spot a 5, 9, 11, 25, 50 or 99 in the question.",
       steps: [
-        "For ×5: multiply by 10, then halve.",
-        "For ×11 on a two-digit number: keep the outer digits, put their sum between them.",
-        "If that sum is 10 or more, carry the 1 into the first digit.",
+        "Every awkward multiplier here is a round number with a small adjustment: 5 = 10 ÷ 2, 50 = 100 ÷ 2, 25 = 100 ÷ 4.",
+        "9 = 10 − 1 and 99 = 100 − 1, so multiply by the round number and take one copy off. 11 = 10 + 1, so add one copy on.",
+        "For ×11 on a two-digit number there is a faster way still: keep the outer digits and put their sum between them, carrying if that sum reaches 10.",
       ],
       examples: [
         { ask: "What is 48 × 5?",
@@ -432,16 +436,18 @@ const TIPS = [
           work: "Keep the 3 and the 6, put their sum in the middle: 3 (3+6) 6 = 396" },
         { ask: "What is 78 × 11, where the middle sum passes 10?",
           work: "7 (7+8) 8 = 7 (15) 8. The 15 does not fit, so carry the 1 into the 7: 858" },
+        { ask: "What is 34 × 9?",
+          work: "9 is one short of 10. So 34 × 10 = 340, then take one copy of 34 off: 340 − 34 = 306" },
       ],
       why: "Both turn a multiplication into an addition or a halving, which are far faster under a clock.",
     },
     vi: {
-      title: "×5 là một nửa của ×10. ×11 là giữ hai đầu, đặt tổng vào giữa",
+      title: "Biến số nhân khó chịu thành 10 hoặc 100, rồi chỉnh lại",
       when: "Ngay khi thấy 5, 9, 11, 25, 50 hay 99 trong đề.",
       steps: [
-        "Với ×5: nhân 10 rồi chia đôi.",
-        "Với ×11 số hai chữ số: giữ hai chữ số ngoài, đặt tổng của chúng vào giữa.",
-        "Nếu tổng đó từ 10 trở lên thì nhớ 1 sang chữ số đầu.",
+        "Mọi số nhân khó chịu ở đây đều là số tròn kèm một chỉnh nhỏ: 5 = 10 ÷ 2, 50 = 100 ÷ 2, 25 = 100 ÷ 4.",
+        "9 = 10 − 1 và 99 = 100 − 1, nên nhân với số tròn rồi bớt đi một lần. 11 = 10 + 1, nên cộng thêm một lần.",
+        "Riêng ×11 với số hai chữ số còn có cách nhanh hơn: giữ hai chữ số ngoài, đặt tổng của chúng vào giữa, nhớ 1 nếu tổng đó từ 10 trở lên.",
       ],
       examples: [
         { ask: "48 × 5 bằng bao nhiêu?",
@@ -450,6 +456,8 @@ const TIPS = [
           work: "Giữ 3 và 6, đặt tổng của chúng vào giữa: 3 (3+6) 6 = 396" },
         { ask: "78 × 11 bằng bao nhiêu, khi tổng ở giữa vượt quá 10?",
           work: "7 (7+8) 8 = 7 (15) 8. Số 15 không nhét vừa nên nhớ 1 sang chữ số 7: 858" },
+        { ask: "34 × 9 bằng bao nhiêu?",
+          work: "9 kém 10 đúng một đơn vị. Nên 34 × 10 = 340, rồi bớt đi một lần 34: 340 − 34 = 306" },
       ],
       why: "Cả hai biến phép nhân thành phép cộng hoặc chia đôi, nhanh hơn hẳn khi có đồng hồ.",
     },
@@ -459,7 +467,7 @@ const TIPS = [
     skill: "arith.squares",
     en: {
       title: "Any square: slide to a round number, then add back",
-      when: "A square you have not memorised, so anything past about 12².",
+      when: "A square beyond the times table you know by heart.",
       steps: [
         "n² = (n − d)(n + d) + d², where d slides n to something round.",
         "Choose d so one factor ends in 0.",
@@ -475,7 +483,7 @@ const TIPS = [
     },
     vi: {
       title: "Bình phương bất kỳ: trượt về số tròn, rồi cộng bù",
-      when: "Một bình phương bạn chưa thuộc, tức từ khoảng 12² trở lên.",
+      when: "Một bình phương nằm ngoài bảng cửu chương bạn đã thuộc lòng.",
       steps: [
         "n² = (n − d)(n + d) + d², với d là khoảng trượt n về số tròn.",
         "Chọn d sao cho một thừa số kết thúc bằng 0.",
@@ -495,7 +503,7 @@ const TIPS = [
     skill: "arith.roots",
     en: {
       title: "Cube roots: the last digit gives itself away",
-      when: "A cube root sign in front of a number whose last digit you can read.",
+      when: "A cube root sign in front of a whole number, when you expect the answer to be a whole number too.",
       steps: [
         "A cube's last digit determines the root's last digit uniquely.",
         "0,1,4,5,6,9 map to themselves. Only 2↔8 and 3↔7 swap.",
@@ -509,7 +517,7 @@ const TIPS = [
     },
     vi: {
       title: "Căn bậc ba: chữ số cuối tự khai ra",
-      when: "Thấy dấu căn bậc ba trước một số mà bạn đọc được chữ số cuối.",
+      when: "Thấy dấu căn bậc ba trước một số nguyên, và bạn trông đợi đáp án cũng là số nguyên.",
       steps: [
         "Chữ số cuối của lập phương xác định duy nhất chữ số cuối của căn.",
         "0,1,4,5,6,9 giữ nguyên. Chỉ có 2↔8 và 3↔7 đổi chỗ.",
@@ -537,7 +545,7 @@ const TIPS = [
         { ask: "Fill in the blank: 8 × 240 = 24 × ?",
           work: "8 and 24 share a factor of 8. Divide both sides by it and the line becomes 240 = 3 × ?, so the answer is 80" },
       ],
-      why: "Most 4-digit-by-2-digit questions are built to cancel. Grinding through the division is the slow path the setter expects you to take.",
+      why: "Many of these are built so that something cancels. Grinding through the long division is the slow path, and it is the one the setter expects you to take.",
     },
     vi: {
       title: "Rút gọn trước, chia một lần",
@@ -551,7 +559,7 @@ const TIPS = [
         { ask: "Điền vào chỗ trống: 8 × 240 = 24 × ?",
           work: "8 và 24 cùng chia hết cho 8. Chia cả hai vế cho 8 thì dòng này thành 240 = 3 × ?, nên đáp án là 80" },
       ],
-      why: "Phần lớn câu chia 4 chữ số cho 2 chữ số được dựng để rút gọn được. Cắm đầu chia là con đường chậm mà người ra đề mong bạn đi.",
+      why: "Nhiều câu trong số này được dựng sao cho rút gọn được. Cắm đầu chia dài là con đường chậm, và đó chính là con đường người ra đề mong bạn đi.",
     },
   },
   {
@@ -603,7 +611,7 @@ const TIPS = [
         { ask: "What is 4% of 75?",
           work: "Flip it: 75% of 4 is three quarters of 4, which is 3" },
       ],
-      why: "Free, exact, and it turns roughly a third of percentage questions into something you can say instantly.",
+      why: "It costs nothing and loses nothing, and it turns a fair share of percentage questions into something you can say instantly.",
     },
     vi: {
       title: "Phần trăm đảo được hai chiều, nên lật về phía nào dễ hơn",
@@ -615,7 +623,7 @@ const TIPS = [
         { ask: "4% của 75 bằng bao nhiêu?",
           work: "Lật lại: 75% của 4 là ba phần tư của 4, tức là 3" },
       ],
-      why: "Miễn phí, chính xác, và biến khoảng một phần ba câu phần trăm thành thứ nói ra được ngay.",
+      why: "Không tốn gì và không mất mát gì, lại biến kha khá câu phần trăm thành thứ nói ra được ngay.",
     },
   },
   {
@@ -633,7 +641,7 @@ const TIPS = [
         { ask: "What comes next: 3, 8, 17, 30, 47, ?",
           work: "Gaps: 5, 9, 13, 17. Gaps of those: 4, 4, 4. So the next gap is 21, and 47 + 21 = 68" },
       ],
-      why: "This order finds the rule for four families out of five in under ten seconds, and tells you fast when to move on.",
+      why: "Working through it in this order settles most sequences quickly, and when none of the three fits, that is your signal to guess and move on rather than stare.",
     },
     vi: {
       title: "Xét hiệu, rồi tỉ số, rồi soi vào bên trong chữ số",
@@ -647,7 +655,7 @@ const TIPS = [
         { ask: "Số tiếp theo là gì: 3, 8, 17, 30, 47, ?",
           work: "Hiệu: 5, 9, 13, 17. Hiệu của hiệu: 4, 4, 4. Nên hiệu kế là 21, và 47 + 21 = 68" },
       ],
-      why: "Thứ tự này tìm ra quy luật của bốn trên năm họ trong chưa tới mười giây, và báo sớm khi nào nên bỏ qua.",
+      why: "Đi theo thứ tự này giải xong phần lớn dãy số rất nhanh, và khi cả ba đều không khớp thì đó là tín hiệu nên đoán rồi đi tiếp chứ đừng ngồi nhìn.",
     },
   },
   {
@@ -658,7 +666,7 @@ const TIPS = [
       when: "A row of numbers with no question mark, where you are asked which one is wrong.",
       steps: [
         "Do not hunt for the odd term. Find the pattern that most terms fit.",
-        "Use the first two or three terms to guess the rule; the first term is never the broken one.",
+        "Guess the rule from the first two or three terms, then test it forward. If it breaks straight away, try again assuming one of those early terms is itself the odd one.",
         "Walk forward and the first term that disagrees is the answer.",
       ],
       examples: [
@@ -672,7 +680,7 @@ const TIPS = [
       when: "Một dãy số không có dấu hỏi, đề hỏi số nào sai.",
       steps: [
         "Đừng đi săn số lệch. Hãy tìm quy luật mà phần lớn các số khớp.",
-        "Dùng hai ba số đầu để đoán quy luật; số đầu tiên không bao giờ là số bị phá.",
+        "Đoán quy luật từ hai ba số đầu rồi thử đi tới. Nếu vừa thử đã sai, hãy đoán lại và giả sử chính một trong mấy số đầu mới là số lạc.",
         "Đi tới, số đầu tiên không khớp chính là đáp án.",
       ],
       examples: [
@@ -728,7 +736,7 @@ const TIPS = [
         { ask: "Roll a die 3 times. What is the chance of getting at least one 6?",
           work: "Chance of no 6 at all: (5/6)³ = 125/216. Everything else is at least one → 1 − 125/216 = 91/216 ≈ 0.42" },
       ],
-      why: "'None' is a single product. The direct sum is three or four terms and one of them is always miscounted.",
+      why: "'None' is a single multiplication. Adding the cases up directly takes three or four terms, and miscounting one of them is the usual way this question is lost.",
     },
     vi: {
       title: "'Ít nhất một' nghĩa là một trừ 'không có cái nào'",
@@ -741,7 +749,7 @@ const TIPS = [
         { ask: "Tung xúc xắc 3 lần. Xác suất có ít nhất một mặt 6 là bao nhiêu?",
           work: "Xác suất không ra mặt 6 lần nào: (5/6)³ = 125/216. Mọi trường hợp còn lại là ít nhất một → 1 − 125/216 = 91/216 ≈ 0,42" },
       ],
-      why: "'Không có cái nào' chỉ là một phép nhân. Cộng trực tiếp thì ba bốn số hạng và luôn có một cái đếm sai.",
+      why: "'Không có cái nào' chỉ là một phép nhân. Cộng trực tiếp thì ba bốn số hạng, và đếm sai một trong số đó là cách người ta hay mất câu này nhất.",
     },
   },
   {
@@ -793,7 +801,7 @@ const TIPS = [
         { ask: "But up then down gives 100 × 1.1 × 0.9 = 99. Why is the average not 99?",
           work: "Because that is one path of four. The four are 121, 99, 99, 81, and their average is (121 + 99 + 99 + 81)/4 = 100" },
       ],
-      why: "This gap between the average outcome and the typical outcome is the whole reason volatility matters in finance. It is the most interviewed idea on this list.",
+      why: "This gap between the average outcome and the typical outcome is the whole reason volatility matters in finance, and it comes up in interviews again and again.",
     },
     vi: {
       title: "Kỳ vọng không phải là đường đi điển hình",
@@ -809,7 +817,7 @@ const TIPS = [
         { ask: "Nhưng lên rồi xuống ra 100 × 1,1 × 0,9 = 99. Sao trung bình không phải 99?",
           work: "Vì đó chỉ là một trong bốn đường đi. Bốn đường là 121, 99, 99, 81, và trung bình của chúng là (121 + 99 + 99 + 81)/4 = 100" },
       ],
-      why: "Khoảng cách giữa kết quả trung bình và kết quả điển hình chính là lý do biến động quan trọng trong tài chính. Đây là ý được hỏi nhiều nhất trong danh sách này.",
+      why: "Khoảng cách giữa kết quả trung bình và kết quả điển hình chính là lý do biến động quan trọng trong tài chính, và nó được hỏi đi hỏi lại trong phỏng vấn.",
     },
   },
   {
