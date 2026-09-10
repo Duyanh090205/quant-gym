@@ -5,8 +5,9 @@
  * `0.33` for 1/3, or `1,234` for 1234, or `hs` for HS, has the answer. Making
  * them guess a format is testing the interface, not the maths.
  *
- * The return value always says *why* a wrong answer is wrong when the engine
- * knows, because that sentence is the product.
+ * Every result carries the question's worked `solution`, and additionally a
+ * `why` naming the specific mistake when the typed answer matches a known trap.
+ * A student should never see only "wrong".
  */
 
 import { parseAnswer, near, normal, fmt, frac, LETTERS } from "./format.js";
@@ -46,7 +47,12 @@ function findTrap(qn, value) {
  */
 export function grade(qn, raw) {
   const given = raw == null ? "" : String(raw).trim();
-  const base = { answered: given !== "", given, expected: displayAnswer(qn), trap: null, why: null };
+  // `why` names the mistake and is only there when we can identify it.
+  // `solution` shows how the question is done and is always there.
+  const base = {
+    answered: given !== "", given, expected: displayAnswer(qn),
+    trap: null, why: null, solution: qn.solution || null,
+  };
   if (!base.answered) return { ...base, correct: false };
 
   const parsed = parseAnswer(given);

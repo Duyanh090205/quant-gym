@@ -218,6 +218,81 @@ test("at-least-one questions equal one minus none", () => {
   assert.ok(checked > 100, `only ${checked} checked`);
 });
 
+/* ── worked solutions ────────────────────────────────────────────────────── */
+
+test("every question carries a worked solution using its own numbers", () => {
+  for (const skill of REAL_SKILLS) {
+    for (const level of LEVELS) {
+      const { questions } = generateSet({ skill, level, count: 40, seed: `sol|${skill}|${level}` });
+      for (const q of questions) {
+        assert.ok(q.solution, `${skill} L${level}: no solution for "${q.prompt}"`);
+        assert.ok(q.solution.length > 25, `${skill}: solution too thin for "${q.prompt}": ${q.solution}`);
+        assert.ok(!/undefined|NaN|\[object|\+ -\d/.test(q.solution),
+          `${skill}: broken solution for "${q.prompt}": ${q.solution}`);
+      }
+    }
+  }
+});
+
+test("the solution reaches the student on every wrong answer, trap or not", () => {
+  for (const skill of REAL_SKILLS) {
+    const { questions } = generateSet({ skill, level: 2, count: 20, seed: `reach|${skill}` });
+    for (const q of questions) {
+      const nonsense = q.format === "letter" ? "z" : "-999999";
+      const r = grade(q, nonsense);
+      assert.equal(r.correct, false);
+      assert.equal(r.trap, null, `${skill}: nonsense should not match a trap`);
+      assert.ok(r.solution, `${skill}: an unrecognised wrong answer got no solution`);
+    }
+    // and a blank still carries it, so a review screen can teach from skipped questions
+    assert.ok(grade(questions[0], "").solution);
+  }
+});
+
+test("explanations stay inside a beginner's vocabulary", () => {
+  // Words a fifteen-year-old meeting this for the first time will not know.
+  // If one is genuinely needed, the sentence has to define it on the spot.
+  const BANNED = [
+    [/martingale/i, "martingale"],
+    [/likelihood/i, "likelihood"],
+    [/prior/i, "prior"],
+    [/harmonic/i, "harmonic"],
+    [/complement/i, "complement"],
+    [/derangement/i, "derangement"],
+    [/i\.i\.d|independent and identically/i, "iid"],
+    [/sample space/i, "sample space"],
+  ];
+  const offenders = [];
+  for (const skill of REAL_SKILLS) {
+    for (const level of LEVELS) {
+      const { questions } = generateSet({ skill, level, count: 40, seed: `plain|${skill}|${level}` });
+      for (const q of questions) {
+        const texts = [q.solution, q.note, ...(q.traps || []).map((t) => t.why)].filter(Boolean);
+        for (const text of texts) {
+          for (const [re, word] of BANNED) {
+            if (re.test(text)) offenders.push(`${skill}: "${word}" in — ${text.slice(0, 80)}`);
+          }
+        }
+        // C(n,k) is fine, but only when the sentence says what it means.
+        if (/C\(\d+,\s*\d+\)/.test(q.solution) && !/ways to choose/i.test(q.solution)) {
+          offenders.push(`${skill}: C(n,k) used without explaining it — ${q.solution.slice(0, 80)}`);
+        }
+      }
+    }
+  }
+  assert.deepEqual(offenders.slice(0, 6), [], `${offenders.length} jargon uses`);
+});
+
+test("tip cards avoid the same jargon, in both languages", () => {
+  for (const t of TIPS) {
+    for (const lang of ["en", "vi"]) {
+      const card = getTip(t.id, lang);
+      const all = [card.title, card.why, card.example, ...card.steps].join(" ");
+      assert.ok(!/martingale|likelihood/i.test(all), `${t.id} (${lang}) uses jargon: ${all.slice(0, 90)}`);
+    }
+  }
+});
+
 /* ── sequences ───────────────────────────────────────────────────────────── */
 
 test("odd one out has exactly one defensible answer", () => {

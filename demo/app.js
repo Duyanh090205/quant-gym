@@ -28,6 +28,7 @@ const T = {
     timeLeft: "time left", review: "Review", again: "Again", exams: "Full papers",
     startExam: "Start", part: "Part", of: "of", questions: "questions",
     done: "Level cleared", needed: "needed to clear", tipTitle: "The trick",
+    howItsDone: "How it's done",
     whyItWorks: "Why it works", blankWarn: (n) => `${n} still blank. A blank is a guaranteed zero, so guess.`,
     autoSubmit: "Runs out on its own. Nothing is deducted for a wrong answer.",
     typeHint: "Fractions like 3/8, decimals like 0.375, or 37.5% all count.",
@@ -42,6 +43,7 @@ const T = {
     timeLeft: "thời gian còn", review: "Xem lại", again: "Làm lại", exams: "Đề đầy đủ",
     startExam: "Bắt đầu", part: "Phần", of: "trên", questions: "câu",
     done: "Đã qua cấp này", needed: "cần đúng để qua", tipTitle: "Mẹo",
+    howItsDone: "Cách làm",
     whyItWorks: "Vì sao dùng được", blankWarn: (n) => `Còn ${n} ô trống. Bỏ trống chắc chắn 0 điểm, nên cứ đoán.`,
     autoSubmit: "Hết giờ tự nộp. Sai không bị trừ điểm.",
     typeHint: "Gõ phân số như 3/8, thập phân như 0.375, hay 37.5% đều được.",
@@ -238,11 +240,19 @@ function drill(app) {
     box.appendChild(el("strong", "", v.correct ? t().correct : t().notQuite));
     if (!v.correct) {
       box.appendChild(el("p", "mono small", `${t().answerIs} ${v.expected}`));
-      // The sentence that makes a miss worth something: not "wrong", but which
-      // wrong route you took.
+      // Two different sentences, in the order a student needs them.
+      // First: which wrong route you took, when we can tell.
       if (v.why) box.appendChild(el("p", "", v.why));
+      // Then: how this exact question is done. Always present, so a student who
+      // went wrong in some way we do not recognise still gets taught something.
+      if (v.solution) {
+        const sol = el("div", "solution");
+        sol.appendChild(el("span", "eyebrow", t().howItsDone));
+        sol.appendChild(el("p", "", v.solution));
+        box.appendChild(sol);
+      }
       const tip = qn.tip ? getTip(qn.tip, S.lang) : null;
-      if (tip) box.appendChild(el("p", "small", `${t().tipTitle}: ${tip.title}. ${tip.example}`));
+      if (tip) box.appendChild(el("p", "small muted", `${t().tipTitle}: ${tip.title}`));
     }
     card.appendChild(box);
     const isLast = S.i + 1 >= S.paper.questions.length;
@@ -415,6 +425,7 @@ function results(app) {
       line.textContent = `${t().answerIs} ${r.expected}` + (r.answered ? `   ·   ${t().yourAnswer}: ${r.given}` : `   ·   ${t().blank}`);
       box.appendChild(line);
       if (r.why) box.appendChild(el("p", "small", r.why));
+      if (r.solution) box.appendChild(el("p", "small muted", r.solution));
       review.appendChild(box);
     });
     if (review.children.length) stack.appendChild(review);

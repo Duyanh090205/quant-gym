@@ -84,6 +84,7 @@ function build(skillId, level, rng, index) {
     level: lv,
     format: "number",
     traps: [],
+    solution: null,
     ...raw,
   };
   qn.traps = cleanTraps(qn);

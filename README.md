@@ -15,17 +15,31 @@ no install, works offline.
 
 ## What makes it different from a question bank
 
-Every question knows the ways a student gets it wrong, and says so.
+A wrong answer is never just wrong. Every question carries two kinds of feedback,
+and they do different jobs.
+
+**The solution** is the worked line for these exact numbers, built from the same
+values that built the question. It is always there, so a student who went wrong in
+some way nobody anticipated still gets taught.
 
 > **38²**
 > Not quite. The answer is 1444.
-> *The correction was never added. (n−d)(n+d) = 1440, and you still owe d² = 4.*
-> The trick: any square, slide to a round number then add back. 37² → 34 × 40 = 1360 → +9 = 1369.
+> **How it's done** — Slide 2 down to reach a round number, then pay it back:
+> 38² = 36 × 40 + 2² = 1440 + 4 = 1444.
 
-That is a `trap`: a specific wrong route with the sentence that names it. There
-are about 180 of them across the engine, and every one is checked by a test to be
-far enough from the right answer that marking can tell them apart. A student who
-misses a question learns *which mistake they made*, not only that they made one.
+**The traps** are specific wrong routes, each with the sentence that names the
+mistake. They fire only when the typed answer matches one, and then they say what
+the student actually did:
+
+> *The correction was never added. 36 × 40 = 1440, and you still owe 2² = 4.*
+
+There are about 180 traps across the engine, and a test checks that every one of
+them is far enough from the right answer for marking to tell them apart, and that
+none is left without an explanation.
+
+Both are written for someone meeting this for the first time. A test enforces
+that: it fails the build on words like *likelihood*, *prior* or *martingale*, and
+on C(n,k) appearing without "ways to choose k from n" beside it.
 
 Attached to each skill is a **tip card**, shown before the first drill and again
 the moment a relevant question is missed. A trick delivered while the mistake is

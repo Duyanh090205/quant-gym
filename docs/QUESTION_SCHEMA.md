@@ -16,6 +16,7 @@ sent over the wire, or rendered by any framework.
 | `prompt` | string | yes | The question as the student reads it. Already localised into symbols, not markup. |
 | `answer` | number \| string | yes | The value. Do not string-compare it; call `grade()`. |
 | `format` | string | yes | How to render and mark it. See below. |
+| `solution` | string | yes | The worked line for this question's own numbers. Show it whenever the student is wrong. |
 | `traps` | array | yes | Wrong routes, each `{ value, why }`. May be empty. |
 | `tip` | string \| null | yes | Id of a tip card, resolve with `getTip(id, lang)`. |
 | `approx` | true | no | Answers within 5% are correct. Render the prompt's `≈` prominently. |
@@ -48,6 +49,7 @@ sent over the wire, or rendered by any framework.
   "format": "probability",
   "prompt": "Urn A holds 3 blue and 1 red. Urn B holds 1 blue and 3 red. You pick an urn at random and draw a red ball. Probability it was urn B?",
   "answer": 0.75,
+  "solution": "Ask how readily each urn gives up a red ball: A does it 1/4 of the time, B does it 3/4 of the time. Both urns were equally likely to be chosen, so that drops out and B's answer is its share of the two: 3/4 ÷ (1/4 + 3/4) = 3/4.",
   "traps": [
     { "value": 0.5, "why": "That is the prior. Drawing red is evidence, and it favours whichever urn has more red." },
     { "value": 0.25, "why": "Red counts were compared directly, but the urns hold different totals, so compare proportions." }
@@ -62,16 +64,28 @@ sent over the wire, or rendered by any framework.
 import { grade, gradeSet } from "quant-gym";
 
 grade(question, "0.75");
-// { answered: true, correct: true, given: "0.75", expected: "3/4  ≈ 0.75", trap: null, why: null }
+// { correct: true, answered: true, given: "0.75", expected: "3/4  ≈ 0.75",
+//   trap: null, why: null, solution: "Ask how readily each urn …" }
 
-grade(question, "0.5");
-// { answered: true, correct: false, given: "0.5", expected: "3/4  ≈ 0.75",
-//   trap: { value: 0.5, why: "That is the prior. …" },
-//   why: "That is the prior. Drawing red is evidence, and it favours whichever urn has more red." }
+grade(question, "0.5");        // a known wrong route
+// { correct: false, answered: true, given: "0.5", expected: "3/4  ≈ 0.75",
+//   trap: { value: 0.5, why: "That is the chance before you drew anything. …" },
+//   why:  "That is the chance before you drew anything. …",
+//   solution: "Ask how readily each urn …" }
+
+grade(question, "0.61");       // wrong in a way nobody anticipated
+// { correct: false, answered: true, given: "0.61", expected: "3/4  ≈ 0.75",
+//   trap: null, why: null,
+//   solution: "Ask how readily each urn …" }
 
 grade(question, "");
-// { answered: false, correct: false, given: "", expected: "3/4  ≈ 0.75", trap: null, why: null }
+// { correct: false, answered: false, given: "", expected: "3/4  ≈ 0.75",
+//   trap: null, why: null, solution: "Ask how readily each urn …" }
 ```
+
+`why` and `solution` answer different questions and belong on screen together, in
+that order: *what you did* first, then *how it is done*. `why` is often absent;
+`solution` never is.
 
 `answered` is separate from `correct` on purpose. Under the +1/0/0 marking these
 assessments use, a blank and a wrong answer both score nothing, but they mean very

@@ -1,13 +1,21 @@
 /**
  * Sequence families, and the two things you can ask about a sequence.
  *
- * A family returns `{ terms, next, family }`. From that one object we build both
- * question types: "what comes next" and "which term breaks the rule". The second
- * is what Maven actually asks, and it is the harder skill, because you have to
- * hold a candidate rule while testing it against every term.
+ * A family returns `{ terms, next, family, rule }`. The `rule` is a plain-words
+ * description of the pattern with this sequence's own numbers in it, and it is
+ * what turns a wrong answer into a lesson: without it, "the answer was 47" tells
+ * a student nothing about how they were supposed to see it.
+ *
+ * From one family object we build both question types: "what comes next" and
+ * "which term breaks the rule". The second is what Maven actually asks, and it is
+ * the harder skill, because you have to hold a candidate rule in mind while
+ * testing it against every term.
  */
 
 import { ALPHA } from "./format.js";
+
+const signed = (d) => (d >= 0 ? `add ${d}` : `subtract ${-d}`);
+const gapsOf = (s) => s.slice(1).map((v, i) => v - s[i]);
 
 /* ── the families, easiest first ─────────────────────────────────────────── */
 
@@ -15,7 +23,7 @@ const arithmetic = (rng) => {
   const a = rng.int(-20, 60);
   const d = rng.pick([-9, -7, -6, -4, -3, 3, 4, 6, 7, 8, 9, 11, 12, 13, 15, 17]);
   const s = [...Array(6)].map((_, i) => a + d * i);
-  return { terms: s.slice(0, 5), next: s[5], family: "arithmetic" };
+  return { terms: s.slice(0, 5), next: s[5], family: "arithmetic", rule: `${signed(d)} each time` };
 };
 
 const geometric = (rng) => {
@@ -23,12 +31,15 @@ const geometric = (rng) => {
     const a = rng.pick([1, 2, 3, 4, 5, 6, 7]);
     const r = rng.pick([2, 3, 4, -2, -3]);
     const s = [...Array(6)].map((_, i) => a * r ** i);
-    return { terms: s.slice(0, 5), next: s[5], family: "geometric" };
+    return {
+      terms: s.slice(0, 5), next: s[5], family: "geometric",
+      rule: r < 0 ? `multiply by ${r} each time, so the sign flips every step` : `multiply by ${r} each time`,
+    };
   }
   const r = rng.pick([2, 3]);
   const a = r ** 5 * rng.pick([1, 2, 3]);
   const s = [...Array(6)].map((_, i) => a / r ** i);
-  return { terms: s.slice(0, 5), next: s[5], family: "geometric" };
+  return { terms: s.slice(0, 5), next: s[5], family: "geometric", rule: `divide by ${r} each time` };
 };
 
 const quadratic = (rng) => {
@@ -36,13 +47,17 @@ const quadratic = (rng) => {
   const b = rng.int(-5, 6);
   const c = rng.int(-10, 15);
   const s = [...Array(6)].map((_, i) => a * i * i + b * i + c);
-  return { terms: s.slice(0, 5), next: s[5], family: "quadratic" };
+  const g = gapsOf(s.slice(0, 5));
+  return {
+    terms: s.slice(0, 5), next: s[5], family: "quadratic",
+    rule: `the gaps are ${g.join(", ")}, and they themselves ${signed(2 * a)} each time`,
+  };
 };
 
 const fibonacci = (rng) => {
   const s = [rng.int(1, 9), rng.int(1, 12)];
   while (s.length < 6) s.push(s[s.length - 1] + s[s.length - 2]);
-  return { terms: s.slice(0, 5), next: s[5], family: "Fibonacci" };
+  return { terms: s.slice(0, 5), next: s[5], family: "Fibonacci", rule: "each term is the two before it added together" };
 };
 
 const affine = (rng) => {
@@ -50,7 +65,7 @@ const affine = (rng) => {
   const b = rng.pick([-3, -1, 1, 2, 3, 5, -5]);
   const s = [rng.int(1, 8)];
   while (s.length < 6) s.push(s[s.length - 1] * a + b);
-  return { terms: s.slice(0, 5), next: s[5], family: "affine" };
+  return { terms: s.slice(0, 5), next: s[5], family: "affine", rule: `multiply by ${a}, then ${signed(b)}` };
 };
 
 const interleaved = (rng) => {
@@ -61,7 +76,10 @@ const interleaved = (rng) => {
   const s = [];
   for (let i = 0; i < 4; i++) s.push(a1 + d1 * i, a2 + d2 * i);
   const n = rng.pick([6, 7]);
-  return { terms: s.slice(0, n), next: s[n], family: "interleaved" };
+  return {
+    terms: s.slice(0, n), next: s[n], family: "interleaved",
+    rule: `two sequences taking turns: the 1st, 3rd, 5th terms ${signed(d1)}, and the 2nd, 4th, 6th ${signed(d2)}`,
+  };
 };
 
 const alternatingOps = (rng) => {
@@ -72,7 +90,10 @@ const alternatingOps = (rng) => {
     const last = s[s.length - 1];
     s.push(s.length % 2 ? last * mul : last + add);
   }
-  return { terms: s.slice(0, 6), next: s[6], family: "alternating ops" };
+  return {
+    terms: s.slice(0, 6), next: s[6], family: "alternating ops",
+    rule: `two operations taking turns: multiply by ${mul}, then add ${add}, then multiply by ${mul} again`,
+  };
 };
 
 const specials = (rng) => {
@@ -88,13 +109,18 @@ const specials = (rng) => {
     tri: (n) => (n * (n + 1)) / 2,
     fac: (n) => [1, 2, 6, 24, 120, 720, 5040][n - 1],
   }[kind];
+  const name = { sq: "square numbers", cb: "cube numbers", pr: "prime numbers", tri: "triangular numbers", fac: "factorials 1, 2, 6, 24, 120" }[kind];
   const s = [...Array(6)].map((_, i) => f(st + i) + off);
-  return { terms: s.slice(0, 5), next: s[5], family: "special numbers" };
+  return {
+    terms: s.slice(0, 5), next: s[5], family: "special numbers",
+    rule: off === 0 ? `the ${name}, starting from the ${st}${st === 1 ? "st" : st === 2 ? "nd" : st === 3 ? "rd" : "th"}` : `the ${name} with ${off > 0 ? off + " added" : -off + " taken off"} each time`,
+  };
 };
 
 const growingDiff = (rng) => {
   let x = rng.int(1, 15);
   let step = rng.int(1, 5);
+  const first = step;
   const dd = rng.pick([1, 2, 3]);
   const s = [x];
   while (s.length < 6) {
@@ -102,34 +128,42 @@ const growingDiff = (rng) => {
     step += dd;
     s.push(x);
   }
-  return { terms: s.slice(0, 5), next: s[5], family: "growing differences" };
+  return {
+    terms: s.slice(0, 5), next: s[5], family: "growing differences",
+    rule: `the gaps start at ${first} and grow by ${dd} each time`,
+  };
 };
 
 const letters = (rng) => {
   const kind = rng.pick(["step", "step", "grow", "pair", "mix"]);
-  let s;
+  let s, rule;
   if (kind === "step") {
     const st = rng.int(0, 12);
     const d = rng.pick([2, 3, 4, 5, -2, -3]);
     s = [...Array(6)].map((_, i) => ALPHA[(((st + d * i) % 26) + 26) % 26]);
+    rule = `move ${Math.abs(d)} letter${Math.abs(d) > 1 ? "s" : ""} ${d > 0 ? "forward" : "back"} through the alphabet each time`;
   } else if (kind === "grow") {
     let p = rng.int(0, 6);
     let d = rng.int(1, 3);
+    const first = d;
     s = [ALPHA[p]];
     while (s.length < 6) {
       p += d;
       d++;
       s.push(ALPHA[p % 26]);
     }
+    rule = `the jump through the alphabet starts at ${first} and grows by 1 each time`;
   } else if (kind === "pair") {
     const st = rng.int(0, 10);
     s = [...Array(6)].map((_, i) => ALPHA[(st + i) % 26] + ALPHA[(25 - st - i + 26) % 26]);
+    rule = "the first letter moves forward one at a time and the second moves back one at a time";
   } else {
     const st = rng.int(0, 12);
     const d = rng.pick([2, 3, 4]);
     s = [...Array(6)].map((_, i) => ALPHA[(st + d * i) % 26] + String(i + 1));
+    rule = `the letter moves ${d} forward each time and the number counts up 1, 2, 3`;
   }
-  return { terms: s.slice(0, 5), next: s[5], family: "letters" };
+  return { terms: s.slice(0, 5), next: s[5], family: "letters", rule };
 };
 
 const cubic = (rng) => {
@@ -137,7 +171,11 @@ const cubic = (rng) => {
   const b = rng.int(-4, 5);
   const c = rng.int(-6, 8);
   const s = [...Array(6)].map((_, i) => a * i ** 3 + b * i + c);
-  return { terms: s.slice(0, 5), next: s[5], family: "cubic" };
+  const g = gapsOf(s.slice(0, 5));
+  return {
+    terms: s.slice(0, 5), next: s[5], family: "cubic",
+    rule: `the gaps are ${g.join(", ")}; take gaps of those and they grow steadily, which means a cubic pattern`,
+  };
 };
 
 const productOfPrev = (rng) => {
@@ -148,14 +186,18 @@ const productOfPrev = (rng) => {
     s.push(v);
   }
   if (s.length < 6) return fibonacci(rng);
-  return { terms: s.slice(0, 5), next: s[5], family: "product of previous two" };
+  return { terms: s.slice(0, 5), next: s[5], family: "product of previous two", rule: "each term is the two before it multiplied together" };
 };
 
 const digitSum = (rng) => {
   const dsum = (n) => String(Math.abs(n)).split("").reduce((a, d) => a + +d, 0);
   const s = [rng.int(10, 60)];
   while (s.length < 6) s.push(s[s.length - 1] + dsum(s[s.length - 1]));
-  return { terms: s.slice(0, 5), next: s[5], family: "add digit sum" };
+  const a = s[0];
+  return {
+    terms: s.slice(0, 5), next: s[5], family: "add digit sum",
+    rule: `add the term's own digits to itself: ${a} + ${String(a).split("").join(" + ")} = ${s[1]}, and so on`,
+  };
 };
 
 const threeInterleaved = (rng) => {
@@ -163,14 +205,20 @@ const threeInterleaved = (rng) => {
   const ds = [rng.pick([3, 5, 7]), rng.pick([-4, -6, 8]), rng.pick([2, -3, 6])];
   const s = [];
   for (let i = 0; i < 4; i++) for (let k = 0; k < 3; k++) s.push(starts[k] + ds[k] * i);
-  return { terms: s.slice(0, 9), next: s[9], family: "three interleaved" };
+  return {
+    terms: s.slice(0, 9), next: s[9], family: "three interleaved",
+    rule: `three sequences taking turns: every 3rd term from the 1st ${signed(ds[0])}, from the 2nd ${signed(ds[1])}, from the 3rd ${signed(ds[2])}`,
+  };
 };
 
 const letterSquare = (rng) => {
   const st = rng.int(0, 8);
   const d = rng.pick([2, 3]);
   const s = [...Array(6)].map((_, i) => ALPHA[(st + d * i) % 26] + String((i + 1) ** 2));
-  return { terms: s.slice(0, 5), next: s[5], family: "letter + square" };
+  return {
+    terms: s.slice(0, 5), next: s[5], family: "letter + square",
+    rule: `the letter moves ${d} forward each time and the number runs through the squares 1, 4, 9, 16, 25`,
+  };
 };
 
 const geometricDiff = (rng) => {
@@ -179,11 +227,16 @@ const geometricDiff = (rng) => {
   const r = rng.pick([2, 3, -2, -3]);
   const s = [a];
   let d = d0;
+  const gaps = [];
   while (s.length < 7) {
+    gaps.push(d);
     s.push(s[s.length - 1] + d);
     d *= r;
   }
-  return { terms: s.slice(0, 6), next: s[6], family: "geometric differences" };
+  return {
+    terms: s.slice(0, 6), next: s[6], family: "geometric differences",
+    rule: `the gaps are ${gaps.slice(0, 5).join(", ")} — each gap is the one before it multiplied by ${r}`,
+  };
 };
 
 const affineBig = (rng) => {
@@ -193,10 +246,10 @@ const affineBig = (rng) => {
     const s = [rng.int(4, 19)];
     while (s.length < 5) s.push(s[s.length - 1] * a + b);
     if (s.every((v) => v > 0 && v < 6000)) {
-      return { terms: s.slice(0, 4), next: s[4], family: "affine, large coefficients" };
+      return { terms: s.slice(0, 4), next: s[4], family: "affine, large coefficients", rule: `multiply by ${a}, then add ${b}` };
     }
   }
-  return { terms: [19, 28, 55, 136], next: 379, family: "affine, large coefficients" };
+  return { terms: [19, 28, 55, 136], next: 379, family: "affine, large coefficients", rule: "multiply by 3, then subtract 29" };
 };
 
 const skipList = (rng) => {
@@ -210,23 +263,31 @@ const skipList = (rng) => {
   const skip = rng.pick([2, 2, 3]);
   const st = rng.int(0, Math.max(0, list.length - 1 - skip * 5));
   const s = [...Array(6)].map((_, i) => list[st + i * skip]).filter((v) => v != null);
-  if (s.length < 6) return { terms: [37, 43, 53, 61, 71], next: 79, family: "skip · primes" };
+  if (s.length < 6) return { terms: [37, 43, 53, 61, 71], next: 79, family: "skip · primes", rule: "prime numbers, taking every other one" };
   const label = { prime: "primes", square: "squares", tri: "triangular", cube: "cubes" }[kind];
-  return { terms: s.slice(0, 5), next: s[5], family: "skip · " + label };
+  const word = { prime: "prime numbers", square: "square numbers", tri: "triangular numbers", cube: "cube numbers" }[kind];
+  return {
+    terms: s.slice(0, 5), next: s[5], family: "skip · " + label,
+    rule: `${word}, taking every ${skip === 2 ? "other one" : skip + "rd one"}`,
+  };
 };
 
 const WORD_LISTS = [
-  ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve"],
-  ["First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth"],
-  ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-  ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+  { name: "the numbers spelled out: One, Two, Three, Four…", items: ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve"] },
+  { name: "the positions spelled out: First, Second, Third…", items: ["First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth"] },
+  { name: "the months of the year", items: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"] },
+  { name: "the days of the week", items: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] },
 ];
 
 const wordInitials = (rng) => {
   const list = rng.pick(WORD_LISTS);
-  const st = rng.int(0, list.length - 6);
-  const s = [...Array(6)].map((_, i) => list[st + i][0]);
-  return { terms: s.slice(0, 5), next: s[5], family: "word initials" };
+  const st = rng.int(0, list.items.length - 6);
+  const s = [...Array(6)].map((_, i) => list.items[st + i][0]);
+  const shown = list.items.slice(st, st + 6).join(", ");
+  return {
+    terms: s.slice(0, 5), next: s[5], family: "word initials",
+    rule: `these are not alphabet steps at all — they are the first letters of ${list.name}. Here: ${shown}`,
+  };
 };
 
 /* ── family pools by level ───────────────────────────────────────────────── */
@@ -253,6 +314,7 @@ export function findRule(rng, level) {
     answer: s.next,
     format: isLetters ? "letter-term" : "number",
     family: s.family,
+    solution: `The rule: ${s.rule}. Carrying it on from ${s.terms[s.terms.length - 1]} gives ${s.next}.`,
     traps: [],
     tip: "sequence-differences",
   };
@@ -290,6 +352,9 @@ export function oddOneOut(rng, level) {
       position: i,
       shouldBe: String(full[i]),
       family: s.family,
+      solution:
+        `Find the rule most of them follow: ${s.rule}. ` +
+        `Every term fits it except position ${i + 1}, which shows ${broken} where the rule needs ${full[i]}.`,
       traps: [],
       tip: "odd-one-out-majority",
     };
@@ -302,6 +367,7 @@ export function oddOneOut(rng, level) {
     position: 2,
     shouldBe: "9",
     family: "arithmetic",
+    solution: "Find the rule most of them follow: add 3 each time. Every term fits it except position 3, which shows 10 where the rule needs 9.",
     traps: [],
     tip: "odd-one-out-majority",
   };

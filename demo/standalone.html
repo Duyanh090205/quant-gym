@@ -88,6 +88,9 @@ input[type=text]{font-family:var(--mono);font-size:19px;padding:10px 12px;backgr
 .verdict{border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:6px;border:1px solid}
 .verdict.ok{background:var(--accent-soft);border-color:var(--accent)}
 .verdict.no{background:var(--bad-soft);border-color:var(--bad)}
+.solution{background:var(--surface);border-radius:8px;padding:10px 12px;display:flex;
+          flex-direction:column;gap:4px}
+.solution .eyebrow{color:var(--fg-3)}
 .rail{height:4px;background:var(--surface-2);border-radius:3px;overflow:hidden}
 .rail i{display:block;height:100%;background:var(--accent);transition:width .3s}
 .rail.hot i{background:var(--bad)}
@@ -953,14 +956,56 @@ Object.assign(__shared, { nextSkill, skillName, CURRICULUM, EXAMS, ALL_SKILLS, g
  * mostly succeed, 2 is the working level, 3 is where the trick in the tip card
  * stops being optional.
  *
- * Traps are not decoration. Each one is a specific wrong route with a sentence
- * saying what went wrong, so a miss tells the student which mistake they made
- * rather than only that they made one.
+ * Two kinds of feedback ride along with each question. `solution` is the worked
+ * line for these exact numbers and is shown whenever the student is wrong, no
+ * matter how. `traps` are specific wrong routes, each with the sentence naming
+ * the mistake, and only fire when the typed answer matches one.
  */
 
-const { round4, fact } = __shared;
+const { round4 } = __shared;
 
 const q = (o) => ({ traps: [], ...o });
+
+/** "17 × 54 = 17 × 50 + 17 × 4 = 850 + 68 = 918" — the split every tip card teaches. */
+function splitMul(a, b) {
+  const tens = Math.floor(b / 10) * 10;
+  const units = b % 10;
+  if (units === 0 && b >= 10) return `Drop the zero: ${a} × ${b / 10} = ${(a * b) / 10}, then put it back: ${a * b}`;
+  if (b < 10) return `${a} × ${b} = ${a * b}`;
+  return `${a} × ${b} = ${a} × ${tens} + ${a} × ${units} = ${a * tens} + ${a * units} = ${a * b}`;
+}
+
+/** Left to right, saying each intermediate number: the method that stops dropped hundreds. */
+function runningSteps(a, b, sign) {
+  const parts = [];
+  let running = a;
+  const digits = String(b).split("").map(Number);
+  digits.forEach((d, i) => {
+    const place = d * 10 ** (digits.length - 1 - i);
+    if (!place) return;
+    running = sign === "+" ? running + place : running - place;
+    parts.push(`${sign} ${place} = ${running}`);
+  });
+  return `${a} ${parts.join(", ")}`;
+}
+
+/**
+ * A route to the answer that is worth more than the answer.
+ *
+ * "7 × 10 = 70" teaches nothing. Reaching a fact from a neighbouring one you
+ * already know does, and it is what a student actually does under time when a
+ * single entry in the table slips.
+ */
+function timesTableRoute(a, b) {
+  const big = Math.max(a, b);
+  const small = Math.min(a, b);
+  if (big % 10 === 0) return `Drop the zero: ${big / 10} × ${small} = ${(big / 10) * small}, then put it back: ${a * b}`;
+  if (big === 11) return `11 × ${small} = ${small} × 10 + ${small} = ${small * 10} + ${small} = ${a * b}`;
+  if (big === 12) return `12 × ${small} = ${small} × 10 + ${small} × 2 = ${small * 10} + ${small * 2} = ${a * b}`;
+  if (big > 12) return splitMul(small, big);
+  // Both single digits: reach it from the ten-times fact, which nobody forgets.
+  return `${small} × ${big} = ${a * b}. If it slips, come at it from ${small} × 10 = ${small * 10}, then take off ${small} × ${10 - big} = ${small * (10 - big)}: ${small * 10} − ${small * (10 - big)} = ${a * b}`;
+}
 
 /* ── 1. Times tables ─────────────────────────────────────────────────────── */
 function timesTables(rng, level) {
@@ -971,9 +1016,10 @@ function timesTables(rng, level) {
   return q({
     prompt: `${a} × ${b}`,
     answer: a * b,
+    solution: timesTableRoute(a, b),
     traps: [
-      { value: a * (b - 1), why: "One row too early in the table." },
-      { value: a * (b + 1), why: "One row too far down the table." },
+      { value: a * (b - 1), why: `That is ${a} × ${b - 1}. One row too early in the table.` },
+      { value: a * (b + 1), why: `That is ${a} × ${b + 1}. One row too far down the table.` },
       { value: a + b, why: "Added instead of multiplied." },
     ],
     tip: "split-and-add",
@@ -991,9 +1037,10 @@ function addSubtract(rng, level) {
     return q({
       prompt: `${a} + ${b}`,
       answer: a + b,
+      solution: `Add the big part first and say each number out loud: ${runningSteps(a, b, "+")}`,
       traps: [
-        { value: a + b - 10, why: "A ten was dropped while carrying." },
-        { value: a + b - 100, why: "A hundred was dropped while carrying." },
+        { value: a + b - 10, why: "A ten went missing while carrying." },
+        { value: a + b - 100, why: "A hundred went missing while carrying. Say the running total out loud at each step and it stops happening." },
       ],
       tip: "subtract-hundreds-first",
     });
@@ -1005,9 +1052,10 @@ function addSubtract(rng, level) {
   return q({
     prompt: `${a} − ${b}`,
     answer: a - b,
+    solution: `Take the big part away first and say each number out loud: ${runningSteps(a, b, "−")}`,
     traps: [
-      { value: a - b + 100, why: "A hundred was left in. This is what rounding up and adding back tends to do under time." },
-      { value: a - b - 100, why: "A hundred was taken twice." },
+      { value: a - b + 100, why: "A hundred was left in. This is what rounding up and adding back tends to do when you are rushed; going left to right never does it." },
+      { value: a - b - 100, why: "A hundred was taken away twice." },
       { value: a - b + 10, why: "A borrow was missed in the tens." },
     ],
     tip: "subtract-hundreds-first",
@@ -1019,12 +1067,14 @@ function multiply(rng, level) {
   if (level === 1) {
     const a = rng.int(12, 99);
     const b = rng.int(3, 9);
+    const tens = Math.floor(a / 10) * 10;
     return q({
       prompt: `${a} × ${b}`,
       answer: a * b,
+      solution: `Split the bigger number: ${a} × ${b} = ${tens} × ${b} + ${a % 10} × ${b} = ${tens * b} + ${(a % 10) * b} = ${a * b}`,
       traps: [
-        { value: Math.floor(a / 10) * 10 * b, why: "Only the tens were multiplied; the units were left behind." },
-        { value: (a % 10) * b + Math.floor(a / 10) * b, why: "The partial products were added without their place value." },
+        { value: tens * b, why: `That is only ${tens} × ${b}. The units, ${a % 10} × ${b} = ${(a % 10) * b}, still have to be added.` },
+        { value: (a % 10) * b + Math.floor(a / 10) * b, why: "The two halves were added without their place value: the tens part is worth ten times what it looks." },
       ],
       tip: "split-and-add",
     });
@@ -1033,11 +1083,20 @@ function multiply(rng, level) {
   if (level === 2) {
     const a = rng.int(12, 49);
     const b = rng.pick([5, 11, 15, 20, 25, 50, 12, 9, 99]);
+    const shortcut =
+      b === 5 ? `${a} × 10 = ${a * 10}, then halve: ${a * 5}`
+      : b === 50 ? `${a} × 100 = ${a * 100}, then halve: ${a * 50}`
+      : b === 11 && a < 100 ? `Outer digits ${Math.floor(a / 10)} and ${a % 10}, their sum ${Math.floor(a / 10) + (a % 10)} goes in the middle: ${a * 11}`
+      : b === 9 ? `${a} × 10 = ${a * 10}, then take one ${a} off: ${a * 9}`
+      : b === 99 ? `${a} × 100 = ${a * 100}, then take one ${a} off: ${a * 99}`
+      : b === 25 ? `${a} × 100 = ${a * 100}, then quarter it: ${a * 25}`
+      : splitMul(a, b);
     return q({
       prompt: `${a} × ${b}`,
       answer: a * b,
+      solution: shortcut,
       traps: [
-        { value: a * b - a, why: "One copy of the first number is missing. Check the last step of the split." },
+        { value: a * b - a, why: `One copy of ${a} is missing. Check the last step of the split.` },
         { value: a * b + a, why: `One copy of ${a} too many. Count the parts of the split again.` },
       ],
       tip: "times-five-and-eleven",
@@ -1050,16 +1109,24 @@ function multiply(rng, level) {
   return q({
     prompt: `${a} × ${b}`,
     answer: a * b,
+    solution: splitMul(a, b),
     traps: [
-      { value: a * tens, why: "The units part of the second factor was never added." },
-      { value: a * (b % 10), why: "Only the units part was used." },
-      { value: a * b - a * 10, why: "A ten went missing between the two partial products." },
+      { value: a * tens, why: `That is only ${a} × ${tens}. The units part, ${a} × ${b % 10} = ${a * (b % 10)}, still has to be added.` },
+      { value: a * (b % 10), why: `That is only ${a} × ${b % 10}. The tens part, ${a} × ${tens} = ${a * tens}, is missing.` },
+      { value: a * b - a * 10, why: "A ten went missing between the two halves of the split." },
     ],
     tip: "split-and-add",
   });
 }
 
 /* ── 4. Division ─────────────────────────────────────────────────────────── */
+function divisionSteps(total, b, ans) {
+  const chunk = Math.floor(ans / 10) * 10;
+  if (!chunk) return `${b} × ${ans} = ${total}, so the answer is ${ans}`;
+  const rest = ans - chunk;
+  return `${b} × ${chunk} = ${b * chunk}, leaving ${total} − ${b * chunk} = ${total - b * chunk}, and ${total - b * chunk} ÷ ${b} = ${rest}. So ${chunk} + ${rest} = ${ans}`;
+}
+
 function divide(rng, level) {
   if (level === 1) {
     const b = rng.int(2, 9);
@@ -1067,7 +1134,8 @@ function divide(rng, level) {
     return q({
       prompt: `${b * ans} ÷ ${b}`,
       answer: ans,
-      traps: [{ value: ans * b, why: "Multiplied instead of divided." }],
+      solution: `Ask what times ${b} makes ${b * ans}: ${b} × ${ans} = ${b * ans}`,
+      traps: [{ value: ans * b, why: "Multiplied instead of divided. Check by multiplying back: the answer times the divisor has to give the number you started with." }],
       tip: "reduce-before-dividing",
     });
   }
@@ -1078,6 +1146,7 @@ function divide(rng, level) {
     return q({
       prompt: `${b * ans} ÷ ${b}`,
       answer: ans,
+      solution: divisionSteps(b * ans, b, ans),
       traps: [
         { value: ans + 1, why: `One too high. Multiply back to check: ${b} times your answer should return the number you started with.` },
         { value: ans - 1, why: `One too low. Multiply back to check: ${b} times your answer should return the number you started with.` },
@@ -1091,9 +1160,10 @@ function divide(rng, level) {
   return q({
     prompt: `${b * ans} ÷ ${b}`,
     answer: ans,
+    solution: divisionSteps(b * ans, b, ans),
     traps: [
-      { value: ans + 10, why: "A ten too many in the quotient; the place value slipped." },
-      { value: ans - 10, why: "A ten short in the quotient." },
+      { value: ans + 10, why: "A ten too many in the answer; the place value slipped." },
+      { value: ans - 10, why: "A ten short in the answer; the place value slipped." },
     ],
     tip: "reduce-before-dividing",
   });
@@ -1108,8 +1178,12 @@ function squares(rng, level) {
   return q({
     prompt: `${n}²`,
     answer: n * n,
+    solution: d === 0
+      ? `${n} ends in 0, so square the ${n / 10} and add two zeros: ${n * n}`
+      : `Slide ${Math.abs(d)} ${d > 0 ? "down" : "up"} to reach a round number, then pay it back: ` +
+        `${n}² = ${Math.min(n - d, n + d)} × ${Math.max(n - d, n + d)} + ${Math.abs(d)}² = ${slid} + ${d * d} = ${n * n}`,
     traps: [
-      { value: slid, why: `The correction was never added. (n−d)(n+d) = ${slid}, and you still owe d² = ${d * d}.` },
+      { value: slid, why: `The correction was never added. ${n - d} × ${n + d} = ${slid}, and you still owe ${d}² = ${d * d}.` },
       { value: n * n - 2 * n + 1, why: `That is ${n - 1}². Off by one before squaring.` },
       { value: n * 2, why: "Doubled instead of squared." },
     ],
@@ -1124,7 +1198,8 @@ function roots(rng, level) {
     return q({
       prompt: `√${n * n}`,
       answer: n,
-      traps: [{ value: (n * n) / 2, why: "Halved instead of taking a square root." }],
+      solution: `Ask what squares to ${n * n}: ${n}² = ${n * n}, so the root is ${n}`,
+      traps: [{ value: (n * n) / 2, why: "Halved instead of taking a square root. A square root asks what number times itself gives this." }],
       tip: "squares-rule-of-one",
     });
   }
@@ -1135,9 +1210,10 @@ function roots(rng, level) {
       return q({
         prompt: `${n}³`,
         answer: n ** 3,
+        solution: `Cubing means three copies multiplied together: ${n} × ${n} = ${n * n}, then ${n * n} × ${n} = ${n ** 3}`,
         traps: [
-          { value: n * n, why: "Squared instead of cubed." },
-          { value: n * 3, why: "Multiplied by 3 instead of raising to the third power." },
+          { value: n * n, why: `That is ${n}², one multiplication short. Cubing means three copies multiplied together.` },
+          { value: n * 3, why: "Multiplied by 3 instead of raising to the third power. The 3 counts the copies, it is not a factor." },
         ],
         tip: "cube-root-last-digit",
       });
@@ -1146,9 +1222,10 @@ function roots(rng, level) {
     return q({
       prompt: `${b}^${e}`,
       answer: b ** e,
+      solution: `${e} copies of ${b} multiplied together: ${Array(e).fill(b).join(" × ")} = ${b ** e}`,
       traps: [
-        { value: b ** (e - 1), why: `That is ${b}^${e - 1}. One factor short; the exponent counts the factors, so there are ${e} of them.` },
-        { value: b * e, why: "Multiplied the base by the exponent." },
+        { value: b ** (e - 1), why: `That is ${b}^${e - 1}. One factor short; the exponent counts the copies, so there are ${e} of them.` },
+        { value: b * e, why: "Multiplied the base by the exponent. The exponent counts how many copies to multiply, it is not one of them." },
       ],
       tip: "cube-root-last-digit",
     });
@@ -1156,17 +1233,21 @@ function roots(rng, level) {
 
   const n = rng.int(11, 25);
   const cube = n ** 3;
+  const tens = Math.floor(n / 10);
   const lastDigitTrap = { 2: 2, 3: 3, 7: 7, 8: 8 }[n % 10];
-  const traps = [{ value: Math.round(cube / 3), why: "Divided by 3 instead of taking a cube root." }];
+  const traps = [{ value: Math.round(cube / 3), why: "Divided by 3 instead of taking a cube root. A cube root asks what number, multiplied by itself three times, gives this." }];
   if (lastDigitTrap != null) {
     traps.unshift({
       value: n - (n % 10) + lastDigitTrap,
-      why: "The last digit of a cube swaps 2 with 8 and 3 with 7. It does not stay put.",
+      why: `The last digit of a cube does not stay put for 2, 3, 7 and 8: 2 and 8 swap, and 3 and 7 swap. A cube ending in ${cube % 10} has a root ending in ${n % 10}.`,
     });
   }
   return q({
     prompt: `∛${cube.toLocaleString("en-US")}`,
     answer: n,
+    solution:
+      `Two clues pin it down. The size: ${cube.toLocaleString("en-US")} sits between ${tens * 10}³ = ${(tens * 10) ** 3} and ${(tens + 1) * 10}³ = ${((tens + 1) * 10) ** 3}, ` +
+      `so the answer starts with ${tens}. The last digit: a cube ending in ${cube % 10} can only come from a root ending in ${n % 10}. That gives ${n}.`,
     traps,
     tip: "cube-root-last-digit",
   });
@@ -1174,6 +1255,7 @@ function roots(rng, level) {
 
 /* ── 7. Fractions ────────────────────────────────────────────────────────── */
 const DENOMS = [2, 4, 5, 8, 10, 16, 20, 25, 40, 50];
+const gcd = (a, b) => (b ? gcd(b, a % b) : a);
 
 function fractions(rng, level) {
   if (level === 1) {
@@ -1182,7 +1264,8 @@ function fractions(rng, level) {
     return q({
       prompt: `${n}/${d} as a decimal`,
       answer: round4(n / d),
-      traps: [{ value: round4(d / n), why: "The fraction was read upside down." }],
+      solution: `1/${d} = ${round4(1 / d)}, so ${n}/${d} = ${n} × ${round4(1 / d)} = ${round4(n / d)}`,
+      traps: [{ value: round4(d / n), why: "The fraction was read upside down. The top number is how many parts you have, the bottom is how many make a whole." }],
       tip: "fraction-anchors",
     });
   }
@@ -1193,22 +1276,31 @@ function fractions(rng, level) {
   const n2 = rng.int(1, d2 - 1);
 
   if (level === 2) {
+    const top = n1 * n2;
+    const bot = d1 * d2;
+    const g = gcd(top, bot);
     return q({
       prompt: `${n1}/${d1} × ${n2}/${d2}`,
-      answer: round4((n1 * n2) / (d1 * d2)),
+      answer: round4(top / bot),
+      solution: `Multiplying is straight across: tops ${n1} × ${n2} = ${top}, bottoms ${d1} × ${d2} = ${bot}` +
+        (g > 1 ? `, which cancels to ${top / g}/${bot / g} = ${round4(top / bot)}` : ` = ${round4(top / bot)}`),
       traps: [
         { value: round4(n1 / d1 + n2 / d2), why: "Added instead of multiplied." },
-        { value: round4((n1 * n2) / (d1 + d2)), why: "Denominators were added, not multiplied." },
+        { value: round4(top / (d1 + d2)), why: "The bottoms were added. When multiplying, the bottoms multiply too." },
       ],
       tip: "fraction-anchors",
     });
   }
 
+  const lcm = (d1 * d2) / gcd(d1, d2);
   return q({
     prompt: `${n1}/${d1} + ${n2}/${d2}`,
     answer: round4(n1 / d1 + n2 / d2),
+    solution:
+      `Adding needs the same bottom. Both fit into ${lcm}: ${n1}/${d1} = ${(n1 * lcm) / d1}/${lcm} and ${n2}/${d2} = ${(n2 * lcm) / d2}/${lcm}. ` +
+      `Now add the tops: ${(n1 * lcm) / d1 + (n2 * lcm) / d2}/${lcm} = ${round4(n1 / d1 + n2 / d2)}`,
     traps: [
-      { value: round4((n1 + n2) / (d1 + d2)), why: "Tops added and bottoms added. Fractions do not work that way; you need a common denominator." },
+      { value: round4((n1 + n2) / (d1 + d2)), why: "Tops added and bottoms added. That is not how adding works: a half plus a half would come out as a half. Give them the same bottom first." },
       { value: round4((n1 * n2) / (d1 * d2)), why: "Multiplied instead of added." },
     ],
     tip: "fraction-anchors",
@@ -1220,12 +1312,20 @@ function percent(rng, level) {
   if (level === 1) {
     const p = rng.pick([10, 20, 25, 50, 5]);
     const y = rng.pick([40, 60, 80, 120, 200, 240, 400, 500]);
+    const ten = y / 10;
+    const solution =
+      p === 50 ? `Per cent means per hundred, and 50 per hundred is half. Halve ${y}: ${y / 2}`
+      : p === 25 ? `25 per hundred is a quarter. Halve ${y} to get ${y / 2}, then halve again: ${y / 4}`
+      : p === 10 ? `10 per hundred is one tenth, so shift the digits one place: ${y} becomes ${ten}`
+      : p === 20 ? `Start from 10%, which is one tenth of ${y} = ${ten}. Then 20% is twice that: ${2 * ten}`
+      : `Start from 10%, which is one tenth of ${y} = ${ten}. Then 5% is half of that: ${ten / 2}`;
     return q({
       prompt: `${p}% of ${y}`,
       answer: round4((p * y) / 100),
+      solution,
       traps: [
-        { value: round4((p * y) / 10), why: "Out by a factor of ten. Per cent means per hundred." },
-        { value: round4(y / p), why: "Divided by the percentage instead of taking that share of it." },
+        { value: round4((p * y) / 10), why: "Out by a factor of ten. Per cent means per hundred, so divide by 100." },
+        { value: round4(y / p), why: `Divided by ${p} instead of taking ${p} hundredths of ${y}.` },
       ],
       tip: "percent-flip",
     });
@@ -1234,10 +1334,12 @@ function percent(rng, level) {
   if (level === 2) {
     const p = rng.pick([12.5, 15, 30, 35, 40, 45, 60, 75, 80, 90, 2.5, 7.5, 17.5]);
     const y = rng.pick([64, 96, 150, 160, 250, 320, 360, 480, 640, 800, 1200]);
+    const ten = y / 10;
     return q({
       prompt: `${p}% of ${y}`,
       answer: round4((p * y) / 100),
-      traps: [{ value: round4((p * y) / 1000), why: "Out by a factor of ten." }],
+      solution: `Build it from 10% = ${round4(ten)}: ${p}% is ${round4(p / 10)} of those, so ${round4(ten)} × ${round4(p / 10)} = ${round4((p * y) / 100)}`,
+      traps: [{ value: round4((p * y) / 1000), why: "Out by a factor of ten. Check against 10%, which is easy to see." }],
       tip: "percent-flip",
     });
   }
@@ -1248,9 +1350,10 @@ function percent(rng, level) {
   return q({
     prompt: `${x} is what % of ${y}`,
     answer: round4((100 * x) / y),
+    solution: `Put it over the whole and turn it into hundredths: ${x}/${y} = ${round4(x / y)}, and ${round4(x / y)} × 100 = ${round4((100 * x) / y)}%`,
     traps: [
-      { value: round4((100 * y) / x), why: "The two numbers were swapped. The number after 'of' is the whole." },
-      { value: round4(x / y), why: "The share is right but it was never turned into a percentage." },
+      { value: round4((100 * y) / x), why: "The two numbers were swapped. Whatever follows the word 'of' is the whole, and goes on the bottom." },
+      { value: round4(x / y), why: "The share is right but it never became a percentage. Multiply by 100." },
     ],
     tip: "percent-flip",
   });
@@ -1262,23 +1365,45 @@ function estimate(rng, level) {
   if (kind === "div") {
     const a = rng.int(1000, 9999);
     const b = rng.int(11, 97);
-    return q({ prompt: `≈ ${a} ÷ ${b}`, answer: a / b, approx: true, tip: "reduce-before-dividing" });
+    const rb = Math.round(b / 10) * 10 || 10;
+    return q({
+      prompt: `≈ ${a} ÷ ${b}`,
+      answer: a / b,
+      approx: true,
+      solution: `Round the divisor to ${rb}: ${a} ÷ ${rb} ≈ ${Math.round((a / rb) * 10) / 10}. The true value is ${Math.round((a / b) * 10) / 10}, and anything within 5% counts.`,
+      tip: "reduce-before-dividing",
+    });
   }
   if (kind === "mul") {
     const a = rng.int(101, 999);
     const b = rng.int(11, 99) / 100;
-    return q({ prompt: `≈ ${a} × ${b}`, answer: a * b, approx: true, tip: "percent-flip" });
+    return q({
+      prompt: `≈ ${a} × ${b}`,
+      answer: a * b,
+      approx: true,
+      solution: `${b} is close to ${Math.round(b * 10) / 10}, and ${a} × ${Math.round(b * 10) / 10} = ${Math.round(a * Math.round(b * 10) / 10 * 10) / 10}. The true value is ${Math.round(a * b * 10) / 10}.`,
+      tip: "percent-flip",
+    });
   }
   const a = rng.int(150, 9000);
-  return q({ prompt: `≈ √${a}`, answer: Math.sqrt(a), approx: true, tip: "squares-rule-of-one" });
+  const lo = Math.floor(Math.sqrt(a));
+  return q({
+    prompt: `≈ √${a}`,
+    answer: Math.sqrt(a),
+    approx: true,
+    solution: `${lo}² = ${lo * lo} and ${lo + 1}² = ${(lo + 1) ** 2}, and ${a} sits between them, so the root is a little ${a - lo * lo < (lo + 1) ** 2 - a ? "above" : "below"} ${a - lo * lo < (lo + 1) ** 2 - a ? lo : lo + 1}: about ${Math.round(Math.sqrt(a) * 10) / 10}`,
+    tip: "squares-rule-of-one",
+  });
 }
 
 /* ── 10. Puzzles: missing digit, balance, two quantities ─────────────────── */
 function maskDigit(rng, n) {
   const s = String(n);
   const i = s.length > 1 ? rng.int(1, s.length - 1) : 0; // never mask the leading digit
-  return [s.slice(0, i) + "□" + s.slice(i + 1), +s[i]];
+  return [s.slice(0, i) + "□" + s.slice(i + 1), +s[i], s.length - 1 - i];
 }
+
+const PLACE = ["units", "tens", "hundreds", "thousands"];
 
 function puzzles(rng, level) {
   const kinds = level === 1 ? ["balance"] : level === 2 ? ["balance", "missing"] : ["missing", "relation", "largest"];
@@ -1292,39 +1417,47 @@ function puzzles(rng, level) {
       if ((c * ans) % a) continue;
       const b = (c * ans) / a;
       if (b < 20 || b > 999) continue;
+      const g = gcd(a, c);
       return q({
         prompt: `${a} × ${b} = ${c} × ?`,
         answer: ans,
+        solution: g > 1
+          ? `Cancel the ${g} shared by ${a} and ${c} first: ${a / g} × ${b} = ${c / g} × ?, so ? = ${(a / g) * b} ÷ ${c / g} = ${ans}`
+          : `Work out the left side, ${a} × ${b} = ${a * b}, then divide by ${c}: ${a * b} ÷ ${c} = ${ans}`,
         traps: [
-          { value: round4((a * b) / c + 1), why: "Off by one in the final division." },
-          { value: a * b, why: "The left side was computed but never divided by the right factor." },
+          { value: round4((a * b) / c + 1), why: "Off by one in the final division. Multiply back to check." },
+          { value: a * b, why: `That is the left side, ${a} × ${b}. It still has to be divided by ${c}.` },
         ],
         tip: "reduce-before-dividing",
       });
     }
-    return q({ prompt: "2 × 232 = 16 × ?", answer: 29, tip: "reduce-before-dividing" });
+    return q({ prompt: "2 × 232 = 16 × ?", answer: 29, solution: "Cancel the 2: 232 = 8 × ?, so ? = 29", tip: "reduce-before-dividing" });
   }
 
   if (kind === "missing") {
     if (rng.chance(0.4)) {
       const a = rng.pick([20, 25, 30, 40, 50, 60, 70, 80, 120, 150]);
       const b = rng.int(105, 989);
-      const [masked, digit] = maskDigit(rng, b);
+      const [masked, digit, place] = maskDigit(rng, b);
       return q({
         prompt: `${a} × ${masked} = ${a * b}`,
         answer: digit,
         hint: "digit",
+        solution: `Divide back: ${a * b} ÷ ${a} = ${b}, so the ${PLACE[place]} digit is ${digit}`,
         tip: "split-and-add",
       });
     }
     const a = rng.int(1000, 9999);
     const b = rng.int(100, 989);
-    const [masked, digit] = maskDigit(rng, a);
+    const [masked, digit, place] = maskDigit(rng, a);
     const plus = rng.chance(0.5);
     return q({
       prompt: plus ? `${masked} + ${b} = ${a + b}` : `${masked} − ${b} = ${a - b}`,
       answer: digit,
       hint: "digit",
+      solution: plus
+        ? `Undo the addition: ${a + b} − ${b} = ${a}, so the ${PLACE[place]} digit is ${digit}`
+        : `Undo the subtraction: ${a - b} + ${b} = ${a}, so the ${PLACE[place]} digit is ${digit}`,
       tip: "subtract-hundreds-first",
     });
   }
@@ -1341,14 +1474,16 @@ function puzzles(rng, level) {
       return q({
         prompt: `A = ${fr[0]}/${fr[1]} of ${b1},  B = ${p}% of ${b2}.  A − B`,
         answer: round4(A - B),
+        solution: `A: ${b1} ÷ ${fr[1]} = ${b1 / fr[1]}, times ${fr[0]} = ${A}. B: 10% of ${b2} is ${b2 / 10}, so ${p}% is ${round4(B)}. Then ${A} − ${round4(B)} = ${round4(A - B)}`,
         traps: [
           { value: round4(B - A), why: "Subtracted the wrong way round." },
           { value: round4(A + B), why: "Added instead of subtracted." },
+          { value: A, why: "That is A on its own. B still has to come off." },
         ],
         tip: "fraction-anchors",
       });
     }
-    return q({ prompt: "A = 3/4 of 200,  B = 35% of 260.  A − B", answer: 59, tip: "fraction-anchors" });
+    return q({ prompt: "A = 3/4 of 200,  B = 35% of 260.  A − B", answer: 59, solution: "A = 150, B = 91, so A − B = 59", tip: "fraction-anchors" });
   }
 
   // largest: comparing powers, answered by letter
@@ -1365,9 +1500,10 @@ function puzzles(rng, level) {
     options: items.map((it) => it[0]),
     answer: "abcde"[best],
     format: "letter",
-    tip: null,
+    solution: `Work each one out: ${items.map(([lab, v]) => `${lab} = ${v}`).join(", ")}. The largest is ${items[best][0]}.`,
     traps: [],
-    note: "Comparing only the bases is not enough: 4^7 beats 3^7 and also beats 6^5. Work each one out.",
+    note: "Comparing the bases alone does not work: a smaller base with a bigger exponent often wins, as 4^7 beats both 3^7 and 6^5. Work each one out.",
+    tip: null,
   });
 }
 
@@ -1392,13 +1528,21 @@ Object.assign(__shared, { timesTables, addSubtract, multiply, divide, squares, r
 /**
  * Sequence families, and the two things you can ask about a sequence.
  *
- * A family returns `{ terms, next, family }`. From that one object we build both
- * question types: "what comes next" and "which term breaks the rule". The second
- * is what Maven actually asks, and it is the harder skill, because you have to
- * hold a candidate rule while testing it against every term.
+ * A family returns `{ terms, next, family, rule }`. The `rule` is a plain-words
+ * description of the pattern with this sequence's own numbers in it, and it is
+ * what turns a wrong answer into a lesson: without it, "the answer was 47" tells
+ * a student nothing about how they were supposed to see it.
+ *
+ * From one family object we build both question types: "what comes next" and
+ * "which term breaks the rule". The second is what Maven actually asks, and it is
+ * the harder skill, because you have to hold a candidate rule in mind while
+ * testing it against every term.
  */
 
 const { ALPHA } = __shared;
+
+const signed = (d) => (d >= 0 ? `add ${d}` : `subtract ${-d}`);
+const gapsOf = (s) => s.slice(1).map((v, i) => v - s[i]);
 
 /* ── the families, easiest first ─────────────────────────────────────────── */
 
@@ -1406,7 +1550,7 @@ const arithmetic = (rng) => {
   const a = rng.int(-20, 60);
   const d = rng.pick([-9, -7, -6, -4, -3, 3, 4, 6, 7, 8, 9, 11, 12, 13, 15, 17]);
   const s = [...Array(6)].map((_, i) => a + d * i);
-  return { terms: s.slice(0, 5), next: s[5], family: "arithmetic" };
+  return { terms: s.slice(0, 5), next: s[5], family: "arithmetic", rule: `${signed(d)} each time` };
 };
 
 const geometric = (rng) => {
@@ -1414,12 +1558,15 @@ const geometric = (rng) => {
     const a = rng.pick([1, 2, 3, 4, 5, 6, 7]);
     const r = rng.pick([2, 3, 4, -2, -3]);
     const s = [...Array(6)].map((_, i) => a * r ** i);
-    return { terms: s.slice(0, 5), next: s[5], family: "geometric" };
+    return {
+      terms: s.slice(0, 5), next: s[5], family: "geometric",
+      rule: r < 0 ? `multiply by ${r} each time, so the sign flips every step` : `multiply by ${r} each time`,
+    };
   }
   const r = rng.pick([2, 3]);
   const a = r ** 5 * rng.pick([1, 2, 3]);
   const s = [...Array(6)].map((_, i) => a / r ** i);
-  return { terms: s.slice(0, 5), next: s[5], family: "geometric" };
+  return { terms: s.slice(0, 5), next: s[5], family: "geometric", rule: `divide by ${r} each time` };
 };
 
 const quadratic = (rng) => {
@@ -1427,13 +1574,17 @@ const quadratic = (rng) => {
   const b = rng.int(-5, 6);
   const c = rng.int(-10, 15);
   const s = [...Array(6)].map((_, i) => a * i * i + b * i + c);
-  return { terms: s.slice(0, 5), next: s[5], family: "quadratic" };
+  const g = gapsOf(s.slice(0, 5));
+  return {
+    terms: s.slice(0, 5), next: s[5], family: "quadratic",
+    rule: `the gaps are ${g.join(", ")}, and they themselves ${signed(2 * a)} each time`,
+  };
 };
 
 const fibonacci = (rng) => {
   const s = [rng.int(1, 9), rng.int(1, 12)];
   while (s.length < 6) s.push(s[s.length - 1] + s[s.length - 2]);
-  return { terms: s.slice(0, 5), next: s[5], family: "Fibonacci" };
+  return { terms: s.slice(0, 5), next: s[5], family: "Fibonacci", rule: "each term is the two before it added together" };
 };
 
 const affine = (rng) => {
@@ -1441,7 +1592,7 @@ const affine = (rng) => {
   const b = rng.pick([-3, -1, 1, 2, 3, 5, -5]);
   const s = [rng.int(1, 8)];
   while (s.length < 6) s.push(s[s.length - 1] * a + b);
-  return { terms: s.slice(0, 5), next: s[5], family: "affine" };
+  return { terms: s.slice(0, 5), next: s[5], family: "affine", rule: `multiply by ${a}, then ${signed(b)}` };
 };
 
 const interleaved = (rng) => {
@@ -1452,7 +1603,10 @@ const interleaved = (rng) => {
   const s = [];
   for (let i = 0; i < 4; i++) s.push(a1 + d1 * i, a2 + d2 * i);
   const n = rng.pick([6, 7]);
-  return { terms: s.slice(0, n), next: s[n], family: "interleaved" };
+  return {
+    terms: s.slice(0, n), next: s[n], family: "interleaved",
+    rule: `two sequences taking turns: the 1st, 3rd, 5th terms ${signed(d1)}, and the 2nd, 4th, 6th ${signed(d2)}`,
+  };
 };
 
 const alternatingOps = (rng) => {
@@ -1463,7 +1617,10 @@ const alternatingOps = (rng) => {
     const last = s[s.length - 1];
     s.push(s.length % 2 ? last * mul : last + add);
   }
-  return { terms: s.slice(0, 6), next: s[6], family: "alternating ops" };
+  return {
+    terms: s.slice(0, 6), next: s[6], family: "alternating ops",
+    rule: `two operations taking turns: multiply by ${mul}, then add ${add}, then multiply by ${mul} again`,
+  };
 };
 
 const specials = (rng) => {
@@ -1479,13 +1636,18 @@ const specials = (rng) => {
     tri: (n) => (n * (n + 1)) / 2,
     fac: (n) => [1, 2, 6, 24, 120, 720, 5040][n - 1],
   }[kind];
+  const name = { sq: "square numbers", cb: "cube numbers", pr: "prime numbers", tri: "triangular numbers", fac: "factorials 1, 2, 6, 24, 120" }[kind];
   const s = [...Array(6)].map((_, i) => f(st + i) + off);
-  return { terms: s.slice(0, 5), next: s[5], family: "special numbers" };
+  return {
+    terms: s.slice(0, 5), next: s[5], family: "special numbers",
+    rule: off === 0 ? `the ${name}, starting from the ${st}${st === 1 ? "st" : st === 2 ? "nd" : st === 3 ? "rd" : "th"}` : `the ${name} with ${off > 0 ? off + " added" : -off + " taken off"} each time`,
+  };
 };
 
 const growingDiff = (rng) => {
   let x = rng.int(1, 15);
   let step = rng.int(1, 5);
+  const first = step;
   const dd = rng.pick([1, 2, 3]);
   const s = [x];
   while (s.length < 6) {
@@ -1493,34 +1655,42 @@ const growingDiff = (rng) => {
     step += dd;
     s.push(x);
   }
-  return { terms: s.slice(0, 5), next: s[5], family: "growing differences" };
+  return {
+    terms: s.slice(0, 5), next: s[5], family: "growing differences",
+    rule: `the gaps start at ${first} and grow by ${dd} each time`,
+  };
 };
 
 const letters = (rng) => {
   const kind = rng.pick(["step", "step", "grow", "pair", "mix"]);
-  let s;
+  let s, rule;
   if (kind === "step") {
     const st = rng.int(0, 12);
     const d = rng.pick([2, 3, 4, 5, -2, -3]);
     s = [...Array(6)].map((_, i) => ALPHA[(((st + d * i) % 26) + 26) % 26]);
+    rule = `move ${Math.abs(d)} letter${Math.abs(d) > 1 ? "s" : ""} ${d > 0 ? "forward" : "back"} through the alphabet each time`;
   } else if (kind === "grow") {
     let p = rng.int(0, 6);
     let d = rng.int(1, 3);
+    const first = d;
     s = [ALPHA[p]];
     while (s.length < 6) {
       p += d;
       d++;
       s.push(ALPHA[p % 26]);
     }
+    rule = `the jump through the alphabet starts at ${first} and grows by 1 each time`;
   } else if (kind === "pair") {
     const st = rng.int(0, 10);
     s = [...Array(6)].map((_, i) => ALPHA[(st + i) % 26] + ALPHA[(25 - st - i + 26) % 26]);
+    rule = "the first letter moves forward one at a time and the second moves back one at a time";
   } else {
     const st = rng.int(0, 12);
     const d = rng.pick([2, 3, 4]);
     s = [...Array(6)].map((_, i) => ALPHA[(st + d * i) % 26] + String(i + 1));
+    rule = `the letter moves ${d} forward each time and the number counts up 1, 2, 3`;
   }
-  return { terms: s.slice(0, 5), next: s[5], family: "letters" };
+  return { terms: s.slice(0, 5), next: s[5], family: "letters", rule };
 };
 
 const cubic = (rng) => {
@@ -1528,7 +1698,11 @@ const cubic = (rng) => {
   const b = rng.int(-4, 5);
   const c = rng.int(-6, 8);
   const s = [...Array(6)].map((_, i) => a * i ** 3 + b * i + c);
-  return { terms: s.slice(0, 5), next: s[5], family: "cubic" };
+  const g = gapsOf(s.slice(0, 5));
+  return {
+    terms: s.slice(0, 5), next: s[5], family: "cubic",
+    rule: `the gaps are ${g.join(", ")}; take gaps of those and they grow steadily, which means a cubic pattern`,
+  };
 };
 
 const productOfPrev = (rng) => {
@@ -1539,14 +1713,18 @@ const productOfPrev = (rng) => {
     s.push(v);
   }
   if (s.length < 6) return fibonacci(rng);
-  return { terms: s.slice(0, 5), next: s[5], family: "product of previous two" };
+  return { terms: s.slice(0, 5), next: s[5], family: "product of previous two", rule: "each term is the two before it multiplied together" };
 };
 
 const digitSum = (rng) => {
   const dsum = (n) => String(Math.abs(n)).split("").reduce((a, d) => a + +d, 0);
   const s = [rng.int(10, 60)];
   while (s.length < 6) s.push(s[s.length - 1] + dsum(s[s.length - 1]));
-  return { terms: s.slice(0, 5), next: s[5], family: "add digit sum" };
+  const a = s[0];
+  return {
+    terms: s.slice(0, 5), next: s[5], family: "add digit sum",
+    rule: `add the term's own digits to itself: ${a} + ${String(a).split("").join(" + ")} = ${s[1]}, and so on`,
+  };
 };
 
 const threeInterleaved = (rng) => {
@@ -1554,14 +1732,20 @@ const threeInterleaved = (rng) => {
   const ds = [rng.pick([3, 5, 7]), rng.pick([-4, -6, 8]), rng.pick([2, -3, 6])];
   const s = [];
   for (let i = 0; i < 4; i++) for (let k = 0; k < 3; k++) s.push(starts[k] + ds[k] * i);
-  return { terms: s.slice(0, 9), next: s[9], family: "three interleaved" };
+  return {
+    terms: s.slice(0, 9), next: s[9], family: "three interleaved",
+    rule: `three sequences taking turns: every 3rd term from the 1st ${signed(ds[0])}, from the 2nd ${signed(ds[1])}, from the 3rd ${signed(ds[2])}`,
+  };
 };
 
 const letterSquare = (rng) => {
   const st = rng.int(0, 8);
   const d = rng.pick([2, 3]);
   const s = [...Array(6)].map((_, i) => ALPHA[(st + d * i) % 26] + String((i + 1) ** 2));
-  return { terms: s.slice(0, 5), next: s[5], family: "letter + square" };
+  return {
+    terms: s.slice(0, 5), next: s[5], family: "letter + square",
+    rule: `the letter moves ${d} forward each time and the number runs through the squares 1, 4, 9, 16, 25`,
+  };
 };
 
 const geometricDiff = (rng) => {
@@ -1570,11 +1754,16 @@ const geometricDiff = (rng) => {
   const r = rng.pick([2, 3, -2, -3]);
   const s = [a];
   let d = d0;
+  const gaps = [];
   while (s.length < 7) {
+    gaps.push(d);
     s.push(s[s.length - 1] + d);
     d *= r;
   }
-  return { terms: s.slice(0, 6), next: s[6], family: "geometric differences" };
+  return {
+    terms: s.slice(0, 6), next: s[6], family: "geometric differences",
+    rule: `the gaps are ${gaps.slice(0, 5).join(", ")} — each gap is the one before it multiplied by ${r}`,
+  };
 };
 
 const affineBig = (rng) => {
@@ -1584,10 +1773,10 @@ const affineBig = (rng) => {
     const s = [rng.int(4, 19)];
     while (s.length < 5) s.push(s[s.length - 1] * a + b);
     if (s.every((v) => v > 0 && v < 6000)) {
-      return { terms: s.slice(0, 4), next: s[4], family: "affine, large coefficients" };
+      return { terms: s.slice(0, 4), next: s[4], family: "affine, large coefficients", rule: `multiply by ${a}, then add ${b}` };
     }
   }
-  return { terms: [19, 28, 55, 136], next: 379, family: "affine, large coefficients" };
+  return { terms: [19, 28, 55, 136], next: 379, family: "affine, large coefficients", rule: "multiply by 3, then subtract 29" };
 };
 
 const skipList = (rng) => {
@@ -1601,23 +1790,31 @@ const skipList = (rng) => {
   const skip = rng.pick([2, 2, 3]);
   const st = rng.int(0, Math.max(0, list.length - 1 - skip * 5));
   const s = [...Array(6)].map((_, i) => list[st + i * skip]).filter((v) => v != null);
-  if (s.length < 6) return { terms: [37, 43, 53, 61, 71], next: 79, family: "skip · primes" };
+  if (s.length < 6) return { terms: [37, 43, 53, 61, 71], next: 79, family: "skip · primes", rule: "prime numbers, taking every other one" };
   const label = { prime: "primes", square: "squares", tri: "triangular", cube: "cubes" }[kind];
-  return { terms: s.slice(0, 5), next: s[5], family: "skip · " + label };
+  const word = { prime: "prime numbers", square: "square numbers", tri: "triangular numbers", cube: "cube numbers" }[kind];
+  return {
+    terms: s.slice(0, 5), next: s[5], family: "skip · " + label,
+    rule: `${word}, taking every ${skip === 2 ? "other one" : skip + "rd one"}`,
+  };
 };
 
 const WORD_LISTS = [
-  ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve"],
-  ["First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth"],
-  ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-  ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+  { name: "the numbers spelled out: One, Two, Three, Four…", items: ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve"] },
+  { name: "the positions spelled out: First, Second, Third…", items: ["First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth"] },
+  { name: "the months of the year", items: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"] },
+  { name: "the days of the week", items: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] },
 ];
 
 const wordInitials = (rng) => {
   const list = rng.pick(WORD_LISTS);
-  const st = rng.int(0, list.length - 6);
-  const s = [...Array(6)].map((_, i) => list[st + i][0]);
-  return { terms: s.slice(0, 5), next: s[5], family: "word initials" };
+  const st = rng.int(0, list.items.length - 6);
+  const s = [...Array(6)].map((_, i) => list.items[st + i][0]);
+  const shown = list.items.slice(st, st + 6).join(", ");
+  return {
+    terms: s.slice(0, 5), next: s[5], family: "word initials",
+    rule: `these are not alphabet steps at all — they are the first letters of ${list.name}. Here: ${shown}`,
+  };
 };
 
 /* ── family pools by level ───────────────────────────────────────────────── */
@@ -1644,6 +1841,7 @@ function findRule(rng, level) {
     answer: s.next,
     format: isLetters ? "letter-term" : "number",
     family: s.family,
+    solution: `The rule: ${s.rule}. Carrying it on from ${s.terms[s.terms.length - 1]} gives ${s.next}.`,
     traps: [],
     tip: "sequence-differences",
   };
@@ -1681,6 +1879,9 @@ function oddOneOut(rng, level) {
       position: i,
       shouldBe: String(full[i]),
       family: s.family,
+      solution:
+        `Find the rule most of them follow: ${s.rule}. ` +
+        `Every term fits it except position ${i + 1}, which shows ${broken} where the rule needs ${full[i]}.`,
       traps: [],
       tip: "odd-one-out-majority",
     };
@@ -1693,6 +1894,7 @@ function oddOneOut(rng, level) {
     position: 2,
     shouldBe: "9",
     family: "arithmetic",
+    solution: "Find the rule most of them follow: add 3 each time. Every term fits it except position 3, which shows 10 where the rule needs 9.",
     traps: [],
     tip: "odd-one-out-majority",
   };
@@ -1712,10 +1914,21 @@ Object.assign(__shared, { drawFamily, findRule, oddOneOut, SEQUENCES });
  * Probability and expected value.
  *
  * These are the questions a trading firm actually asks, reduced to the seven
- * ideas that generate almost all of them. Every distractor here is a route a
- * real student really takes, and carries the sentence explaining where it went
- * wrong. That is the point of the module: a wrong answer should name the
- * misconception, not just fail.
+ * ideas that generate almost all of them.
+ *
+ * Every question carries two different kinds of feedback, and they do different
+ * jobs:
+ *
+ *   solution — always available. The worked line for this exact question, built
+ *              from the same numbers that built the question. Shown whenever the
+ *              student is wrong, however they were wrong.
+ *   traps    — a specific wrong route with the sentence naming it. Only fires
+ *              when the typed answer matches. This is the diagnosis; the
+ *              solution is the treatment.
+ *
+ * House style for both: no term a fifteen-year-old has not met, unless the
+ * sentence defines it on the spot. No "martingale", no bare "likelihood", and
+ * C(n,k) always arrives with "ways to choose k from n" beside it.
  *
  * Sources for the classics: Zhou's *A Practical Guide to Quantitative Finance
  * Interviews*, and questions repeatedly reported from Optiver, SIG, IMC and
@@ -1725,21 +1938,28 @@ Object.assign(__shared, { drawFamily, findRule, oddOneOut, SEQUENCES });
 const { fact, choose, frac } = __shared;
 
 const q = (o) => ({ format: "probability", traps: [], ...o });
+const mapTraps = (list) => list.map(([value, why]) => ({ value, why }));
 
 /* ── 1. Counting ─────────────────────────────────────────────────────────── */
 function counting(rng, level) {
   if (level === 1) {
     const v = rng.pick([
-      ["a 6 when rolling a fair die", 1 / 6, [[1 / 3, "There are six faces, not three."], [1 / 2, "A die is not a coin."]]],
-      ["heads when flipping a fair coin", 1 / 2, [[1 / 4, "That is two heads in a row."]]],
-      ["a number greater than 4 when rolling a die", 1 / 3, [[1 / 6, "Two faces qualify, 5 and 6, not one."], [1 / 2, "Greater than 4 is not the same as greater than 3."]]],
-      ["a heart when drawing one card from a full deck", 1 / 4, [[1 / 13, "That is one particular rank, not one suit."], [1 / 52, "That is one specific card."]]],
-      ["an even number when rolling a die", 1 / 2, [[1 / 3, "Three faces out of six are even."]]],
+      ["a 6 when rolling a fair die", 1 / 6, "A die has 6 equally likely faces and 1 of them is a 6, so 1 out of 6.",
+        [[1 / 3, "There are six faces, not three."], [1 / 2, "A die is not a coin."]]],
+      ["heads when flipping a fair coin", 1 / 2, "Two faces, both equally likely, one of them is heads: 1 out of 2.",
+        [[1 / 4, "That is two heads in a row."]]],
+      ["a number greater than 4 when rolling a die", 1 / 3, "Two faces beat 4, namely 5 and 6, so 2 out of 6, which is 1/3.",
+        [[1 / 6, "Two faces qualify, 5 and 6, not one."], [1 / 2, "Greater than 4 is not the same as greater than 3."]]],
+      ["a heart when drawing one card from a full deck", 1 / 4, "A deck has 13 hearts among 52 cards: 13 out of 52, which is 1/4.",
+        [[1 / 13, "That is one particular rank, not one suit."], [1 / 52, "That is one specific card."]]],
+      ["an even number when rolling a die", 1 / 2, "The even faces are 2, 4 and 6: 3 out of 6, which is 1/2.",
+        [[1 / 3, "Three faces out of six are even."]]],
     ]);
     return q({
       prompt: `Probability of getting ${v[0]}?`,
       answer: v[1],
-      traps: v[2].map(([value, why]) => ({ value, why })),
+      solution: v[2],
+      traps: mapTraps(v[3]),
       tip: "equally-likely",
     });
   }
@@ -1747,36 +1967,47 @@ function counting(rng, level) {
   if (level === 2) {
     const s = rng.int(2, 12);
     const ways = 6 - Math.abs(s - 7);
+    const pairs = [];
+    for (let a = 1; a <= 6; a++) if (s - a >= 1 && s - a <= 6) pairs.push(`(${a},${s - a})`);
     return q({
       prompt: `Roll two fair dice. Probability the sum is ${s}?`,
       answer: ways / 36,
-      traps: [
-        { value: 1 / 11, why: "There are 11 possible sums but they are not equally likely. Count the 36 ordered pairs instead." },
-        { value: ways / 21, why: "Unordered pairs were counted. (2,5) and (5,2) are two different outcomes." },
-        { value: 1 / 36, why: "That is one specific pair, not every pair with this sum." },
-      ],
+      solution:
+        `Two dice give 6 × 6 = 36 equally likely results, counting the dice as different. ` +
+        `The ones that add to ${s} are ${pairs.join(" ")} — that is ${ways} of them. So ${ways}/36` +
+        (frac(ways / 36) === `${ways}/36` ? "." : `, which is ${frac(ways / 36)}.`),
+      traps: mapTraps([
+        [1 / 11, "There are 11 possible sums but they are not equally likely: 7 happens far more often than 2. Count the 36 pairs instead."],
+        [ways / 21, "Each pair was counted once, but (2,5) and (5,2) really are two different results, so there are 36 of them, not 21."],
+        [1 / 36, "That is one single pair. Several different pairs give this sum."],
+      ]),
       tip: "equally-likely",
     });
   }
 
   const ev = rng.pick([
-    ["at least one 6", 1 / 6, "Roll a fair die"],
-    ["at least one head", 1 / 2, "Flip a fair coin"],
-    ["at least one heart", 1 / 4, "Draw a card with replacement"],
-    ["at least one ace", 1 / 13, "Draw a card with replacement"],
-    ["at least one 1 or 2", 1 / 3, "Roll a fair die"],
+    ["at least one 6", 1 / 6, "Roll a fair die", "5/6", "a 6"],
+    ["at least one head", 1 / 2, "Flip a fair coin", "1/2", "a head"],
+    ["at least one heart", 1 / 4, "Draw a card with replacement", "3/4", "a heart"],
+    ["at least one ace", 1 / 13, "Draw a card with replacement", "12/13", "an ace"],
+    ["at least one 1 or 2", 1 / 3, "Roll a fair die", "2/3", "a 1 or 2"],
   ]);
   const n = rng.int(2, 6);
   const p = ev[1];
-  const ans = 1 - (1 - p) ** n;
+  const none = (1 - p) ** n;
+  const ans = 1 - none;
   return q({
     prompt: `${ev[2]} ${n} times. Probability of ${ev[0]}?`,
     answer: ans,
-    traps: [
-      { value: (1 - p) ** n, why: "That is the probability of none. The question asks for at least one, so subtract it from 1." },
-      { value: Math.min(1, n * p), why: "Probabilities of overlapping events cannot simply be added; you double-count the cases where it happens twice." },
-      { value: p, why: "That is a single trial. The question asks across all of them." },
-    ],
+    solution:
+      `Go the other way round and work out the chance of missing every time. ` +
+      `One try misses with chance ${ev[3]}, so ${n} tries all miss with chance (${ev[3]})^${n} = ${frac(Math.round(none * 1e6) / 1e6)}. ` +
+      `Everything else is "at least one", so 1 − ${frac(Math.round(none * 1e6) / 1e6)} = ${frac(Math.round(ans * 1e6) / 1e6)}.`,
+    traps: mapTraps([
+      [none, `That is the chance of never getting ${ev[4]}. You are one subtraction away: take it from 1.`],
+      [Math.min(1, n * p), "Chances cannot just be added up like that. Adding counts the times it happens twice over and over, and with enough tries it would pass 1, which is impossible."],
+      [p, "That is one single try. The question asks across all of them."],
+    ]),
     tip: "at-least-one-complement",
   });
 }
@@ -1785,35 +2016,62 @@ function counting(rng, level) {
 function expectedValue(rng, level) {
   if (level === 1) {
     const v = rng.pick([
-      ["the value shown on one fair die", 3.5, [[3, "The average of 1 to 6 is 3.5, not 3. There is no middle face."], [6, "That is the maximum, not the average."]]],
-      ["the sum of two fair dice", 7, [[3.5, "That is one die. Expectations add, so double it."], [6, "The most likely single face is not the expected sum."]]],
-      ["the number of heads in 4 flips of a fair coin", 2, [[4, "That is the number of flips."], [0.5, "That is the chance per flip, not the count."]]],
+      ["the value shown on one fair die", 3.5, "Add the faces and share them out evenly: (1+2+3+4+5+6)/6 = 21/6 = 3.5. No face shows 3.5, and that is fine — an average does not have to be a possible result.",
+        [[3, "The middle of 1 to 6 sits between 3 and 4, so the average is 3.5. There is no middle face."], [6, "That is the biggest face, not the average one."]]],
+      ["the sum of two fair dice", 7, "Each die averages 3.5 on its own, and averages simply add: 3.5 + 3.5 = 7.",
+        [[3.5, "That is one die. The other die is still there, so add its average too."], [6, "The face that comes up most often is not the same as the average total."]]],
+      ["the number of heads in 4 flips of a fair coin", 2, "Each flip contributes half a head on average, and averages add up: 4 × ½ = 2.",
+        [[4, "That is how many flips you make, not how many come up heads."], [0.5, "That is one flip's share. There are four flips."]]],
+      ["the number of 6s in 12 rolls of a fair die", 2, "Each roll contributes 1/6 of a six on average, and averages add up: 12 × 1/6 = 2.",
+        [[12, "That is how many rolls you make, not how many are sixes."], [6, "That is a number on the die, not a count of anything."]]],
     ]);
-    return q({ prompt: `Expected value of ${v[0]}?`, answer: v[1], format: "number", traps: v[2].map(([value, why]) => ({ value, why })), tip: "expectation-is-a-weighted-average" });
+    return q({
+      prompt: `Expected value of ${v[0]}?`,
+      answer: v[1],
+      format: "number",
+      solution: v[2],
+      traps: mapTraps(v[3]),
+      tip: "expectation-is-a-weighted-average",
+    });
   }
 
   if (level === 2) {
     if (rng.chance(0.5)) {
       const v = rng.pick([
-        ["the product of two fair dice", 12.25, [[7, "That is the expected sum."], [21, "That is 3.5 × 6."], [12, "Close, but E[XY] = 3.5 × 3.5 = 12.25 exactly."]]],
-        ["the larger of two fair dice", 161 / 36, [[3.5, "That is one die on its own; taking a maximum pulls the average up."], [6, "That is the largest possible value, not the average."]]],
-        ["the smaller of two fair dice", 91 / 36, [[3.5, "Taking a minimum pulls the average down."], [1, "That is the smallest possible value."]]],
+        ["the product of two fair dice", 12.25, "The dice do not affect each other, so you may multiply the two averages: 3.5 × 3.5 = 12.25.",
+          [[7, "That is the average total, not the average product."], [21, "That is 3.5 × 6. The second die averages 3.5 as well, not 6."], [12, "Very close: 3.5 × 3.5 is 12.25 exactly."]]],
+        ["the larger of two fair dice", 161 / 36, "Go through each possible top face k and count how often it wins: k is the larger in 2k−1 of the 36 results. Adding those up gives 161/36, about 4.47.",
+          [[3.5, "That is one die by itself. Always taking the bigger of two pulls the average up."], [6, "That is the biggest it can ever be, not what it is on average."]]],
+        ["the smaller of two fair dice", 91 / 36, "The larger and the smaller always add to the total, so their averages do too: 7 − 161/36 = 91/36, about 2.53.",
+          [[3.5, "That is one die by itself. Always taking the smaller of two pulls the average down."], [1, "That is the smallest it can ever be, not what it is on average."]]],
       ]);
-      return q({ prompt: `Expected value of ${v[0]}?`, answer: v[1], format: "number", traps: v[2].map(([value, why]) => ({ value, why })), tip: "expectation-is-a-weighted-average" });
+      return q({
+        prompt: `Expected value of ${v[0]}?`,
+        answer: v[1],
+        format: "number",
+        solution: v[2],
+        traps: mapTraps(v[3]),
+        tip: "expectation-is-a-weighted-average",
+      });
     }
     const S = rng.pick([100, 200, 50]);
     const x = rng.pick([0.1, 0.2, 0.05]);
     const n = rng.pick([2, 2, 3]);
     const pct = Math.round(x * 100);
+    const up = (1 + x).toFixed(2);
+    const down = (1 - x).toFixed(2);
     return q({
       prompt: `A stock is at ${S}. Each day it goes up ${pct}% or down ${pct}%, equally likely. Expected price after ${n} days?`,
       answer: S,
       format: "number",
-      traps: [
-        { value: S * (1 - x * x) ** Math.floor(n / 2), why: "Up then down gives back less than you started with, but that is one path out of many. The average over all paths is unchanged." },
-        { value: S * (1 + x) ** n, why: "That is the best case, every day up." },
-        { value: S * (1 - x) ** n, why: "That is the worst case, every day down." },
-      ],
+      solution:
+        `Each day multiplies the price by ${up} or by ${down}, equally often, so on average it multiplies by (${up} + ${down})/2 = 1. ` +
+        `Multiplying by 1 changes nothing, and ${n} days of that still changes nothing: the answer stays ${S}.`,
+      traps: mapTraps([
+        [S * (1 - x * x) ** Math.floor(n / 2), `Up then down really does land below ${S}, but that is only one of the ways the ${n} days can go. Up then up lands above. Averaged over all of them, they cancel exactly.`],
+        [S * (1 + x) ** n, "That is the luckiest case, up every single day."],
+        [S * (1 - x) ** n, "That is the unluckiest case, down every single day."],
+      ]),
       tip: "expectation-not-one-path",
     });
   }
@@ -1823,11 +2081,14 @@ function expectedValue(rng, level) {
     prompt: `Roll a die and you are paid its face value. You may re-roll up to ${k === 1 ? "once" : k + " times"}, discarding the previous roll. Playing optimally, what is the expected payoff?`,
     answer: k === 1 ? 4.25 : 14 / 3,
     format: "number",
-    traps: [
-      { value: 3.5, why: "That is a single roll with no re-roll. The option to re-roll is worth something, so the answer must exceed 3.5." },
-      { value: k === 1 ? 14 / 3 : 4.25, why: "That is the answer for a different number of re-rolls." },
-      { value: 5, why: "Re-rolling only helps when the first roll is below the value of rolling again; you keep a 4, 5 or 6." },
-    ],
+    solution: k === 1
+      ? "If you re-roll, you get an ordinary die, worth 3.5 on average. So keep anything above 3.5, which means 4, 5 or 6, and re-roll 1, 2 and 3. That gives (4 + 5 + 6)/6 for the halves you keep, plus 3/6 × 3.5 for the halves you re-roll: 2.5 + 1.75 = 4.25."
+      : "Work backwards. With one re-roll left the game is worth 4.25, from the case above. So on the first roll keep anything above 4.25, meaning 5 or 6, and re-roll the rest: (5 + 6)/6 + 4/6 × 4.25 = 11/6 + 17/6 = 14/3, about 4.67.",
+    traps: mapTraps([
+      [3.5, "That is a plain die with no re-roll. Being allowed to re-roll can only help, so the answer has to be above 3.5."],
+      [k === 1 ? 14 / 3 : 4.25, "That is the answer for a different number of re-rolls. Check how many this question gives you."],
+      [5, "You do not keep only 5 and 6 here. Re-roll whenever your roll is below what a fresh roll is worth, and keep it otherwise."],
+    ]),
     tip: "expectation-is-a-weighted-average",
   });
 }
@@ -1841,7 +2102,10 @@ function conditional(rng, level) {
       return q({
         prompt: stem + "The older child is a boy. Probability both are boys?",
         answer: 1 / 2,
-        traps: [{ value: 1 / 3, why: "That is the answer to 'at least one is a boy'. Naming the older child fixes one slot, which leaves only two cases." }],
+        solution:
+          "List the families oldest first: BB, BG, GB, GG. Being told the older one is a boy rules out GB and GG and leaves BB and BG. " +
+          "One of those two is two boys, so 1/2.",
+        traps: mapTraps([[1 / 3, "That is the answer to the other version, 'at least one is a boy'. Naming the older child is stronger information: it pins down a particular child, which leaves only two families instead of three."]]),
         tip: "condition-shrinks-the-space",
       });
     }
@@ -1849,17 +2113,23 @@ function conditional(rng, level) {
       return q({
         prompt: stem + "At least one is a girl. Probability both are girls?",
         answer: 1 / 3,
-        traps: [{ value: 1 / 2, why: "GB and BG are two different outcomes. The condition leaves GG, GB, BG, and only one of those is two girls." }],
+        solution:
+          "List the families oldest first: BB, BG, GB, GG. 'At least one girl' rules out BB and leaves BG, GB and GG. " +
+          "One of those three is two girls, so 1/3.",
+        traps: mapTraps([[1 / 2, "BG and GB are two different families: older boy with younger girl is not the same as older girl with younger boy. Counting them separately leaves three cases, not two."]]),
         tip: "condition-shrinks-the-space",
       });
     }
     return q({
       prompt: stem + "At least one is a boy. Probability both are boys?",
       answer: 1 / 3,
-      traps: [
-        { value: 1 / 2, why: "BG and GB are two different outcomes. The condition leaves BB, BG, GB, and only one of those is two boys." },
-        { value: 1 / 4, why: "That is the unconditional chance of two boys, before you were told anything." },
-      ],
+      solution:
+        "List the families oldest first: BB, BG, GB, GG. 'At least one boy' rules out GG and leaves BB, BG and GB. " +
+        "One of those three is two boys, so 1/3.",
+      traps: mapTraps([
+        [1 / 2, "BG and GB are two different families: older boy with younger girl is not the same as older girl with younger boy. Counting them separately leaves three cases, not two."],
+        [1 / 4, "That is the chance of two boys before anyone told you anything. The information you were given rules GG out, so the answer has to be bigger."],
+      ]),
       tip: "condition-shrinks-the-space",
     });
   }
@@ -1867,14 +2137,19 @@ function conditional(rng, level) {
   if (level === 2) {
     const s = rng.pick([7, 8, 9, 10]);
     const total = 13 - s;
+    const pairs = [];
+    for (let a = 1; a <= 6; a++) if (s - a >= 1 && s - a <= 6) pairs.push(`(${a},${s - a})`);
     return q({
       prompt: `Two fair dice are rolled and the sum is ${s}. Probability at least one die shows a 6?`,
       answer: 2 / total,
-      traps: [
-        { value: 1 / 6, why: "That is the unconditional chance for one die. Knowing the sum changes it." },
-        { value: 11 / 36, why: "That is the unconditional chance of at least one 6 in two rolls." },
-        { value: 1 / total, why: "There are two ordered pairs containing a 6, not one, because the 6 can be on either die." },
-      ],
+      solution:
+        `Knowing the sum throws away every result except these: ${pairs.join(" ")} — ${total} of them. ` +
+        `A 6 appears in exactly 2, once on each die. So 2/${total} = ${frac(2 / total)}.`,
+      traps: mapTraps([
+        [1 / 6, "That is one die on its own, ignoring what you were told. The sum rules out most results and changes the answer."],
+        [11 / 36, "That is the chance of a 6 in two rolls when you know nothing about the total."],
+        [1 / total, `Two of the ${total} results contain a 6, not one, because the 6 can sit on either die.`],
+      ]),
       tip: "condition-shrinks-the-space",
     });
   }
@@ -1885,11 +2160,14 @@ function conditional(rng, level) {
   return q({
     prompt: `An urn holds ${r} red and ${b} blue balls. You draw 2 without replacement. Probability both are red?`,
     answer: (r * (r - 1)) / (N * (N - 1)),
-    traps: [
-      { value: (r / N) ** 2, why: "That assumes replacement. After the first red is taken out, both the reds and the total are one smaller." },
-      { value: r / N, why: "That is the first draw only." },
-      { value: (r - 1) / (N - 1), why: "That is the second draw given the first was red; you still have to multiply by the first." },
-    ],
+    solution:
+      `The first draw is red with chance ${r}/${N}. If it was, the urn now holds ${r - 1} red among ${N - 1} balls, ` +
+      `so the second is red with chance ${r - 1}/${N - 1}. Multiply: ${r}/${N} × ${r - 1}/${N - 1} = ${frac((r * (r - 1)) / (N * (N - 1)))}.`,
+    traps: mapTraps([
+      [(r / N) ** 2, "That would be right if you put the first ball back. You do not, so the second draw sees one fewer red ball and one fewer ball in total."],
+      [r / N, "That is only the first draw. The second one still has to be red as well."],
+      [(r - 1) / (N - 1), "That is the second draw, assuming the first was red. You still have to multiply by the chance the first one was."],
+    ]),
     tip: "condition-shrinks-the-space",
   });
 }
@@ -1903,11 +2181,15 @@ function bayes(rng, level) {
     return q({
       prompt: `Three coins have P(heads) = ${set.map((x) => frac(x)).join(", ")}. You pick one at random and flip heads. Probability it was the coin with P(heads) = ${frac(set[k])}?`,
       answer: set[k] / total,
-      traps: [
-        { value: set[k], why: "That is the likelihood on its own. Bayes divides it by the sum of all three likelihoods." },
-        { value: 1 / 3, why: "That is the prior, before you saw the flip. The heads result is evidence and must move it." },
-        { value: set[k] / 3, why: "The 1/3 priors cancel between numerator and denominator; do not divide by 3 as well." },
-      ],
+      solution:
+        `Ask how eagerly each coin produces the heads you saw: ${set.map((x) => frac(x)).join(", ")}. ` +
+        `All three were equally likely to be picked, so that part affects each of them the same way and drops out. ` +
+        `What is left is this coin's share of the total: ${frac(set[k])} ÷ (${set.map((x) => frac(x)).join(" + ")}) = ${frac(set[k])} ÷ ${frac(total)} = ${frac(set[k] / total)}.`,
+      traps: mapTraps([
+        [set[k], "That is how often this coin alone shows heads. You still have to compare it against what the other two would have done."],
+        [1 / 3, "That is the chance before you flipped. Seeing heads is evidence, and evidence has to move the answer."],
+        [set[k] / 3, "The 1/3 chance of picking each coin appears on the top and the bottom of the fraction, so it cancels. Do not divide by 3 as well."],
+      ]),
       tip: "bayes-likelihood-share",
     });
   }
@@ -1923,25 +2205,34 @@ function bayes(rng, level) {
       return q({
         prompt: `Urn A holds ${A[0]} blue and ${A[1]} red. Urn B holds ${B[0]} blue and ${B[1]} red. You pick an urn at random and draw a red ball. Probability it was urn B?`,
         answer: rB / (rA + rB),
-        traps: [
-          { value: rB, why: "That is urn B's own share of red. Bayes compares it against urn A's share as well." },
-          { value: 1 / 2, why: "That is the prior. Drawing red is evidence, and it favours whichever urn has more red." },
-          { value: B[1] / (A[1] + B[1]), why: "Red counts were compared directly, but the urns hold different totals, so compare proportions." },
-        ],
+        solution:
+          `Ask how readily each urn gives up a red ball: A does it ${A[1]}/${A[0] + A[1]} of the time, B does it ${B[1]}/${B[0] + B[1]} of the time. ` +
+          `Both urns were equally likely to be chosen, so that drops out and B's answer is its share of the two: ` +
+          `${frac(rB)} ÷ (${frac(rA)} + ${frac(rB)}) = ${frac(rB / (rA + rB))}.`,
+        traps: mapTraps([
+          [rB, "That is how often urn B gives a red ball on its own. The question is which urn you are holding, so urn A's rate has to come into it too."],
+          [1 / 2, "That is the chance before you drew anything. A red ball is evidence, and it points at whichever urn is redder."],
+          [B[1] / (A[1] + B[1]), `Red balls were counted straight up, but the urns hold different numbers of balls, so compare the rates ${A[1]}/${A[0] + A[1]} and ${B[1]}/${B[0] + B[1]} instead of the counts.`],
+        ]),
         tip: "bayes-likelihood-share",
       });
     }
   }
 
   const n = rng.int(1, 3);
+  const fair = 1 / 2 ** n;
+  const flips = n === 1 ? "one head" : `${n} heads in a row`;
   return q({
     prompt: `A box holds 3 coins: one fair, one two-headed, one two-tailed. You pick one at random and flip it ${n === 1 ? "once: heads" : n + " times: all heads"}. Probability it is the fair coin?`,
-    answer: 1 / 2 ** n / (1 / 2 ** n + 1),
-    traps: [
-      { value: 1 / 3, why: "That is the prior. Seeing only heads is evidence against the fair coin." },
-      { value: 1 / 2, why: "Two coins can produce heads, but not equally readily: the two-headed coin does it every time." },
-      { value: 1 / 2 ** n, why: "That is the fair coin's likelihood alone, not its share of the total." },
-    ],
+    answer: fair / (fair + 1),
+    solution:
+      `Ask how readily each coin gives ${flips}. The fair coin: ${frac(fair)}. The two-headed coin: 1, every time. The two-tailed coin: 0, never, so it is out. ` +
+      `Take the fair coin's share of what is left: ${frac(fair)} ÷ (${frac(fair)} + 1) = ${frac(fair / (fair + 1))}.`,
+    traps: mapTraps([
+      [1 / 3, "That is the chance before you flipped. A run of heads is evidence, and it counts against the fair coin."],
+      [1 / 2, "Two coins can show heads, but not equally readily: the two-headed one does it every single time, the fair one only sometimes."],
+      [fair, `That is how often the fair coin gives ${flips} on its own. You still have to compare it against the two-headed coin.`],
+    ]),
     tip: "bayes-likelihood-share",
   });
 }
@@ -1950,54 +2241,63 @@ function bayes(rng, level) {
 function waitingTime(rng, level) {
   if (level === 1) {
     const ev = rng.pick([
-      ["a 6 when rolling a die", 6],
-      ["heads when flipping a coin", 2],
-      ["a 5 or 6 when rolling a die", 3],
-      ["a heart when drawing cards with replacement", 4],
+      ["a 6 when rolling a die", 6, "1/6"],
+      ["heads when flipping a coin", 2, "1/2"],
+      ["a 5 or 6 when rolling a die", 3, "1/3"],
+      ["a heart when drawing cards with replacement", 4, "1/4"],
     ]);
     return q({
       prompt: `Expected number of trials until you first get ${ev[0]}?`,
       answer: ev[1],
       format: "number",
-      traps: [
-        { value: 1 / ev[1], why: "That is the probability. The expected wait is its reciprocal." },
-        { value: ev[1] - 1, why: "The trial that succeeds counts too." },
-      ],
+      solution: `It happens ${ev[2]} of the time, so on average you wait for it once every ${ev[1]} tries. Turn the chance upside down: 1 ÷ ${ev[2]} = ${ev[1]}.`,
+      traps: mapTraps([
+        [1 / ev[1], "That is the chance of it happening, not how long you wait. Flip the fraction over."],
+        [ev[1] - 1, "The try that finally works counts as a try too."],
+      ]),
       tip: "waiting-time-one-over-p",
     });
   }
 
   if (level === 2) {
-    const ev = rng.pick([["a 6", 6, "rolling a die"], ["heads", 2, "flipping a coin"], ["a 5 or 6", 3, "rolling a die"]]);
+    const ev = rng.pick([["a 6", 6, "rolling a die", "1/6"], ["heads", 2, "flipping a coin", "1/2"], ["a 5 or 6", 3, "rolling a die", "1/3"]]);
     const k = rng.int(2, 4);
     return q({
       prompt: `Expected number of trials until ${ev[0]} has come up ${k === 2 ? "twice" : k + " times"}, not necessarily in a row, when ${ev[2]}?`,
       answer: ev[1] * k,
       format: "number",
-      traps: [
-        { value: ev[1], why: "That is the wait for the first one. Each further one costs the same again, because expectations add." },
-        { value: ev[1] ** k, why: "Waits add, they do not multiply. Multiplying is for probabilities of joint events." },
-        { value: k, why: "That is the number of successes wanted, not the number of trials needed." },
-      ],
+      solution:
+        `Waiting for the first one costs ${ev[1]} tries on average. After it lands, nothing has changed and the wait for the next one costs ${ev[1]} again. ` +
+        `Waits like this simply add: ${k} × ${ev[1]} = ${ev[1] * k}.`,
+      traps: mapTraps([
+        [ev[1], "That is the wait for the first one only. Each of the others costs the same again."],
+        [ev[1] ** k, "Waits add, they do not multiply. Multiplying is for working out the chance of several things all happening."],
+        [k, "That is how many successes you want, not how many tries it takes to get them."],
+      ]),
       tip: "waiting-time-one-over-p",
     });
   }
 
   if (rng.chance(0.6)) {
     const pat = rng.pick([
-      ["heads then tails", 4, "After a head, another head does not hurt: you are still waiting for the tail."],
-      ["tails then heads", 4, "After a tail, another tail does not hurt: you are still waiting for the head."],
-      ["two heads in a row", 6, "A tail after a head destroys the run, so you start over. That is why this is 6 and HT is only 4."],
-      ["two tails in a row", 6, "A head after a tail destroys the run, so you start over. That is why this is 6 and TH is only 4."],
+      ["heads then tails", 4, "After a head, another head does not hurt you: you are still waiting for the tail, and the head you already have is still good.",
+        "Wait 2 flips on average for the first head. Then wait 2 more for a tail. Any extra heads in between cost nothing, because the head you need is already banked. So 2 + 2 = 4."],
+      ["tails then heads", 4, "After a tail, another tail does not hurt you: you are still waiting for the head, and the tail you already have is still good.",
+        "Wait 2 flips on average for the first tail. Then wait 2 more for a head. Any extra tails in between cost nothing, because the tail you need is already banked. So 2 + 2 = 4."],
+      ["two heads in a row", 6, "A tail lands after your first head half the time, and it wipes the run out so you start again. That restarting is why this costs 6 while heads-then-tails costs only 4.",
+        "Wait 2 flips for the first head. Then half the time the next flip is a head and you are done, and half the time it is a tail and you are back to the very beginning. Writing that as E = 2 + 1 + ½·E and solving gives E = 6."],
+      ["two tails in a row", 6, "A head lands after your first tail half the time, and it wipes the run out so you start again. That restarting is why this costs 6 while tails-then-heads costs only 4.",
+        "Wait 2 flips for the first tail. Then half the time the next flip is a tail and you are done, and half the time it is a head and you are back to the very beginning. Writing that as E = 2 + 1 + ½·E and solving gives E = 6."],
     ]);
     return q({
       prompt: `Flip a fair coin repeatedly. Expected number of flips until you first see ${pat[0]}?`,
       answer: pat[1],
       format: "number",
-      traps: [
-        { value: pat[1] === 4 ? 6 : 4, why: pat[2] },
-        { value: 2, why: "That is the wait for one particular face, not for a two-flip pattern." },
-      ],
+      solution: pat[3],
+      traps: mapTraps([
+        [pat[1] === 4 ? 6 : 4, pat[2]],
+        [2, "That is the wait for one particular face. This question wants a two-flip pattern."],
+      ]),
       tip: "waiting-time-one-over-p",
     });
   }
@@ -2009,15 +2309,20 @@ function waitingTime(rng, level) {
   ]);
   const n = v[1];
   let h = 0;
-  for (let i = 1; i <= n; i++) h += 1 / i;
+  const terms = [];
+  for (let i = 1; i <= n; i++) { h += 1 / i; terms.push(i === 1 ? "1" : `1/${i}`); }
   return q({
     prompt: `Expected number of trials to see ${v[0]} at least once each?`,
     answer: n * h,
     format: "number",
-    traps: [
-      { value: n, why: "That is the minimum possible, which assumes you never repeat one you already have." },
-      { value: n * n, why: "Too big. The wait is n times the harmonic sum 1 + 1/2 + … + 1/n, which grows slowly." },
-    ],
+    solution:
+      `The first one is free, it arrives immediately. Once you hold j of them, a new one turns up ${n - 0}−j times out of ${n}, ` +
+      `so you wait ${n}/(${n}−j) tries for it. Adding those waits up gives ${n} × (${terms.join(" + ")}) = ${Math.round(n * h * 100) / 100}. ` +
+      `The last one is the slow part: it alone costs ${n} tries.`,
+    traps: mapTraps([
+      [n, "That is the fastest it could possibly go, with no repeats at all. Repeats are common, so the real wait is longer."],
+      [n * n, "Too long. Waiting gets slower as you go, but not that much slower: the total is a bit under twice the number of trials you would guess."],
+    ]),
     tip: "waiting-time-one-over-p",
   });
 }
@@ -2031,11 +2336,14 @@ function symmetry(rng, level) {
     return q({
       prompt: `${n} independent Uniform[0,1] values are drawn in order. Probability the ${ord} one is the largest?`,
       answer: 1 / n,
-      traps: [
-        { value: j / n, why: "The position carries no information. Being drawn later does not make a value bigger." },
-        { value: 1 / 2, why: "That would be the answer for two draws only." },
-        { value: 1 / fact(n), why: "That is the chance of one full ordering, not of one value being the maximum." },
-      ],
+      solution:
+        `The draws know nothing about each other, so no position is special. ` +
+        `Exactly one of the ${n} has to be the biggest, and each is as likely as the next, so each gets 1/${n}.`,
+      traps: mapTraps([
+        [j / n, "The position number does not matter. Coming out later does not make a number bigger."],
+        [1 / 2, "That would be the answer with only two draws."],
+        [1 / fact(n), `That is the chance of one exact ordering of all ${n}. Here you only care which one is on top.`],
+      ]),
       tip: "symmetry-orderings",
     });
   }
@@ -2046,11 +2354,14 @@ function symmetry(rng, level) {
     return q({
       prompt: `${n} independent draws from a continuous distribution. Probability they come out ${dir} in the order drawn?`,
       answer: 1 / fact(n),
-      traps: [
-        { value: 1 / n, why: "That is the chance of one value being the largest. Here all n! orderings compete and exactly one qualifies." },
-        { value: 2 / fact(n), why: "Increasing and decreasing are two different orderings; the question asks for one of them." },
-        { value: 1 / 2 ** n, why: "Ordering is not a sequence of independent coin flips." },
-      ],
+      solution:
+        `Whatever ${n} numbers you end up with, they could have arrived in any order, and every order is as likely as any other. ` +
+        `There are ${n}! = ${fact(n)} orders and exactly one of them is ${dir}, so 1/${fact(n)}.`,
+      traps: mapTraps([
+        [1 / n, "That is the chance of one particular number being the biggest. Here the whole order has to be right, which is much harder."],
+        [2 / fact(n), "Increasing and decreasing are two separate orders. The question asks for one of them, not either."],
+        [1 / 2 ** n, "Ordering is not a run of coin flips. Count the orders instead: there are n! of them."],
+      ]),
       tip: "symmetry-orderings",
     });
   }
@@ -2062,20 +2373,27 @@ function symmetry(rng, level) {
     return q({
       prompt: `Pick ${k} numbers from 1–${N}, each pick independent so repeats are possible, in order. Probability they are strictly increasing?`,
       answer: c / N ** k,
-      traps: [
-        { value: 1 / fact(k), why: "That is the answer when the picks must be distinct. Here repeats are possible and a repeat is never increasing, so the answer is smaller." },
-        { value: 1 / k, why: "Not a per-item chance; count the increasing selections against all N^k sequences." },
-      ],
+      solution:
+        `There are ${N}^${k} = ${N ** k} equally likely sequences in total. An increasing one needs ${k} different values, and each set of ${k} different values ` +
+        `can be written in increasing order in exactly one way. The number of such sets is C(${N},${k}) = ${c}, meaning the ways to choose ${k} things from ${N}. ` +
+        `So ${c}/${N ** k} = ${frac(c / N ** k)}.`,
+      traps: mapTraps([
+        [1 / fact(k), "That is the answer when the picks have to be different. Here repeats are allowed, and a repeat can never be increasing, so the answer must be smaller."],
+        [1 / k, `Not a per-pick chance. Count the increasing sequences against all ${N ** k} of them.`],
+      ]),
       tip: "symmetry-orderings",
     });
   }
   return q({
     prompt: `Pick ${k} distinct numbers from 1–${N}, revealed in random order. Probability they come out strictly increasing?`,
     answer: 1 / fact(k),
-    traps: [
-      { value: 1 / N, why: "The size of the pool does not matter once the numbers are distinct; only the number of orderings does." },
-      { value: k / N, why: "The pool size cancels. Any k distinct values have k! equally likely orderings and one is increasing." },
-    ],
+    solution:
+      `Whichever ${k} numbers you get, they can appear in ${k}! = ${fact(k)} orders, all equally likely, and one of those is increasing. ` +
+      `So 1/${fact(k)}. Notice the pool size ${N} never enters the answer.`,
+    traps: mapTraps([
+      [1 / N, `Once the ${k} numbers are different, the size of the pool stops mattering. Only the number of orders counts.`],
+      [k / N, `The pool size cancels out. Any ${k} different values have ${fact(k)} equally likely orders and one is increasing.`],
+    ]),
     tip: "symmetry-orderings",
   });
 }
@@ -2087,10 +2405,13 @@ function classics(rng, level) {
     return q({
       prompt: `Three doors hide one car and two goats. You pick a door. The host, who knows where the car is, opens a different door revealing a goat. Probability you win the car if you ${sw ? "switch to the remaining door" : "stay with your first door"}?`,
       answer: sw ? 2 / 3 : 1 / 3,
-      traps: [
-        { value: 1 / 2, why: "Two doors remain but they are not equally likely. The host never opens the car, so his choice carries information about the door he avoided." },
-        { value: sw ? 1 / 3 : 2 / 3, why: "That is the chance for the other strategy. Read carefully which one the question asks about." },
-      ],
+      solution: sw
+        ? "Your first pick is right 1 time in 3. The other 2 times in 3 the car sits behind one of the two doors you did not pick, and the host has just shown you which of those two it is not. So switching hands you the car exactly when your first pick was wrong: 2/3."
+        : "Staying wins exactly when your first pick was right. That was 1 in 3 before the host opened anything, and the host was always going to be able to show you a goat, so it is still 1 in 3 afterwards.",
+      traps: mapTraps([
+        [1 / 2, "Two doors are left, but they are not equally likely. The host is not choosing at random: he knows where the car is and never opens it, and that is information about the door he left shut."],
+        [sw ? 1 / 3 : 2 / 3, "That is the answer for the other strategy. Check whether the question says switch or stay."],
+      ]),
       tip: "ruin-and-first-mover",
     });
   }
@@ -2102,11 +2423,14 @@ function classics(rng, level) {
       return q({
         prompt: `A holds ${i} coins and B holds ${N - i}. They play a fair game; each round the loser hands the winner one coin, until someone has none. Probability A ends up with everything?`,
         answer: i / N,
-        traps: [
-          { value: 1 / 2, why: "The game is fair per round, but the player with fewer coins runs out sooner. Starting stack decides it." },
-          { value: (N - i) / N, why: "That is B's chance of winning, not A's. The two must add to 1." },
-          { value: 1 / N, why: "The chance is proportional to the whole starting stack, not to a single coin." },
-        ],
+        solution:
+          `Neither player has an edge in a single round, so nobody gains or loses on average, and your chance of taking the lot is simply your share of the coins on the table: ` +
+          `${i} out of ${N}, which is ${frac(i / N)}. Coins are the only advantage in this game.`,
+        traps: mapTraps([
+          [1 / 2, "Each round is fair, but the whole game is not. Whoever starts with fewer coins runs out first far more often."],
+          [(N - i) / N, "That is B's chance of winning, not A's. The two have to add up to 1."],
+          [1 / N, "The chance follows the whole starting pile, not a single coin."],
+        ]),
         tip: "ruin-and-first-mover",
       });
     }
@@ -2115,16 +2439,21 @@ function classics(rng, level) {
     return q({
       prompt: `A and B take turns and whoever ${ev[0]} first wins. A goes first. Probability A wins?`,
       answer: 1 / (2 - p),
-      traps: [
-        { value: 1 / 2, why: "Going first is a real advantage: A can win before B ever gets a turn." },
-        { value: p, why: "That is only A's first turn. A also wins if both miss and the position repeats." },
-        { value: (1 + p) / 2, why: "Set it up as one equation: A wins now with probability p, or both miss and the same position returns." },
-      ],
+      solution:
+        `Call A's chance P. Two things can happen. A succeeds straight away, chance ${frac(p)}. Or A misses and B misses, chance ${frac((1 - p) ** 2)}, ` +
+        `and then it is A's turn again with nothing changed, so A's chance is P once more. That gives P = ${frac(p)} + ${frac((1 - p) ** 2)}·P, ` +
+        `and solving it gives P = ${frac(1 / (2 - p))}. Going first is worth a little over half.`,
+      traps: mapTraps([
+        [1 / 2, "Going first is a genuine advantage: A gets a chance to win before B ever throws."],
+        [p, "That is only A's very first turn. A can also win later, after both players miss."],
+        [(1 + p) / 2, "Set it up as one equation instead: A wins now, or both miss and the game is back where it started."],
+      ]),
       tip: "ruin-and-first-mover",
     });
   }
 
   const kind = rng.pick(["derange", "walk", "cards", "unit"]);
+
   if (kind === "derange") {
     const n = rng.pick([3, 3, 4, 5]);
     const D = { 3: 2, 4: 9, 5: 44 }[n];
@@ -2133,48 +2462,68 @@ function classics(rng, level) {
     return q({
       prompt: `${n} letters are placed at random into ${n} addressed envelopes. Probability that ${asksNone ? "no letter" : "at least one letter"} reaches the right envelope?`,
       answer: asksNone ? none : 1 - none,
-      traps: [
-        { value: asksNone ? 1 - none : none, why: "That is the complement; read which way the question is asked." },
-        { value: 1 / n, why: "That is the chance for one named letter, not for the whole arrangement." },
-        { value: 1 / fact(n), why: "That is the chance of the one perfect arrangement where every letter is right." },
-      ],
+      solution:
+        `There are ${n}! = ${fact(n)} ways to fill the envelopes, all equally likely. Of those, ${D} have every letter in the wrong envelope. ` +
+        `So the chance of no letter being right is ${D}/${fact(n)} = ${frac(none)}` +
+        (asksNone ? "." : `, and at least one being right is everything else: 1 − ${frac(none)} = ${frac(1 - none)}.`),
+      traps: mapTraps([
+        [asksNone ? 1 - none : none, "That is the opposite of what was asked. Check whether the question says no letter or at least one."],
+        [1 / n, "That is about one named letter. The question is about the whole arrangement at once."],
+        [1 / fact(n), "That is the chance of the single perfect arrangement where every letter lands correctly."],
+      ]),
       tip: "symmetry-orderings",
     });
   }
+
   if (kind === "walk") {
     const n = rng.pick([1, 2, 3]);
+    const c = choose(2 * n, n);
     return q({
       prompt: `A walker on the integers takes each step +1 or −1 with probability ½. Probability of standing back at the start after ${2 * n} steps?`,
-      answer: choose(2 * n, n) / 4 ** n,
-      traps: [
-        { value: 1 / 2, why: "Returning needs equal numbers of steps each way, which is one particular count out of many." },
-        { value: 1 / 2 ** n, why: "Count the paths: C(2n, n) of the 2^(2n) equally likely paths come home." },
-      ],
+      answer: c / 4 ** n,
+      solution:
+        `Getting home after ${2 * n} steps means exactly ${n} steps forward and ${n} steps back, in any order. ` +
+        `The number of orders is C(${2 * n},${n}) = ${c}, meaning the ways to choose which ${n} of the ${2 * n} steps go forward. ` +
+        `Every one of the 2^${2 * n} = ${4 ** n} possible walks is equally likely, so ${c}/${4 ** n} = ${frac(c / 4 ** n)}.`,
+      traps: mapTraps([
+        [1 / 2, "Coming home is one particular outcome among many, not a coin flip between home and not home."],
+        [1 / 2 ** n, `Count the walks: ${c} of the ${4 ** n} possible ones end where they started.`],
+      ]),
       tip: "equally-likely",
     });
   }
+
   if (kind === "cards") {
     const v = rng.pick([
-      ["of the same suit", 12 / 51, [[1 / 4, "That is the chance the second card is a named suit; here it only has to match the first, and one card of that suit is already gone."], [1 / 13, "That is about ranks, not suits."]]],
-      ["a pair, meaning the same rank", 3 / 51, [[1 / 13, "Three of the rank remain out of 51 cards, not four out of 52."], [1 / 52, "That is one specific card."]]],
-      ["both red", 25 / 102, [[1 / 4, "Close, but drawing without replacement leaves 25 reds among 51 cards, not 26 among 52."], [1 / 2, "That is the chance the first card is red. Both cards have to be."]]],
+      ["of the same suit", 12 / 51, "The first card can be anything at all, so ignore it. Of the 51 cards left, 12 share its suit. So 12/51, which is 4/17.",
+        [[1 / 4, "That would be right if the second card had to be a named suit. It only has to match the first, and one card of that suit has already left the deck."], [1 / 13, "That is about ranks like queens, not about suits."]]],
+      ["a pair, meaning the same rank", 3 / 51, "The first card can be anything at all, so ignore it. Of the 51 cards left, 3 share its rank. So 3/51, which is 1/17.",
+        [[1 / 13, "Three cards of that rank remain out of 51, not four out of 52: the first card is already in your hand."], [1 / 52, "That is one specific card."]]],
+      ["both red", 25 / 102, "The first card is red 26 times in 52, which is 1/2. Then 25 reds remain among 51 cards. Multiply: 1/2 × 25/51 = 25/102, about 0.245.",
+        [[1 / 4, "Very close, but the deck changes: after a red leaves, 25 reds remain among 51 cards, not 26 among 52."], [1 / 2, "That is only the first card. The second one has to be red as well."]]],
     ]);
     return q({
       prompt: `Draw 2 cards from a standard 52-card deck without replacement. Probability they are ${v[0]}?`,
       answer: v[1],
-      traps: v[2].map(([value, why]) => ({ value, why })),
+      solution: v[2],
+      traps: mapTraps(v[3]),
       tip: "condition-shrinks-the-space",
     });
   }
+
   const v = rng.pick([
-    ["|X − Y| < ½", 3 / 4, [[1 / 2, "Draw the unit square: the band around the diagonal is the region, and the two corner triangles it excludes are each 1/8."], [1 / 4, "That is the excluded part, both corners together."]]],
-    ["X + Y < 1", 1 / 2, [[1 / 4, "The region is the triangle below the anti-diagonal, which is half the square."]]],
-    ["X > 2Y", 1 / 4, [[1 / 2, "The line y = x/2 cuts off a triangle of area 1/4, not half the square."]]],
+    ["|X − Y| < ½", 3 / 4, "Draw a 1 by 1 square with X across and Y up. The points where the two differ by less than ½ form a band down the middle. What it leaves out is two corner triangles, each with legs ½ and area 1/8. So 1 − 2 × 1/8 = 3/4.",
+      [[1 / 2, "The band is wider than half the square. Draw it: the two corners it misses are triangles of area 1/8 each, so only 1/4 is left out."], [1 / 4, "That is the part left out, not the part asked for."]]],
+    ["X + Y < 1", 1 / 2, "Draw a 1 by 1 square. The line X + Y = 1 runs corner to corner, and the region below it is a triangle covering exactly half the square. So 1/2.",
+      [[1 / 4, "The line runs corner to corner and cuts the square cleanly in half, so the triangle below it is 1/2, not 1/4."]]],
+    ["X > 2Y", 1 / 4, "Draw a 1 by 1 square. The line Y = X/2 passes through the corner and the midpoint of the right edge, and the region below it is a triangle with base 1 and height ½, so area 1/4.",
+      [[1 / 2, "That would be the line Y = X. The line Y = X/2 is shallower and cuts off only a quarter."]]],
   ]);
   return q({
     prompt: `X and Y are independent Uniform[0,1]. Probability that ${v[0]}?`,
     answer: v[1],
-    traps: v[2].map(([value, why]) => ({ value, why })),
+    solution: v[2],
+    traps: mapTraps(v[3]),
     tip: "equally-likely",
   });
 }
@@ -2201,8 +2550,9 @@ Object.assign(__shared, { counting, expectedValue, conditional, bayes, waitingTi
  * `0.33` for 1/3, or `1,234` for 1234, or `hs` for HS, has the answer. Making
  * them guess a format is testing the interface, not the maths.
  *
- * The return value always says *why* a wrong answer is wrong when the engine
- * knows, because that sentence is the product.
+ * Every result carries the question's worked `solution`, and additionally a
+ * `why` naming the specific mistake when the typed answer matches a known trap.
+ * A student should never see only "wrong".
  */
 
 const { parseAnswer, near, normal, fmt, frac, LETTERS } = __shared;
@@ -2242,7 +2592,12 @@ function findTrap(qn, value) {
  */
 function grade(qn, raw) {
   const given = raw == null ? "" : String(raw).trim();
-  const base = { answered: given !== "", given, expected: displayAnswer(qn), trap: null, why: null };
+  // `why` names the mistake and is only there when we can identify it.
+  // `solution` shows how the question is done and is always there.
+  const base = {
+    answered: given !== "", given, expected: displayAnswer(qn),
+    trap: null, why: null, solution: qn.solution || null,
+  };
   if (!base.answered) return { ...base, correct: false };
 
   const parsed = parseAnswer(given);
@@ -2399,6 +2754,7 @@ function build(skillId, level, rng, index) {
     level: lv,
     format: "number",
     traps: [],
+    solution: null,
     ...raw,
   };
   qn.traps = cleanTraps(qn);
@@ -2521,6 +2877,7 @@ const T = {
     timeLeft: "time left", review: "Review", again: "Again", exams: "Full papers",
     startExam: "Start", part: "Part", of: "of", questions: "questions",
     done: "Level cleared", needed: "needed to clear", tipTitle: "The trick",
+    howItsDone: "How it's done",
     whyItWorks: "Why it works", blankWarn: (n) => `${n} still blank. A blank is a guaranteed zero, so guess.`,
     autoSubmit: "Runs out on its own. Nothing is deducted for a wrong answer.",
     typeHint: "Fractions like 3/8, decimals like 0.375, or 37.5% all count.",
@@ -2535,6 +2892,7 @@ const T = {
     timeLeft: "thời gian còn", review: "Xem lại", again: "Làm lại", exams: "Đề đầy đủ",
     startExam: "Bắt đầu", part: "Phần", of: "trên", questions: "câu",
     done: "Đã qua cấp này", needed: "cần đúng để qua", tipTitle: "Mẹo",
+    howItsDone: "Cách làm",
     whyItWorks: "Vì sao dùng được", blankWarn: (n) => `Còn ${n} ô trống. Bỏ trống chắc chắn 0 điểm, nên cứ đoán.`,
     autoSubmit: "Hết giờ tự nộp. Sai không bị trừ điểm.",
     typeHint: "Gõ phân số như 3/8, thập phân như 0.375, hay 37.5% đều được.",
@@ -2731,11 +3089,19 @@ function drill(app) {
     box.appendChild(el("strong", "", v.correct ? t().correct : t().notQuite));
     if (!v.correct) {
       box.appendChild(el("p", "mono small", `${t().answerIs} ${v.expected}`));
-      // The sentence that makes a miss worth something: not "wrong", but which
-      // wrong route you took.
+      // Two different sentences, in the order a student needs them.
+      // First: which wrong route you took, when we can tell.
       if (v.why) box.appendChild(el("p", "", v.why));
+      // Then: how this exact question is done. Always present, so a student who
+      // went wrong in some way we do not recognise still gets taught something.
+      if (v.solution) {
+        const sol = el("div", "solution");
+        sol.appendChild(el("span", "eyebrow", t().howItsDone));
+        sol.appendChild(el("p", "", v.solution));
+        box.appendChild(sol);
+      }
       const tip = qn.tip ? getTip(qn.tip, S.lang) : null;
-      if (tip) box.appendChild(el("p", "small", `${t().tipTitle}: ${tip.title}. ${tip.example}`));
+      if (tip) box.appendChild(el("p", "small muted", `${t().tipTitle}: ${tip.title}`));
     }
     card.appendChild(box);
     const isLast = S.i + 1 >= S.paper.questions.length;
@@ -2908,6 +3274,7 @@ function results(app) {
       line.textContent = `${t().answerIs} ${r.expected}` + (r.answered ? `   ·   ${t().yourAnswer}: ${r.given}` : `   ·   ${t().blank}`);
       box.appendChild(line);
       if (r.why) box.appendChild(el("p", "small", r.why));
+      if (r.solution) box.appendChild(el("p", "small muted", r.solution));
       review.appendChild(box);
     });
     if (review.children.length) stack.appendChild(review);

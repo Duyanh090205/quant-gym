@@ -21,9 +21,10 @@ for (const skill of skills) {
   questions.forEach((q, i) => {
     const opts = q.options ? "   " + q.options.map((o, j) => `(${"abcde"[j]}) ${o}`).join("  ") : "";
     console.log(`\n${String(i + 1).padStart(2)}. ${q.prompt}${opts}`);
-    console.log(`    answer: ${displayAnswer(q)}`);
+    console.log(`    answer:   ${displayAnswer(q)}`);
+    if (q.solution) console.log(`    solution: ${q.solution}`);
     for (const t of q.traps || []) {
-      console.log(`    trap ${String(t.value).padEnd(10)} ${t.why}`);
+      console.log(`    trap ${String(t.value).padEnd(9)} ${t.why}`);
     }
   });
 }

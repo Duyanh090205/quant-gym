@@ -81,8 +81,11 @@ const marked = gradeSet(paper.questions, answers);
 Two things to carry through if you build your own screen, because they are where
 most of the teaching value is:
 
-1. **Show `result.why` when an answer is wrong.** That sentence names the specific
-   mistake. Without it the module is just a timer with sums in it.
+1. **Show `result.solution` on every wrong answer, and `result.why` above it when
+   it is there.** `why` names the specific mistake and is only present when the
+   typed answer matches a known wrong route; `solution` works the question through
+   with its own numbers and is always present. Without them the module is just a
+   timer with sums in it.
 2. **Show the tip card on a miss**, via `getTip(question.tip, lang)`. A trick
    lands when the mistake is still warm.
 
@@ -106,9 +109,13 @@ Everything a student reads comes from one of three places:
 - **Question prompts** are generated in English. They are mostly symbols and short
   sentences; translating them means adding a `vi` branch in the generator files.
 - **Tip cards** are already bilingual. `getTip(id, "vi")` returns Vietnamese.
-- **Trap explanations** are English only today. They are ordinary strings inside
-  the generator files and are the next thing to translate, because they are the
-  part a struggling student most needs to read in their own language.
+- **Solutions and trap explanations** are English only today. They are ordinary
+  strings inside the generator files and are the next thing to translate, because
+  they are the part a struggling student most needs in their own language.
+
+All of it is written to a house style: no term a fifteen-year-old has not met,
+unless the sentence defines it on the spot. `npm test` enforces this against a
+list of banned words, so a translation that reintroduces jargon fails the build.
 
 Interface labels belong to your application, not to the engine.
 
