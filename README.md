@@ -50,6 +50,16 @@ Every card title names a move you can carry out, never a result to memorise: *Ca
 first, divide once*, not *Fair ruin is i/N*. A test enforces that too, by rejecting
 any title containing a formula.
 
+Each card also opens with **Use it when**, the sentence that tells you this is the
+card your question wants. Arithmetic barely needs it: you see 37² and you reach for
+the square rule. Probability is nothing but that. A student who knows all seven
+probability ideas and cannot tell which one a question is asking for still scores
+nothing, so the header there says *How to see it*, not *The trick* — there is no
+shortcut on offer, and promising one sets up an expectation nothing can meet.
+
+Every topic on the ladder carries a **Which idea does a question want?** table
+listing all its triggers in one place.
+
 ## The ladder
 
 | Topic | Skills |

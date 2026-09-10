@@ -283,6 +283,20 @@ test("explanations stay inside a beginner's vocabulary", () => {
   assert.deepEqual(offenders.slice(0, 6), [], `${offenders.length} jargon uses`);
 });
 
+test("every tip says when to reach for it", () => {
+  // Knowing seven probability ideas is worth nothing without knowing which one
+  // a question is asking for. That recognition is the skill being taught, so it
+  // is a required field on the card, not a nice-to-have.
+  for (const t of TIPS) {
+    for (const lang of ["en", "vi"]) {
+      const { when } = getTip(t.id, lang);
+      assert.ok(when, `${t.id} (${lang}) does not say when to use it`);
+      assert.ok(when.length > 25, `${t.id} (${lang}): trigger too vague - ${when}`);
+      assert.ok(/[.?"]$/.test(when.trim()), `${t.id} (${lang}): trigger is not a sentence - ${when}`);
+    }
+  }
+});
+
 test("a tip title names the move, not the formula", () => {
   // "Fair ruin is i/N, and going first is 1/(2 - p)" is a crib sheet: it states
   // two results, uses three symbols it never introduces, and helps only someone

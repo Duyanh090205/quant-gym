@@ -13,7 +13,7 @@
 
 import {
   CURRICULUM, generateSet, generateExam, EXAMS, grade, gradeSet,
-  displayAnswer, getTip, getSkill, skillName, nextSkill,
+  displayAnswer, getTip, getSkill, skillName, nextSkill, TIPS,
 } from "../src/engine/index.js";
 
 /* ── translations for the shell itself ───────────────────────────────────── */
@@ -28,7 +28,8 @@ const T = {
     timeLeft: "time left", review: "Review", again: "Again", exams: "Full papers",
     startExam: "Start", part: "Part", of: "of", questions: "questions",
     done: "Level cleared", needed: "needed to clear", tipTitle: "The trick",
-    howItsDone: "How it's done",
+    howItsDone: "How it's done", seeIt: "How to see it", useWhen: "Use it when",
+    whichOne: "Which idea does a question want?",
     whyItWorks: "Why it works", blankWarn: (n) => `${n} still blank. A blank is a guaranteed zero, so guess.`,
     autoSubmit: "Runs out on its own. Nothing is deducted for a wrong answer.",
     typeHint: "Fractions like 3/8, decimals like 0.375, or 37.5% all count.",
@@ -43,7 +44,8 @@ const T = {
     timeLeft: "thời gian còn", review: "Xem lại", again: "Làm lại", exams: "Đề đầy đủ",
     startExam: "Bắt đầu", part: "Phần", of: "trên", questions: "câu",
     done: "Đã qua cấp này", needed: "cần đúng để qua", tipTitle: "Mẹo",
-    howItsDone: "Cách làm",
+    howItsDone: "Cách làm", seeIt: "Cách nhận ra", useWhen: "Dùng khi",
+    whichOne: "Câu hỏi đang cần ý nào?",
     whyItWorks: "Vì sao dùng được", blankWarn: (n) => `Còn ${n} ô trống. Bỏ trống chắc chắn 0 điểm, nên cứ đoán.`,
     autoSubmit: "Hết giờ tự nộp. Sai không bị trừ điểm.",
     typeHint: "Gõ phân số như 3/8, thập phân như 0.375, hay 37.5% đều được.",
@@ -78,6 +80,9 @@ const btn = (label, cls, onClick) => {
   return b;
 };
 const clock = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+/** Only arithmetic has genuine shortcuts. The rest have ways of seeing. */
+const isTrickTopic = (skillId) => String(skillId).startsWith("arith.");
+const PREFIX = { arithmetic: "arith.", sequences: "seq.", probability: "prob." };
 /** Word problems need prose type; bare arithmetic needs tabular figures. */
 const isWordy = (q) => q.prompt.length > 40 || /[a-z]{4}/.test(q.prompt);
 
@@ -118,6 +123,26 @@ function ladder(app) {
     head.appendChild(el("h2", "", tr(topic.name)));
     head.appendChild(el("p", "muted small", tr(topic.blurb)));
     box.appendChild(head);
+
+    // Knowing seven ideas is useless without knowing which one a question is
+    // asking for, so put every trigger in one place, openable at any time.
+    const cards = TIPS.filter((x) => x.skill.startsWith(PREFIX[topic.id])).map((x) => getTip(x.id, S.lang));
+    if (cards.length) {
+      const d = document.createElement("details");
+      d.className = "recognise";
+      const sum = document.createElement("summary");
+      sum.textContent = t().whichOne;
+      d.appendChild(sum);
+      const list = el("div", "reclist");
+      for (const c of cards) {
+        const row = el("div", "recrow");
+        row.appendChild(el("span", "recwhen", c.when || ""));
+        row.appendChild(el("span", "rectitle", c.title));
+        list.appendChild(row);
+      }
+      d.appendChild(list);
+      box.appendChild(d);
+    }
 
     const grid = el("div", "skills");
     for (const sk of topic.skills) {
@@ -170,8 +195,17 @@ function levelScreen(app) {
   const tip = q0.tip ? getTip(q0.tip, S.lang) : null;
   if (tip) {
     const card = el("div", "tip");
-    card.appendChild(el("span", "eyebrow", t().tipTitle));
+    // Arithmetic really does have tricks: a faster road to the same answer.
+    // Probability has none. What it has is knowing which idea a question wants,
+    // so promising a trick there sets up an expectation nothing can meet.
+    card.appendChild(el("span", "eyebrow", isTrickTopic(S.skill) ? t().tipTitle : t().seeIt));
     card.appendChild(el("h3", "", tip.title));
+    if (tip.when) {
+      const w = el("p", "when");
+      w.appendChild(el("strong", "", t().useWhen + " — "));
+      w.appendChild(document.createTextNode(tip.when));
+      card.appendChild(w);
+    }
     const ol = el("ol");
     for (const step of tip.steps) ol.appendChild(el("li", "", step));
     card.appendChild(ol);
@@ -252,7 +286,10 @@ function drill(app) {
         box.appendChild(sol);
       }
       const tip = qn.tip ? getTip(qn.tip, S.lang) : null;
-      if (tip) box.appendChild(el("p", "small muted", `${t().tipTitle}: ${tip.title}`));
+      if (tip) {
+        const label = isTrickTopic(qn.skill) ? t().tipTitle : t().seeIt;
+        box.appendChild(el("p", "small muted", `${label}: ${tip.title}`));
+      }
     }
     card.appendChild(box);
     const isLast = S.i + 1 >= S.paper.questions.length;

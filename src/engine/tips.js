@@ -9,6 +9,13 @@
  * Every card is bilingual. English is the default; `vi` exists because most of
  * the first cohort reads Vietnamese faster than English, and a student should
  * never lose a maths point to a language gap.
+ *
+ * Each card opens with `when`: the sentence telling you that this is the card
+ * this question wants. For arithmetic that is nearly automatic — you see 37² and
+ * you reach for the square rule. For probability it is the whole difficulty. A
+ * student who knows all seven probability ideas and cannot tell which one a
+ * question is asking for will still score nothing, so recognition comes first on
+ * the card, before any method.
  */
 
 export const TIPS = [
@@ -17,6 +24,7 @@ export const TIPS = [
     skill: "arith.add-subtract",
     en: {
       title: "Subtract the hundreds first, then say the middle number out loud",
+      when: "Any addition or subtraction with three digits or more.",
       steps: [
         "Take away the big part before the small part.",
         "Say the intermediate number to yourself. That is what stops you dropping a hundred.",
@@ -27,6 +35,7 @@ export const TIPS = [
     },
     vi: {
       title: "Trừ hàng trăm trước, rồi đọc to số ở giữa",
+      when: "Mọi phép cộng trừ từ ba chữ số trở lên.",
       steps: [
         "Bỏ phần lớn trước, phần nhỏ sau.",
         "Đọc thầm số trung gian. Đó là thứ giữ cho bạn không rơi mất một trăm.",
@@ -41,6 +50,7 @@ export const TIPS = [
     skill: "arith.multiply",
     en: {
       title: "Split the second number, multiply twice, add",
+      when: "Any multiplication where a number has two digits or more.",
       steps: [
         "Break the smaller factor into tens and units.",
         "Multiply each part separately.",
@@ -51,6 +61,7 @@ export const TIPS = [
     },
     vi: {
       title: "Tách số thứ hai, nhân hai lần, rồi cộng",
+      when: "Mọi phép nhân có số từ hai chữ số trở lên.",
       steps: [
         "Tách thừa số nhỏ hơn thành hàng chục và hàng đơn vị.",
         "Nhân từng phần riêng.",
@@ -65,6 +76,7 @@ export const TIPS = [
     skill: "arith.multiply",
     en: {
       title: "×5 is half of ×10. ×11 is the digits with their sum in the middle",
+      when: "The moment you spot a 5, 9, 11, 25, 50 or 99 in the question.",
       steps: [
         "For ×5: multiply by 10, then halve.",
         "For ×11 on a two-digit number: keep the outer digits, put their sum between them.",
@@ -75,6 +87,7 @@ export const TIPS = [
     },
     vi: {
       title: "×5 là một nửa của ×10. ×11 là giữ hai đầu, đặt tổng vào giữa",
+      when: "Ngay khi thấy 5, 9, 11, 25, 50 hay 99 trong đề.",
       steps: [
         "Với ×5: nhân 10 rồi chia đôi.",
         "Với ×11 số hai chữ số: giữ hai chữ số ngoài, đặt tổng của chúng vào giữa.",
@@ -89,6 +102,7 @@ export const TIPS = [
     skill: "arith.squares",
     en: {
       title: "Any square: slide to a round number, then add back",
+      when: "A square you have not memorised, so anything past about 12².",
       steps: [
         "n² = (n − d)(n + d) + d², where d slides n to something round.",
         "Choose d so one factor ends in 0.",
@@ -99,6 +113,7 @@ export const TIPS = [
     },
     vi: {
       title: "Bình phương bất kỳ: trượt về số tròn, rồi cộng bù",
+      when: "Một bình phương bạn chưa thuộc, tức từ khoảng 12² trở lên.",
       steps: [
         "n² = (n − d)(n + d) + d², với d là khoảng trượt n về số tròn.",
         "Chọn d sao cho một thừa số kết thúc bằng 0.",
@@ -113,6 +128,7 @@ export const TIPS = [
     skill: "arith.roots",
     en: {
       title: "Cube roots: the last digit gives itself away",
+      when: "A cube root sign in front of a number whose last digit you can read.",
       steps: [
         "A cube's last digit determines the root's last digit uniquely.",
         "0,1,4,5,6,9 map to themselves. Only 2↔8 and 3↔7 swap.",
@@ -123,6 +139,7 @@ export const TIPS = [
     },
     vi: {
       title: "Căn bậc ba: chữ số cuối tự khai ra",
+      when: "Thấy dấu căn bậc ba trước một số mà bạn đọc được chữ số cuối.",
       steps: [
         "Chữ số cuối của lập phương xác định duy nhất chữ số cuối của căn.",
         "0,1,4,5,6,9 giữ nguyên. Chỉ có 2↔8 và 3↔7 đổi chỗ.",
@@ -137,6 +154,7 @@ export const TIPS = [
     skill: "arith.divide",
     en: {
       title: "Cancel first, divide once",
+      when: "A division with big numbers, or an equation with a multiplication on both sides.",
       steps: [
         "Look for a common factor on both sides before doing any long division.",
         "Halve both numbers as often as they are both even.",
@@ -147,6 +165,7 @@ export const TIPS = [
     },
     vi: {
       title: "Rút gọn trước, chia một lần",
+      when: "Phép chia số to, hoặc đẳng thức có phép nhân ở cả hai vế.",
       steps: [
         "Tìm thừa số chung hai vế trước khi làm phép chia dài.",
         "Chia đôi cả hai số chừng nào cả hai còn chẵn.",
@@ -161,6 +180,7 @@ export const TIPS = [
     skill: "arith.fractions",
     en: {
       title: "Learn eight anchors, read every percentage off them",
+      when: "Any fraction that has to become a decimal or a percentage.",
       steps: [
         "1/2 = 50%, 1/3 = 33.3%, 1/4 = 25%, 1/5 = 20%",
         "1/6 = 16.7%, 1/8 = 12.5%, 1/10 = 10%, 1/16 = 6.25%",
@@ -171,6 +191,7 @@ export const TIPS = [
     },
     vi: {
       title: "Thuộc tám cái mốc, mọi phần trăm khác đọc ra từ đó",
+      when: "Bất kỳ phân số nào phải đổi ra thập phân hay phần trăm.",
       steps: [
         "1/2 = 50%, 1/3 = 33,3%, 1/4 = 25%, 1/5 = 20%",
         "1/6 = 16,7%, 1/8 = 12,5%, 1/10 = 10%, 1/16 = 6,25%",
@@ -185,12 +206,14 @@ export const TIPS = [
     skill: "arith.percent",
     en: {
       title: "Percentages work both ways round, so flip to whichever side is easier",
+      when: "A percentage question where one of the two numbers is friendlier than the other.",
       steps: ["x% of y is always equal to y% of x.", "Pick whichever of the two is easier to compute."],
       example: "18% of 50 is hard. 50% of 18 is 9.   4% of 75 → 75% of 4 = 3",
       why: "Free, exact, and it turns roughly a third of percentage questions into something you can say instantly.",
     },
     vi: {
       title: "Phần trăm đảo được hai chiều, nên lật về phía nào dễ hơn",
+      when: "Câu phần trăm mà một trong hai số dễ chịu hơn số kia.",
       steps: ["x% của y luôn bằng y% của x.", "Chọn cái nào trong hai cái dễ tính hơn."],
       example: "18% của 50 thì khó. 50% của 18 là 9.   4% của 75 → 75% của 4 = 3",
       why: "Miễn phí, chính xác, và biến khoảng một phần ba câu phần trăm thành thứ nói ra được ngay.",
@@ -201,6 +224,7 @@ export const TIPS = [
     skill: "seq.find-rule",
     en: {
       title: "Differences, then ratios, then look inside the digits",
+      when: "A row of numbers ending in a question mark.",
       steps: [
         "Write the gaps between consecutive terms. Constant gap means arithmetic.",
         "Gaps growing steadily means quadratic; take the differences of the differences.",
@@ -211,6 +235,7 @@ export const TIPS = [
     },
     vi: {
       title: "Xét hiệu, rồi tỉ số, rồi soi vào bên trong chữ số",
+      when: "Một dãy số kết thúc bằng dấu hỏi.",
       steps: [
         "Viết khoảng cách giữa các số liền nhau. Hiệu không đổi là cấp số cộng.",
         "Hiệu tăng đều là bậc hai; lấy hiệu của hiệu.",
@@ -225,6 +250,7 @@ export const TIPS = [
     skill: "seq.odd-one-out",
     en: {
       title: "Find the rule the majority obeys, then the outlier names itself",
+      when: "A row of numbers with no question mark, where you are asked which one is wrong.",
       steps: [
         "Do not hunt for the odd term. Find the pattern that most terms fit.",
         "Use the first two or three terms to guess the rule; the first term is never the broken one.",
@@ -235,6 +261,7 @@ export const TIPS = [
     },
     vi: {
       title: "Tìm quy luật mà số đông tuân theo, kẻ lạc sẽ tự lộ",
+      when: "Một dãy số không có dấu hỏi, đề hỏi số nào sai.",
       steps: [
         "Đừng đi săn số lệch. Hãy tìm quy luật mà phần lớn các số khớp.",
         "Dùng hai ba số đầu để đoán quy luật; số đầu tiên không bao giờ là số bị phá.",
@@ -249,6 +276,7 @@ export const TIPS = [
     skill: "prob.counting",
     en: {
       title: "Count the outcomes, and keep them equally likely",
+      when: "Almost any probability question, as the opening move. Especially dice, cards and coins.",
       steps: [
         "Write the sample space so every outcome has the same chance.",
         "Probability is then favourable divided by total.",
@@ -259,6 +287,7 @@ export const TIPS = [
     },
     vi: {
       title: "Đếm các kết quả, và giữ cho chúng đồng khả năng",
+      when: "Gần như mọi câu xác suất, ở nước đi đầu tiên. Nhất là xúc xắc, bài và xu.",
       steps: [
         "Viết không gian mẫu sao cho mọi kết quả có cùng cơ hội.",
         "Xác suất khi đó là số thuận lợi chia tổng.",
@@ -273,6 +302,7 @@ export const TIPS = [
     skill: "prob.counting",
     en: {
       title: "'At least one' means one minus 'none'",
+      when: "The words \"at least one\" appear, or something has several chances to happen.",
       steps: [
         "Never add up the cases for one, two, three successes.",
         "Compute the probability of zero successes and subtract from 1.",
@@ -282,6 +312,7 @@ export const TIPS = [
     },
     vi: {
       title: "'Ít nhất một' nghĩa là một trừ 'không có cái nào'",
+      when: "Xuất hiện chữ \"ít nhất một\", hoặc một điều có nhiều cơ hội để xảy ra.",
       steps: [
         "Đừng cộng các trường hợp một, hai, ba lần thành công.",
         "Tính xác suất không thành công lần nào rồi lấy 1 trừ đi.",
@@ -295,6 +326,7 @@ export const TIPS = [
     skill: "prob.expected-value",
     en: {
       title: "Expected value is a weighted average, and it adds",
+      when: "The words \"expected\", \"average\" or \"on average\" appear.",
       steps: [
         "Multiply each payoff by its probability and add.",
         "E[X + Y] = E[X] + E[Y] always, even when X and Y are dependent.",
@@ -305,6 +337,7 @@ export const TIPS = [
     },
     vi: {
       title: "Kỳ vọng là trung bình có trọng số, và nó cộng được",
+      when: "Xuất hiện chữ \"kỳ vọng\", \"trung bình\".",
       steps: [
         "Nhân mỗi khoản với xác suất của nó rồi cộng lại.",
         "E[X + Y] = E[X] + E[Y] luôn đúng, kể cả khi X và Y phụ thuộc nhau.",
@@ -319,6 +352,7 @@ export const TIPS = [
     skill: "prob.expected-value",
     en: {
       title: "The expected value is not the typical path",
+      when: "Something is multiplied again and again: a price rising and falling, repeated percentage changes.",
       steps: [
         "For a product of independent factors, multiply the expectations.",
         "Up 10% then down 10% gives 0.99 of your money, but that is one path.",
@@ -329,6 +363,7 @@ export const TIPS = [
     },
     vi: {
       title: "Kỳ vọng không phải là đường đi điển hình",
+      when: "Một thứ bị nhân đi nhân lại: giá lên xuống, phần trăm thay đổi nhiều lần.",
       steps: [
         "Với tích các thừa số độc lập, hãy nhân các kỳ vọng.",
         "Tăng 10% rồi giảm 10% còn 0,99 số tiền, nhưng đó là một đường đi.",
@@ -343,6 +378,7 @@ export const TIPS = [
     skill: "prob.conditional",
     en: {
       title: "Being told something crosses cases out; it never merges two into one",
+      when: "The question already tells you something happened: \"given that\", \"knowing that\", \"at least one is\".",
       steps: [
         "Write the full space, cross out what the condition rules out, recount.",
         "Two children are BB, BG, GB, GG. BG and GB are different outcomes.",
@@ -353,6 +389,7 @@ export const TIPS = [
     },
     vi: {
       title: "Được cho biết một điều là gạch bớt trường hợp, không phải gộp hai thành một",
+      when: "Đề đã cho biết một điều đã xảy ra: \"biết rằng\", \"cho biết\", \"có ít nhất một\".",
       steps: [
         "Viết cả không gian, gạch đi phần điều kiện loại trừ, rồi đếm lại.",
         "Hai con là BB, BG, GB, GG. BG và GB là hai kết quả khác nhau.",
@@ -367,6 +404,7 @@ export const TIPS = [
     skill: "prob.bayes",
     en: {
       title: "When every option was equally likely to begin with, Bayes is just a share",
+      when: "You saw a result and are asked which source it came from. \"You drew red — which urn was it?\"",
       steps: [
         "For each option, ask how readily it would have produced the thing you actually saw.",
         "Add those numbers together.",
@@ -377,6 +415,7 @@ export const TIPS = [
     },
     vi: {
       title: "Khi mọi khả năng ban đầu đều dễ xảy ra như nhau, Bayes chỉ là chia phần",
+      when: "Bạn thấy một kết quả rồi được hỏi nó đến từ nguồn nào. \"Rút ra bóng đỏ — đó là rổ nào?\"",
       steps: [
         "Với mỗi khả năng, hỏi xem nó tạo ra đúng thứ bạn vừa thấy dễ dàng tới mức nào.",
         "Cộng các số đó lại.",
@@ -391,6 +430,7 @@ export const TIPS = [
     skill: "prob.waiting-time",
     en: {
       title: "Waiting for something with probability p takes 1/p tries",
+      when: "The question asks how many tries, rolls or flips until something finally happens.",
       steps: [
         "One 6 on a die: p = 1/6, so 6 rolls on average.",
         "Want it k times and they need not be consecutive? Just k/p, because expectations add.",
@@ -401,6 +441,7 @@ export const TIPS = [
     },
     vi: {
       title: "Chờ một biến cố có xác suất p thì mất 1/p lần thử",
+      when: "Đề hỏi bao nhiêu lần thử, bao nhiêu lần tung cho tới khi một điều xảy ra.",
       steps: [
         "Một mặt 6 trên xúc xắc: p = 1/6, nên trung bình 6 lần tung.",
         "Muốn nó xảy ra k lần và không cần liên tiếp? Chỉ là k/p, vì kỳ vọng cộng được.",
@@ -415,6 +456,7 @@ export const TIPS = [
     skill: "prob.classics",
     en: {
       title: "When someone who knows the answer helps you, their choice is a message",
+      when: "Someone who knows more than you acts first, and then you are offered a choice.",
       steps: [
         "Your first pick was right 1 time in 3, and nothing anyone does afterwards changes that.",
         "So 2 times in 3 the car is behind one of the other two doors.",
@@ -425,6 +467,7 @@ export const TIPS = [
     },
     vi: {
       title: "Khi người biết đáp án ra tay giúp bạn, lựa chọn của họ là một lời nhắn",
+      when: "Một người biết nhiều hơn bạn ra tay trước, rồi bạn được cho một lựa chọn.",
       steps: [
         "Cửa bạn chọn đầu tiên đúng 1 lần trong 3, và không ai làm gì sau đó thay đổi được con số ấy.",
         "Nghĩa là 2 lần trong 3, xe nằm sau một trong hai cửa còn lại.",
@@ -439,6 +482,7 @@ export const TIPS = [
     skill: "prob.classics",
     en: {
       title: "In a fair game, your chance of winning it all is your share of the money",
+      when: "Two players pass money back and forth on an even bet until one of them has none left.",
       steps: [
         "Each round is even, so neither player gains or loses anything on average.",
         "That leaves only one thing to decide the outcome: how much each of you started with.",
@@ -449,6 +493,7 @@ export const TIPS = [
     },
     vi: {
       title: "Trong trò chơi công bằng, cơ hội ăn hết bằng đúng phần tiền bạn đang cầm",
+      when: "Hai người chuyển tiền qua lại trong ván cược đều nhau, cho tới khi một người hết sạch.",
       steps: [
         "Mỗi ván đều nhau, nên không ai được hay mất gì tính trung bình.",
         "Vậy chỉ còn đúng một thứ quyết định kết cục: mỗi người bắt đầu với bao nhiêu.",
@@ -463,6 +508,7 @@ export const TIPS = [
     skill: "prob.classics",
     en: {
       title: "Going first? Write one line: you win now, or the game comes back to you",
+      when: "Players take turns, and the first one to succeed wins.",
       steps: [
         "Call your chance of winning P, and your chance of succeeding on one turn p.",
         "Either you succeed straight away, or you miss and they miss too, and then it is your turn again with nothing changed, so your chance is P all over again.",
@@ -473,6 +519,7 @@ export const TIPS = [
     },
     vi: {
       title: "Đi trước? Viết một dòng: hoặc bạn thắng ngay, hoặc ván cờ quay lại chỗ bạn",
+      when: "Hai người thay phiên nhau, ai thành công trước thì thắng.",
       steps: [
         "Gọi cơ hội thắng của bạn là P, và cơ hội thành công trong một lượt là p.",
         "Hoặc bạn thành công ngay, hoặc bạn trượt và đối thủ cũng trượt, rồi tới lượt bạn với mọi thứ y như cũ, nên cơ hội lại đúng là P.",
@@ -487,6 +534,7 @@ export const TIPS = [
     skill: "prob.symmetry",
     en: {
       title: "If nothing distinguishes the positions, every ordering is equally likely",
+      when: "The question is about order — largest, increasing, in what sequence — and nothing sets the items apart.",
       steps: [
         "n distinct continuous draws produce n! orderings, all equally likely.",
         "So the chance they come out in one named order is 1/n!.",
@@ -497,6 +545,7 @@ export const TIPS = [
     },
     vi: {
       title: "Nếu không có gì phân biệt các vị trí thì mọi thứ tự đều đồng khả năng",
+      when: "Đề hỏi về thứ tự — lớn nhất, tăng dần, ra theo trình tự nào — và không có gì phân biệt các phần tử.",
       steps: [
         "n lần rút liên tục khác nhau tạo ra n! thứ tự, tất cả đồng khả năng.",
         "Nên xác suất chúng ra theo đúng một thứ tự được nêu là 1/n!.",

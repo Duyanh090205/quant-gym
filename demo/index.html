@@ -76,6 +76,21 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .tip ol{margin:0;padding-left:19px;display:flex;flex-direction:column;gap:4px;color:var(--fg-2)}
 .tip .ex{font-family:var(--mono);font-size:13px;background:var(--surface);border-radius:6px;padding:9px 11px;
          overflow-x:auto;white-space:pre-wrap}
+.tip .when{background:var(--surface);border-left:3px solid var(--warn);border-radius:0 6px 6px 0;
+           padding:8px 11px;color:var(--fg-2);font-size:14px}
+.tip .when strong{color:var(--fg)}
+
+.recognise{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);margin-bottom:12px}
+.recognise summary{cursor:pointer;padding:10px 13px;font-weight:600;font-size:13.5px;list-style-position:inside}
+.recognise summary::marker{color:var(--fg-3)}
+.recognise[open] summary{border-bottom:1px solid var(--line)}
+.reclist{display:flex;flex-direction:column}
+.recrow{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;padding:9px 13px;
+        font-size:13px;align-items:baseline}
+.recrow+.recrow{border-top:1px solid var(--surface-2)}
+.recwhen{color:var(--fg-2)}
+.rectitle{color:var(--fg-3)}
+@media (max-width:560px){.recrow{grid-template-columns:1fr;gap:2px}}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .stack{display:flex;flex-direction:column;gap:16px}
 
