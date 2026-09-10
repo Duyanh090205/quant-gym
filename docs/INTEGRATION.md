@@ -87,7 +87,11 @@ most of the teaching value is:
    with its own numbers and is always present. Without them the module is just a
    timer with sums in it.
 2. **Show the tip card on a miss**, via `getTip(question.tip, lang)`. A trick
-   lands when the mistake is still warm.
+   lands when the mistake is still warm. The card is
+   `{ title, when, steps[], example: { ask, work }, why }`. Render `when` before
+   the steps and `example.ask` before `example.work`: recognising which idea a
+   question wants is the skill, and working shown without its question is an
+   answer key nobody can read.
 
 ## Classroom assignments without a backend
 

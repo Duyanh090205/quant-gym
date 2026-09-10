@@ -322,7 +322,7 @@ test("tip cards avoid the same jargon, in both languages", () => {
   for (const t of TIPS) {
     for (const lang of ["en", "vi"]) {
       const card = getTip(t.id, lang);
-      const all = [card.title, card.why, card.example, ...card.steps].join(" ");
+      const all = [card.title, card.why, card.example.ask, card.example.work, ...card.steps].join(" ");
       for (const re of BANNED) {
         if (re.test(all)) offenders.push(`${t.id} (${lang}): ${all.match(re)[0]}`);
       }
@@ -407,6 +407,16 @@ test("every tip exists in both languages and every referenced tip resolves", () 
     for (const lang of ["en", "vi"]) {
       const card = getTip(t.id, lang);
       assert.ok(card.title && card.steps.length && card.example && card.why, `${t.id} incomplete in ${lang}`);
+      // An example that shows only working is an answer key, readable only by
+      // someone who already knows the puzzle. State the question first.
+      assert.ok(card.example.ask, `${t.id} (${lang}): example does not state the question`);
+      assert.ok(card.example.work, `${t.id} (${lang}): example does not show the working`);
+      assert.match(card.example.ask, /\?/, `${t.id} (${lang}): the example is not a question - ${card.example.ask}`);
+      // The question mark above is the real guard: working alone never carries
+      // one. Length is a weak backstop, kept low because a good question can be
+      // short ("What is 823 - 467?", "On average, what total do two dice show?").
+      assert.ok(card.example.ask.length > 15,
+        `${t.id} (${lang}): question too terse to stand on its own - ${card.example.ask}`);
     }
   }
   const ids = new Set(TIPS.map((t) => t.id));

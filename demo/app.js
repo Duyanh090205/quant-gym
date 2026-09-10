@@ -29,6 +29,7 @@ const T = {
     startExam: "Start", part: "Part", of: "of", questions: "questions",
     done: "Level cleared", needed: "needed to clear", tipTitle: "The trick",
     howItsDone: "How it's done", seeIt: "How to see it", useWhen: "Use it when",
+    worked: "Worked example",
     whichOne: "Which idea does a question want?",
     whyItWorks: "Why it works", blankWarn: (n) => `${n} still blank. A blank is a guaranteed zero, so guess.`,
     autoSubmit: "Runs out on its own. Nothing is deducted for a wrong answer.",
@@ -45,6 +46,7 @@ const T = {
     startExam: "Bắt đầu", part: "Phần", of: "trên", questions: "câu",
     done: "Đã qua cấp này", needed: "cần đúng để qua", tipTitle: "Mẹo",
     howItsDone: "Cách làm", seeIt: "Cách nhận ra", useWhen: "Dùng khi",
+    worked: "Ví dụ có lời giải",
     whichOne: "Câu hỏi đang cần ý nào?",
     whyItWorks: "Vì sao dùng được", blankWarn: (n) => `Còn ${n} ô trống. Bỏ trống chắc chắn 0 điểm, nên cứ đoán.`,
     autoSubmit: "Hết giờ tự nộp. Sai không bị trừ điểm.",
@@ -209,7 +211,13 @@ function levelScreen(app) {
     const ol = el("ol");
     for (const step of tip.steps) ol.appendChild(el("li", "", step));
     card.appendChild(ol);
-    card.appendChild(el("div", "ex", tip.example));
+    // The question first, in ordinary words, then the working in figures.
+    // Working on its own is an answer key: it only reads to someone who already
+    // knows which puzzle it belongs to.
+    const ex = el("div", "ex");
+    ex.appendChild(el("p", "exask", tip.example.ask));
+    ex.appendChild(el("p", "exwork", tip.example.work));
+    card.appendChild(ex);
     card.appendChild(el("p", "small muted", `${t().whyItWorks}: ${tip.why}`));
     stack.appendChild(card);
   }
