@@ -142,12 +142,18 @@ its paper, that no trap can be confused with a right answer, that every trap and
 every worked solution reaches the answer it claims, and that the writing stays
 inside a beginner's vocabulary.
 
-Correctness is checked twice over, because a formula and a generator can be wrong
-in the same way. `engine.test.js` re-derives each answer algebraically. Then
-`simulate.test.js` throws the question away and plays the game: it rolls the dice,
-draws the balls, walks the walks and runs the duels, a hundred thousand times each,
-and compares what happens against what the engine claims. Every probability
-question shape the engine can produce, 265 of them, is covered.
+Correctness is checked three ways, because each check misses what the others catch.
+
+- `engine.test.js` re-derives every answer from a formula written separately from
+  the generator, and requires each worked solution to reach the answer it claims.
+- `simulate.test.js` throws the formulas away and plays the games: rolling the
+  dice, drawing the balls, walking the walks, running the duels, a hundred
+  thousand trials each. All 265 distinct probability question shapes are covered.
+  A formula and a generator can be wrong in the same way; a simulation cannot join in.
+- `tip-arithmetic.test.js` reads the tip cards themselves, which are hand-written
+  prose in two languages, and evaluates both sides of every equation printed on
+  them. It also confirms each arithmetic example answers its own question, and that
+  the two languages of a card never disagree about a number.
 
 ## Status
 
