@@ -46,6 +46,10 @@ the moment a relevant question is missed. A trick delivered while the mistake is
 still warm sticks; the same trick in a textbook chapter does not. Cards are
 written in English and Vietnamese.
 
+Every card title names a move you can carry out, never a result to memorise: *Cancel
+first, divide once*, not *Fair ruin is i/N*. A test enforces that too, by rejecting
+any title containing a formula.
+
 ## The ladder
 
 | Topic | Skills |

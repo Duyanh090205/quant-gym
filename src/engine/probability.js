@@ -500,7 +500,7 @@ export function classics(rng, level) {
         [1 / 2, "Two doors are left, but they are not equally likely. The host is not choosing at random: he knows where the car is and never opens it, and that is information about the door he left shut."],
         [sw ? 1 / 3 : 2 / 3, "That is the answer for the other strategy. Check whether the question says switch or stay."],
       ]),
-      tip: "ruin-and-first-mover",
+      tip: "host-knows-something",
     });
   }
 
@@ -519,7 +519,7 @@ export function classics(rng, level) {
           [(N - i) / N, "That is B's chance of winning, not A's. The two have to add up to 1."],
           [1 / N, "The chance follows the whole starting pile, not a single coin."],
         ]),
-        tip: "ruin-and-first-mover",
+        tip: "ruin-share-of-the-pot",
       });
     }
     const ev = rng.pick([["rolls a 6", 1 / 6], ["flips heads", 1 / 2], ["rolls a 5 or 6", 1 / 3]]);
@@ -536,7 +536,7 @@ export function classics(rng, level) {
         [p, "That is only A's very first turn. A can also win later, after both players miss."],
         [(1 + p) / 2, "Set it up as one equation instead: A wins now, or both miss and the game is back where it started."],
       ]),
-      tip: "ruin-and-first-mover",
+      tip: "first-mover-one-equation",
     });
   }
 

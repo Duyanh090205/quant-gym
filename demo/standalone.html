@@ -490,13 +490,13 @@ const TIPS = [
     id: "percent-flip",
     skill: "arith.percent",
     en: {
-      title: "Percentages commute, so flip to the easy side",
+      title: "Percentages work both ways round, so flip to whichever side is easier",
       steps: ["x% of y is always equal to y% of x.", "Pick whichever of the two is easier to compute."],
       example: "18% of 50 is hard. 50% of 18 is 9.   4% of 75 → 75% of 4 = 3",
       why: "Free, exact, and it turns roughly a third of percentage questions into something you can say instantly.",
     },
     vi: {
-      title: "Phần trăm đổi chỗ được, nên lật về phía dễ",
+      title: "Phần trăm đảo được hai chiều, nên lật về phía nào dễ hơn",
       steps: ["x% của y luôn bằng y% của x.", "Chọn cái nào trong hai cái dễ tính hơn."],
       example: "18% của 50 thì khó. 50% của 18 là 9.   4% của 75 → 75% của 4 = 3",
       why: "Miễn phí, chính xác, và biến khoảng một phần ba câu phần trăm thành thứ nói ra được ngay.",
@@ -648,7 +648,7 @@ const TIPS = [
     id: "condition-shrinks-the-space",
     skill: "prob.conditional",
     en: {
-      title: "Conditioning throws away outcomes, it does not merge them",
+      title: "Being told something crosses cases out; it never merges two into one",
       steps: [
         "Write the full space, cross out what the condition rules out, recount.",
         "Two children are BB, BG, GB, GG. BG and GB are different outcomes.",
@@ -658,7 +658,7 @@ const TIPS = [
       why: "The intuitive 1/2 is wrong because it silently merges BG and GB. Which fact you are told changes the answer, so read the wording twice.",
     },
     vi: {
-      title: "Điều kiện loại bớt kết quả, chứ không gộp chúng lại",
+      title: "Được cho biết một điều là gạch bớt trường hợp, không phải gộp hai thành một",
       steps: [
         "Viết cả không gian, gạch đi phần điều kiện loại trừ, rồi đếm lại.",
         "Hai con là BB, BG, GB, GG. BG và GB là hai kết quả khác nhau.",
@@ -717,27 +717,75 @@ const TIPS = [
     },
   },
   {
-    id: "ruin-and-first-mover",
+    id: "host-knows-something",
     skill: "prob.classics",
     en: {
-      title: "Fair ruin is i/N, and going first is 1/(2 − p)",
+      title: "When someone who knows the answer helps you, their choice is a message",
       steps: [
-        "In a fair game, your chance of reaching N before 0 from i is exactly i/N.",
-        "Taking turns, first to succeed wins: P(first player) = p / (1 − (1 − p)²) = 1/(2 − p).",
-        "The second form comes from one line: you win now, or both miss and the position repeats.",
+        "Your first pick was right 1 time in 3, and nothing anyone does afterwards changes that.",
+        "So 2 times in 3 the car is behind one of the other two doors.",
+        "The host never opens the car, so he has just pointed out which of those two it is not. Switching collects that whole 2/3.",
       ],
-      example: "3 coins against 2 → 3/5.   First to roll a 6 → 1/(2 − 1/6) = 6/11 ≈ 0.545",
-      why: "Both look like they need infinite series and neither does. Setting up 'the position repeats' is the move worth practising.",
+      example: "Stay → 1/3. Switch → 2/3. Try it with 100 doors: you pick one, the host opens 98 goats, and switching now wins 99 times in 100.",
+      why: "Two doors left feels like an even split. It is not, because the host was not picking at random. He was avoiding the car, and avoiding it is what tells you where it is.",
     },
     vi: {
-      title: "Ruin công bằng là i/N, và đi trước là 1/(2 − p)",
+      title: "Khi người biết đáp án ra tay giúp bạn, lựa chọn của họ là một lời nhắn",
       steps: [
-        "Trong trò công bằng, xác suất từ i lên tới N trước khi về 0 đúng bằng i/N.",
-        "Thay phiên nhau, ai thành công trước thì thắng: P(người đi trước) = p / (1 − (1 − p)²) = 1/(2 − p).",
-        "Dạng thứ hai ra từ một dòng: hoặc bạn thắng ngay, hoặc cả hai trượt và ván cờ lặp lại.",
+        "Cửa bạn chọn đầu tiên đúng 1 lần trong 3, và không ai làm gì sau đó thay đổi được con số ấy.",
+        "Nghĩa là 2 lần trong 3, xe nằm sau một trong hai cửa còn lại.",
+        "Người dẫn không bao giờ mở cửa có xe, nên anh ta vừa chỉ ra trong hai cửa đó cái nào KHÔNG phải. Đổi cửa là ôm trọn 2/3 đó.",
       ],
-      example: "3 đồng đấu 2 đồng → 3/5.   Ai ra mặt 6 trước → 1/(2 − 1/6) = 6/11 ≈ 0,545",
-      why: "Cả hai trông như cần chuỗi vô hạn mà thật ra không cần. Dựng được ý 'ván cờ lặp lại' mới là nước đáng luyện.",
+      example: "Giữ → 1/3. Đổi → 2/3. Thử với 100 cửa: bạn chọn một cửa, người dẫn mở 98 cửa có dê, và đổi cửa lúc này thắng 99 lần trên 100.",
+      why: "Còn hai cửa thì cảm giác là năm ăn năm thua. Không phải, vì người dẫn không chọn ngẫu nhiên. Anh ta né chiếc xe, và chính cái né đó nói cho bạn biết xe ở đâu.",
+    },
+  },
+  {
+    id: "ruin-share-of-the-pot",
+    skill: "prob.classics",
+    en: {
+      title: "In a fair game, your chance of winning it all is your share of the money",
+      steps: [
+        "Each round is even, so neither player gains or loses anything on average.",
+        "That leaves only one thing to decide the outcome: how much each of you started with.",
+        "Your chance of taking everything is your pile divided by both piles together.",
+      ],
+      example: "You hold 3 coins, they hold 2. Five coins on the table and three are yours → 3/5. Hold 1 against 9 and it drops to 1/10, which is why a short stack almost always busts.",
+      why: "It looks like it needs you to add up every possible run of wins and losses, for ever. It does not. The starting piles settle it on their own.",
+    },
+    vi: {
+      title: "Trong trò chơi công bằng, cơ hội ăn hết bằng đúng phần tiền bạn đang cầm",
+      steps: [
+        "Mỗi ván đều nhau, nên không ai được hay mất gì tính trung bình.",
+        "Vậy chỉ còn đúng một thứ quyết định kết cục: mỗi người bắt đầu với bao nhiêu.",
+        "Cơ hội bạn ăn hết bằng đống tiền của bạn chia cho cả hai đống cộng lại.",
+      ],
+      example: "Bạn cầm 3 đồng, họ cầm 2. Năm đồng trên bàn, ba đồng là của bạn → 3/5. Cầm 1 đấu 9 thì tụt còn 1/10, và đó là lý do người ít tiền gần như luôn cháy túi.",
+      why: "Trông như phải cộng hết mọi chuỗi thắng thua có thể, đến vô tận. Không cần. Số tiền ban đầu tự nó định đoạt.",
+    },
+  },
+  {
+    id: "first-mover-one-equation",
+    skill: "prob.classics",
+    en: {
+      title: "Going first? Write one line: you win now, or the game comes back to you",
+      steps: [
+        "Call your chance of winning P, and your chance of succeeding on one turn p.",
+        "Either you succeed straight away, or you miss and they miss too, and then it is your turn again with nothing changed, so your chance is P all over again.",
+        "That is P = p + (1 − p)² × P. Solve it and P = 1/(2 − p).",
+      ],
+      example: "First to roll a 6: p = 1/6, so P = 1/(2 − 1/6) = 6/11 ≈ 0.545. First to flip heads: p = 1/2, so P = 2/3.",
+      why: "The honest route is to add up winning on turn 1, then turn 3, then turn 5, for ever. Noticing that the game returns to the exact same position replaces all of it with one equation you can solve in your head.",
+    },
+    vi: {
+      title: "Đi trước? Viết một dòng: hoặc bạn thắng ngay, hoặc ván cờ quay lại chỗ bạn",
+      steps: [
+        "Gọi cơ hội thắng của bạn là P, và cơ hội thành công trong một lượt là p.",
+        "Hoặc bạn thành công ngay, hoặc bạn trượt và đối thủ cũng trượt, rồi tới lượt bạn với mọi thứ y như cũ, nên cơ hội lại đúng là P.",
+        "Vậy P = p + (1 − p)² × P. Giải ra được P = 1/(2 − p).",
+      ],
+      example: "Ai ra mặt 6 trước: p = 1/6, nên P = 1/(2 − 1/6) = 6/11 ≈ 0,545. Ai ra mặt ngửa trước: p = 1/2, nên P = 2/3.",
+      why: "Cách thật thà là cộng khả năng thắng ở lượt 1, rồi lượt 3, rồi lượt 5, mãi mãi. Nhận ra ván cờ quay về đúng vị trí cũ thay tất cả bằng một phương trình giải nhẩm được.",
     },
   },
   {
@@ -2412,7 +2460,7 @@ function classics(rng, level) {
         [1 / 2, "Two doors are left, but they are not equally likely. The host is not choosing at random: he knows where the car is and never opens it, and that is information about the door he left shut."],
         [sw ? 1 / 3 : 2 / 3, "That is the answer for the other strategy. Check whether the question says switch or stay."],
       ]),
-      tip: "ruin-and-first-mover",
+      tip: "host-knows-something",
     });
   }
 
@@ -2431,7 +2479,7 @@ function classics(rng, level) {
           [(N - i) / N, "That is B's chance of winning, not A's. The two have to add up to 1."],
           [1 / N, "The chance follows the whole starting pile, not a single coin."],
         ]),
-        tip: "ruin-and-first-mover",
+        tip: "ruin-share-of-the-pot",
       });
     }
     const ev = rng.pick([["rolls a 6", 1 / 6], ["flips heads", 1 / 2], ["rolls a 5 or 6", 1 / 3]]);
@@ -2448,7 +2496,7 @@ function classics(rng, level) {
         [p, "That is only A's very first turn. A can also win later, after both players miss."],
         [(1 + p) / 2, "Set it up as one equation instead: A wins now, or both miss and the game is back where it started."],
       ]),
-      tip: "ruin-and-first-mover",
+      tip: "first-mover-one-equation",
     });
   }
 

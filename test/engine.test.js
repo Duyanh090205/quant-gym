@@ -283,12 +283,26 @@ test("explanations stay inside a beginner's vocabulary", () => {
   assert.deepEqual(offenders.slice(0, 6), [], `${offenders.length} jargon uses`);
 });
 
+test("a tip title names the move, not the formula", () => {
+  // "Fair ruin is i/N, and going first is 1/(2 - p)" is a crib sheet: it states
+  // two results, uses three symbols it never introduces, and helps only someone
+  // who already knows the material. A title has to be something you DO.
+  for (const t of TIPS) {
+    for (const lang of ["en", "vi"]) {
+      const { title } = getTip(t.id, lang);
+      assert.ok(!/=|\/\(/.test(title), `${t.id} (${lang}): the title is a formula — ${title}`);
+      assert.ok(title.length < 90, `${t.id} (${lang}): title too long — ${title}`);
+    }
+  }
+});
+
 test("tip cards avoid the same jargon, in both languages", () => {
   // Same bar as the solutions, plus the Vietnamese habit of leaving English
   // statistics terms untranslated, which helps nobody who is stuck.
   const BANNED = [
     /martingale/i, /likelihood/i, /prior[s]?/i, /harmonic/i,
     /derangement/i, /sample space/i, /posterior/i,
+    /commute[sd]?/i, /infinite series/i, /converge/i,
   ];
   const offenders = [];
   for (const t of TIPS) {
