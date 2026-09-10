@@ -98,9 +98,9 @@ const en = {
   aSplitMul: (a, b, tens, units) =>
     `${a} × ${b} = ${a} × ${tens} + ${a} × ${units} = ${a * tens} + ${a * units} = ${a * b}`,
   aPlainMul: (a, b) => `${a} × ${b} = ${a * b}`,
-  aRunningAdd: (a, steps) => `Add the big part first and say each number out loud: ${a} ${steps}`,
-  aRunningSub: (a, steps) => `Take the big part away first and say each number out loud: ${a} ${steps}`,
-  aStep: (sign, place, running) => `${sign} ${place} = ${running}`,
+  aRunningAdd: (a, steps) => `Add the big part first and say each number out loud: ${steps}`,
+  aRunningSub: (a, steps) => `Take the big part away first and say each number out loud: ${steps}`,
+  aStep: (from, sign, place, running) => `${from} ${sign} ${place} = ${running}`,
   aSplitBigger: (a, b, tens, units) =>
     `Split the bigger number: ${a} × ${b} = ${tens} × ${b} + ${units} × ${b} = ${tens * b} + ${units * b} = ${a * b}`,
   aHalveTen: (a, ten, half) => `${a} × 10 = ${ten}, then halve: ${half}`,
@@ -129,17 +129,17 @@ const en = {
     `so the answer starts with ${tens}. The last digit: a cube ending in ${lastCube} can only come from a root ending in ${lastRoot}. That gives ${n}.`,
   aOneOverD: (d, dec, n, whole) => `1/${d} = ${dec}, so ${n}/${d} = ${n} × ${dec} = ${whole}`,
   aFracMul: (n1, n2, top, d1, d2, bot, cancelled, whole) =>
-    `Multiplying is straight across: tops ${n1} × ${n2} = ${top}, bottoms ${d1} × ${d2} = ${bot}` +
-    (cancelled ? `, which cancels to ${cancelled} = ${whole}` : ` = ${whole}`),
+    `Multiplying is straight across: tops ${n1} × ${n2} = ${top}, bottoms ${d1} × ${d2} = ${bot}. ` +
+    (cancelled ? `That cancels to ${cancelled}, which is ${whole}.` : `As a decimal that is ${whole}.`),
   aFracAdd: (n1, d1, a1, n2, d2, a2, lcm, sum, whole) =>
     `Adding needs the same bottom. Both fit into ${lcm}: ${n1}/${d1} = ${a1}/${lcm} and ${n2}/${d2} = ${a2}/${lcm}. ` +
     `Now add the tops: ${sum}/${lcm} = ${whole}`,
   aPctHalf: (y, half) => `Per cent means per hundred, and 50 per hundred is half. Halve ${y}: ${half}`,
   aPctQuarter: (y, half, quarter) => `25 per hundred is a quarter. Halve ${y} to get ${half}, then halve again: ${quarter}`,
   aPctTenth: (y, ten) => `10 per hundred is one tenth, so shift the digits one place: ${y} becomes ${ten}`,
-  aPctFromTen: (p, y, ten, whole) => `Start from 10%, which is one tenth of ${y} = ${ten}. Then ${p}% is ${p === 20 ? "twice that" : "half of that"}: ${whole}`,
-  aPctBuild: (ten, times, p, whole) => `Build it from 10% = ${ten}: ${p}% is ${times} of those, so ${ten} × ${times} = ${whole}`,
-  aPctOfWhole: (x, y, share, whole) => `Put it over the whole and turn it into hundredths: ${x}/${y} = ${share}, and ${share} × 100 = ${whole}%`,
+  aPctFromTen: (p, y, ten, whole) => `Start from a tenth of ${y}, which is ${ten}. Then ${p}% is ${p === 20 ? "twice that" : "half of that"}: ${whole}`,
+  aPctBuild: (ten, times, p, whole, y) => `Build it from a tenth of ${y}, which is ${ten}. ${p}% is ${times} of those, so ${ten} × ${times} = ${whole}`,
+  aPctOfWhole: (x, y, share, whole) => `Put it over the whole, then read it as hundredths: ${x}/${y} ≈ ${share}. Multiplying by 100 turns that into ${whole}, so the answer is ${whole}%.`,
   aEstDiv: (a, rb, first, b, pct, dir, est, exact) =>
     `Divide by the round number first: ${a} ÷ ${rb} ≈ ${first}. But ${b} is about ${pct}% ${dir} ${rb}, ` +
     `so nudge the answer the other way by about that much: roughly ${est}. The true value is ${exact}, and anything within 5% counts.`,
@@ -158,7 +158,7 @@ const en = {
   aMissingSub: (diff, b, a, place, digit) => `Undo the subtraction: ${diff} + ${b} = ${a}, so the ${place} digit is ${digit}`,
   aPlaces: ["units", "tens", "hundreds", "thousands"],
   aRelationSol: (b1, den, part, num, A, b2, tenth, B, diff) =>
-    `A: ${b1} ÷ ${den} = ${part}, times ${num} = ${A}. B: 10% of ${b2} is ${tenth}, so it comes to ${B}. Then ${A} − ${B} = ${diff}`,
+    `A: ${b1} ÷ ${den} = ${part}, then ${part} × ${num} = ${A}. B: a tenth of ${b2} is ${tenth}, so B comes to ${B}. Then ${A} − ${B} = ${diff}`,
   aLargestSol: (list, best) => `Work each one out: ${list}. The largest is ${best}.`,
   aStraddle: (lo, hi, centre, d, sq, corr, whole) =>
     `They sit either side of ${centre}, ${d} away each. So ${centre}² − ${d}² = ${sq} − ${corr} = ${whole}`,
@@ -173,6 +173,7 @@ const en = {
   ttHundredTwice: () => "A hundred was taken away twice.",
   ttBorrowMissed: () => "A borrow was missed in the tens.",
   ttOnlyTens: (a, tens, units, part) => `That is only ${a} × ${tens}. The units, ${a} × ${units} = ${part}, still have to be added.`,
+  ttOnlyTensOfA: (tens, b, units, part) => `That is only ${tens} × ${b}. The units, ${units} × ${b} = ${part}, still have to be added.`,
   ttOnlyUnits: (a, units, tens, part) => `That is only ${a} × ${units}. The tens part, ${a} × ${tens} = ${part}, is missing.`,
   ttNoPlaceValue: () => "The two halves were added without their place value: the tens part is worth ten times what it looks.",
   ttOneCopyShort: (a) => `One copy of ${a} is missing. Check the last step of the split.`,
@@ -327,8 +328,8 @@ const en = {
     (reduced ? `, which is ${reduced}.` : "."),
   pSolAtLeast: (n, missOne, missAll, ans) =>
     `Go the other way round and work out the chance of missing every time. ` +
-    `One try misses with chance ${missOne}, so ${n} tries all miss with chance (${missOne})^${n} = ${missAll}. ` +
-    `Everything else is "at least one", so 1 − ${missAll} = ${ans}.`,
+    `One try misses with chance ${missOne}, so ${n} tries all miss with chance (${missOne})^${n} ≈ ${missAll}. ` +
+    `Everything else is "at least one", so 1 − ${missAll} ≈ ${ans}.`,
   pSolEV: {
     oneDie: "Add the faces and share them out evenly: (1+2+3+4+5+6)/6 = 21/6 = 3.5. No face shows 3.5, and that is fine — an average does not have to be a possible result.",
     sumTwo: "Each die averages 3.5 on its own, and averages simply add: 3.5 + 3.5 = 7.",
@@ -363,7 +364,7 @@ const en = {
   pSolBox: (flips, fair, ans) =>
     `Ask how readily each coin gives ${flips}. The fair coin: ${fair}. The two-headed coin: 1, every time. ` +
     `The two-tailed coin: 0, never, so it is out. Take the fair coin's share of what is left: ${fair} ÷ (${fair} + 1) = ${ans}.`,
-  pSolWaitFirst: (p, ans) => `It happens ${p} of the time, so on average you wait for it once every ${ans} tries. Turn the chance upside down: 1 ÷ ${p} = ${ans}.`,
+  pSolWaitFirst: (p, ans) => `It happens ${p} of the time, so on average you wait for it once every ${ans} tries. Turn the chance upside down: 1 ÷ (${p}) = ${ans}.`,
   pSolWaitK: (one, k, ans) =>
     `Waiting for the first one costs ${one} tries on average. After it lands, nothing has changed and the wait for the next one costs ${one} again. ` +
     `Waits like this simply add: ${k} × ${one} = ${ans}.`,
@@ -375,7 +376,7 @@ const en = {
   },
   pSolCollect: (n, terms, ans) =>
     `The first one is free, it arrives immediately. Once you hold j of them, a new one turns up ${n}−j times out of ${n}, ` +
-    `so you wait ${n}/(${n}−j) tries for it. Adding those waits up gives ${n} × (${terms}) = ${ans}. ` +
+    `so you wait ${n}/(${n}−j) tries for it. Adding those waits up gives ${n} × (${terms}) ≈ ${ans}. ` +
     `The last one is the slow part: it alone costs ${n} tries.`,
   pSolOrderMax: (n) =>
     `The draws know nothing about each other, so no position is special. ` +
@@ -386,7 +387,7 @@ const en = {
   pSolPickRepeat: (N, k, total, c, ans) =>
     `There are ${N}^${k} = ${total} equally likely sequences in total. An increasing one needs ${k} different values, and each set of ${k} different values ` +
     `can be written in increasing order in exactly one way. The number of such sets is C(${N},${k}) = ${c}, meaning the ways to choose ${k} things from ${N}. ` +
-    `So ${c}/${total} = ${ans}.`,
+    `So ${c}/${total} ≈ ${ans}.`,
   pSolPickDistinct: (k, fact, N) =>
     `Whichever ${k} numbers you get, they can appear in ${k}! = ${fact} orders, all equally likely, and one of those is increasing. ` +
     `So 1/${fact}. Notice the pool size ${N} never enters the answer.`,
@@ -595,9 +596,9 @@ const vi = {
   aSplitMul: (a, b, tens, units) =>
     `${a} × ${b} = ${a} × ${tens} + ${a} × ${units} = ${a * tens} + ${a * units} = ${a * b}`,
   aPlainMul: (a, b) => `${a} × ${b} = ${a * b}`,
-  aRunningAdd: (a, steps) => `Cộng phần lớn trước và đọc to từng số: ${a} ${steps}`,
-  aRunningSub: (a, steps) => `Trừ phần lớn trước và đọc to từng số: ${a} ${steps}`,
-  aStep: (sign, place, running) => `${sign} ${place} = ${running}`,
+  aRunningAdd: (a, steps) => `Cộng phần lớn trước và đọc to từng số: ${steps}`,
+  aRunningSub: (a, steps) => `Trừ phần lớn trước và đọc to từng số: ${steps}`,
+  aStep: (from, sign, place, running) => `${from} ${sign} ${place} = ${running}`,
   aSplitBigger: (a, b, tens, units) =>
     `Tách số lớn hơn ra: ${a} × ${b} = ${tens} × ${b} + ${units} × ${b} = ${tens * b} + ${units * b} = ${a * b}`,
   aHalveTen: (a, ten, half) => `${a} × 10 = ${ten}, rồi chia đôi: ${half}`,
@@ -626,17 +627,17 @@ const vi = {
     `nên đáp án bắt đầu bằng ${tens}. Về chữ số cuối: lập phương tận cùng ${lastCube} chỉ có thể đến từ căn tận cùng ${lastRoot}. Vậy là ${n}.`,
   aOneOverD: (d, dec, n, whole) => `1/${d} = ${dec}, nên ${n}/${d} = ${n} × ${dec} = ${whole}`,
   aFracMul: (n1, n2, top, d1, d2, bot, cancelled, whole) =>
-    `Nhân phân số là nhân thẳng: tử ${n1} × ${n2} = ${top}, mẫu ${d1} × ${d2} = ${bot}` +
-    (cancelled ? `, rút gọn thành ${cancelled} = ${whole}` : ` = ${whole}`),
+    `Nhân phân số là nhân thẳng: tử ${n1} × ${n2} = ${top}, mẫu ${d1} × ${d2} = ${bot}. ` +
+    (cancelled ? `Rút gọn thành ${cancelled}, tức ${whole}.` : `Đổi ra thập phân là ${whole}.`),
   aFracAdd: (n1, d1, a1, n2, d2, a2, lcm, sum, whole) =>
     `Muốn cộng thì phải cùng mẫu. Cả hai đều quy về ${lcm}: ${n1}/${d1} = ${a1}/${lcm} và ${n2}/${d2} = ${a2}/${lcm}. ` +
     `Giờ cộng tử: ${sum}/${lcm} = ${whole}`,
   aPctHalf: (y, half) => `Phần trăm là phần của một trăm, và 50 trên 100 là một nửa. Chia đôi ${y}: ${half}`,
   aPctQuarter: (y, half, quarter) => `25 trên 100 là một phần tư. Chia đôi ${y} được ${half}, rồi chia đôi lần nữa: ${quarter}`,
   aPctTenth: (y, ten) => `10 trên 100 là một phần mười, nên dịch chữ số sang một hàng: ${y} thành ${ten}`,
-  aPctFromTen: (p, y, ten, whole) => `Bắt đầu từ 10%, tức một phần mười của ${y} = ${ten}. Rồi ${p}% là ${p === 20 ? "gấp đôi số đó" : "một nửa số đó"}: ${whole}`,
-  aPctBuild: (ten, times, p, whole) => `Dựng từ 10% = ${ten}: ${p}% là ${times} lần số đó, nên ${ten} × ${times} = ${whole}`,
-  aPctOfWhole: (x, y, share, whole) => `Đặt nó trên tổng rồi đổi ra phần trăm: ${x}/${y} = ${share}, và ${share} × 100 = ${whole}%`,
+  aPctFromTen: (p, y, ten, whole) => `Bắt đầu từ một phần mười của ${y}, tức ${ten}. Rồi ${p}% là ${p === 20 ? "gấp đôi số đó" : "một nửa số đó"}: ${whole}`,
+  aPctBuild: (ten, times, p, whole, y) => `Dựng từ một phần mười của ${y}, tức ${ten}. ${p}% là ${times} lần số đó, nên ${ten} × ${times} = ${whole}`,
+  aPctOfWhole: (x, y, share, whole) => `Đặt nó trên tổng rồi đọc thành phần trăm: ${x}/${y} ≈ ${share}. Nhân 100 thì thành ${whole}, nên đáp án là ${whole}%.`,
   aEstDiv: (a, rb, first, b, pct, dir, est, exact) =>
     `Chia cho số tròn trước đã: ${a} ÷ ${rb} ≈ ${first}. Nhưng ${b} ${dir} ${rb} khoảng ${pct}%, ` +
     `nên đẩy đáp án ngược lại chừng đó: khoảng ${est}. Giá trị thật là ${exact}, và sai lệch trong 5% vẫn tính đúng.`,
@@ -655,7 +656,7 @@ const vi = {
   aMissingSub: (diff, b, a, place, digit) => `Làm ngược phép trừ: ${diff} + ${b} = ${a}, nên chữ số ${place} là ${digit}`,
   aPlaces: ["hàng đơn vị", "hàng chục", "hàng trăm", "hàng nghìn"],
   aRelationSol: (b1, den, part, num, A, b2, tenth, B, diff) =>
-    `A: ${b1} ÷ ${den} = ${part}, nhân ${num} = ${A}. B: 10% của ${b2} là ${tenth}, nên nó bằng ${B}. Rồi ${A} − ${B} = ${diff}`,
+    `A: ${b1} ÷ ${den} = ${part}, rồi ${part} × ${num} = ${A}. B: một phần mười của ${b2} là ${tenth}, nên B bằng ${B}. Rồi ${A} − ${B} = ${diff}`,
   aLargestSol: (list, best) => `Tính từng cái ra: ${list}. Lớn nhất là ${best}.`,
   aStraddle: (lo, hi, centre, d, sq, corr, whole) =>
     `Chúng nằm hai bên ${centre}, mỗi bên cách ${d}. Vậy ${centre}² − ${d}² = ${sq} − ${corr} = ${whole}`,
@@ -670,6 +671,7 @@ const vi = {
   ttHundredTwice: () => "Trừ mất một trăm hai lần.",
   ttBorrowMissed: () => "Quên mượn ở hàng chục.",
   ttOnlyTens: (a, tens, units, part) => `Đó mới là ${a} × ${tens}. Phần đơn vị, ${a} × ${units} = ${part}, vẫn phải cộng vào.`,
+  ttOnlyTensOfA: (tens, b, units, part) => `Đó mới là ${tens} × ${b}. Phần đơn vị, ${units} × ${b} = ${part}, vẫn phải cộng vào.`,
   ttOnlyUnits: (a, units, tens, part) => `Đó mới là ${a} × ${units}. Phần chục, ${a} × ${tens} = ${part}, còn thiếu.`,
   ttNoPlaceValue: () => "Hai nửa được cộng lại mà quên giá trị hàng: phần chục đáng giá gấp mười lần vẻ ngoài của nó.",
   ttOneCopyShort: (a) => `Thiếu một lần ${a}. Kiểm lại bước cuối của phép tách.`,
@@ -824,8 +826,8 @@ const vi = {
     (reduced ? `, tức ${reduced}.` : "."),
   pSolAtLeast: (n, missOne, missAll, ans) =>
     `Hãy đi đường vòng và tính xác suất trượt hết mọi lần. ` +
-    `Một lần trượt với xác suất ${missOne}, nên ${n} lần trượt hết có xác suất (${missOne})^${n} = ${missAll}. ` +
-    `Mọi trường hợp còn lại đều là "ít nhất một", nên 1 − ${missAll} = ${ans}.`,
+    `Một lần trượt với xác suất ${missOne}, nên ${n} lần trượt hết có xác suất (${missOne})^${n} ≈ ${missAll}. ` +
+    `Mọi trường hợp còn lại đều là "ít nhất một", nên 1 − ${missAll} ≈ ${ans}.`,
   pSolEV: {
     oneDie: "Cộng các mặt lại rồi chia đều: (1+2+3+4+5+6)/6 = 21/6 = 3,5. Không mặt nào là 3,5, và điều đó bình thường — trung bình không nhất thiết phải là một kết quả có thể xảy ra.",
     sumTwo: "Mỗi xúc xắc tự nó trung bình 3,5, và các trung bình cộng thẳng vào nhau: 3,5 + 3,5 = 7.",
@@ -860,7 +862,7 @@ const vi = {
   pSolBox: (flips, fair, ans) =>
     `Hỏi xem mỗi đồng xu cho ra ${flips} dễ dàng tới đâu. Đồng công bằng: ${fair}. Đồng hai mặt ngửa: 1, lần nào cũng được. ` +
     `Đồng hai mặt sấp: 0, không bao giờ, nên loại. Lấy phần của đồng công bằng trên phần còn lại: ${fair} ÷ (${fair} + 1) = ${ans}.`,
-  pSolWaitFirst: (p, ans) => `Nó xảy ra ${p} số lần, nên trung bình cứ ${ans} lần thử mới gặp một lần. Lật ngược xác suất lại: 1 ÷ ${p} = ${ans}.`,
+  pSolWaitFirst: (p, ans) => `Nó xảy ra ${p} số lần, nên trung bình cứ ${ans} lần thử mới gặp một lần. Lật ngược xác suất lại: 1 ÷ (${p}) = ${ans}.`,
   pSolWaitK: (one, k, ans) =>
     `Chờ cái đầu tiên tốn trung bình ${one} lần thử. Sau khi nó xuất hiện thì mọi thứ y như cũ, nên chờ cái tiếp theo lại tốn ${one} lần nữa. ` +
     `Những khoảng chờ kiểu này cộng thẳng vào nhau: ${k} × ${one} = ${ans}.`,
@@ -872,7 +874,7 @@ const vi = {
   },
   pSolCollect: (n, terms, ans) =>
     `Cái đầu tiên là miễn phí, nó tới ngay lập tức. Khi bạn đã có j cái, một cái mới xuất hiện ${n}−j lần trên ${n}, ` +
-    `nên bạn chờ ${n}/(${n}−j) lần thử cho nó. Cộng hết các khoảng chờ lại được ${n} × (${terms}) = ${ans}. ` +
+    `nên bạn chờ ${n}/(${n}−j) lần thử cho nó. Cộng hết các khoảng chờ lại được ${n} × (${terms}) ≈ ${ans}. ` +
     `Cái cuối cùng mới là chỗ chậm: riêng nó đã tốn ${n} lần thử.`,
   pSolOrderMax: (n) =>
     `Các lần lấy không biết gì về nhau, nên không vị trí nào đặc biệt. ` +
@@ -883,7 +885,7 @@ const vi = {
   pSolPickRepeat: (N, k, total, c, ans) =>
     `Tổng cộng có ${N}^${k} = ${total} dãy đồng khả năng. Một dãy tăng cần ${k} giá trị khác nhau, và mỗi bộ ${k} giá trị khác nhau ` +
     `chỉ viết được theo thứ tự tăng đúng một cách. Số bộ như vậy là C(${N};${k}) = ${c}, tức số cách chọn ${k} thứ từ ${N} thứ. ` +
-    `Vậy ${c}/${total} = ${ans}.`,
+    `Vậy ${c}/${total} ≈ ${ans}.`,
   pSolPickDistinct: (k, fact, N) =>
     `Dù bạn nhận ${k} số nào, chúng có thể hiện ra theo ${k}! = ${fact} thứ tự, tất cả đồng khả năng, và một trong số đó là tăng dần. ` +
     `Vậy 1/${fact}. Để ý là cỡ của kho số, ${N}, không hề đi vào đáp án.`,

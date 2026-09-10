@@ -50,6 +50,10 @@ export function frac(x, maxDen = 130) {
     const n = Math.round(x * d);
     if (n !== 0 && Math.abs(n / d - x) < 1e-9) return `${n}/${d}`;
   }
+  // Three decimals is fine for a half, and badly wrong for a fiftieth: 0.01157
+  // shown as 0.012 is out by nearly 4%, which the question itself would mark
+  // wrong. Below 0.05, keep four significant figures.
+  if (Math.abs(x) < 0.05) return String(Number(x.toPrecision(4)));
   return String(Math.round(x * 1000) / 1000);
 }
 

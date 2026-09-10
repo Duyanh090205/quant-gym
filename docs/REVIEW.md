@@ -10,7 +10,7 @@ plus every generator's questions, solutions and traps.
 
 ## What a machine verifies
 
-`npm test` runs 46 tests. Three of them do the load-bearing work, and they are
+`npm test` runs 52 tests. Three of them do the load-bearing work, and they are
 deliberately independent of one another, because a formula and the generator that
 produced it can be wrong in the same way.
 
@@ -20,6 +20,8 @@ produced it can be wrong in the same way.
 | `simulate.test.js` | the same answers, by playing the game instead of computing it | 265 distinct question shapes, 120,000 trials each |
 | `tip-arithmetic.test.js` | the hand-written tip cards, parsing and evaluating both sides of every equation printed on them | 140 equations across 24 cards in two languages |
 | `bilingual.test.js` | the two languages against each other: answers, traps, numbers, and what is left untranslated | every skill at every level |
+| `solution-arithmetic.test.js` | every equation printed inside a generated solution or trap, in both languages | 5,480 equations per run |
+| `sequence-ambiguity.test.js` | whether a sequence admits two defensible answers, using rules fitted from scratch | 1,079 sequences, 789 odd-one-out |
 
 Simulation is the one worth explaining. It ignores the formulas entirely and
 rolls the dice, draws the balls, shuffles the envelopes, walks the walks and plays
@@ -173,6 +175,59 @@ Doing it exposed four real faults that English alone would never have shown:
 answers, same traps, same numbers in the prompt, no English left in the Vietnamese,
 no comma-separated pairs, and the shown answer in the question's own convention.
 
+## Checking the solutions, not just the answers
+
+The tip cards had their arithmetic verified. The generated solutions did not, and
+they are the far bigger surface: thousands of worked lines assembled from templates
+at run time, in two languages. Pointing the same equation parser at them found
+**636 false equations reaching students**, in four families:
+
+- **Sentence fragments that read as equations.** "823 − 400 = 423, − 60 = 363"
+  prints the literal claim that −60 = 363. Steps now carry their running total.
+- **Notation that is simply wrong.** "0.25 × 100 = 25%" asserts 25 = 0.25, because
+  25% *is* 0.25. "50 × 40 = 2000 = 0.6435" asserts 2000 = 0.6435.
+- **An equals sign on a rounded value**, and one rounding coarse enough to matter:
+  a probability of 0.01157 was displayed as 0.012, out by nearly 4% on a question
+  graded to 0.5%.
+- **A missing bracket.** "1 ÷ 1/3 = 3" read left to right is 1/3.
+
+One real trap bug came out of the same sweep: level-1 multiplication splits the
+first factor while level 3 splits the second, and both used the sentence written
+for the second, so a 71 × 5 question explained itself with "the units, 71 × 1 = 5".
+
+Nought remain, of 5,480 equations checked per run.
+
+## Sequences with two defensible answers
+
+The standard and usually fair complaint about these tests: `2, 4, 8, 16` continues
+as 32 under doubling and as 22 under a quadratic through the same four points. A
+student who finds the second and is marked wrong learns only that the test is
+unreliable.
+
+`sequence-ambiguity.test.js` fits arithmetic, geometric, quadratic, Fibonacci and
+affine rules from scratch, knowing nothing about which family produced the
+question, and fails if two of them explain the terms while disagreeing about the
+answer. For odd-one-out it asks, for each position, whether the *other* terms lie
+on a simple rule, and fails if two positions qualify.
+
+Nothing was ambiguous: 1,079 sequences and 789 odd-one-out questions, and 1,172
+answers independently confirmed by a rule fitted without reference to the engine.
+
+## Accessibility
+
+`npm run audit:a11y` measures every visible run of text against whatever is
+actually painted behind it, in both themes across three screens, and reports
+controls with no accessible name or that the keyboard cannot reach.
+
+It found white text on the light-teal accent at **2.26:1** in dark mode, where
+ordinary text needs 4.5, and muted text at 4.24:1 in light mode. The ink on an
+accent is now a token rather than a literal, and the muted grey was darkened.
+
+Two things a screen reader needed and did not have: the countdown was never
+announced, and the verdict replaced the input in place with nothing to say it had.
+The clock now announces at a minute, thirty seconds, ten seconds and time-up
+rather than four times a second, and the verdict is a polite live region.
+
 ## Open questions for whoever picks this up
 
 1. **Vietnamese fluency, not correctness.** Everything is now translated, and the
@@ -184,5 +239,7 @@ no comma-separated pairs, and the shown answer in the question's own convention.
 3. **Level 1 of a narrow skill can run out of distinct questions.** `generateSet`
    returns `distinct` alongside `questions` so a caller can see when this happens;
    it repeats a question rather than handing back a short paper.
-4. **No accessibility audit** beyond keyboard focus and reduced-motion. Screen
-   reader behaviour on the timed sheet is untested.
+4. **A Vietnamese teacher has still not read it.** Everything below is machine
+   checked; how it reads is not.
+5. **The accessibility audit covers contrast, naming and keyboard reach.** It does
+   not cover an actual screen reader, only the markup one would rely on.

@@ -28,6 +28,8 @@ const T = {
     answerIs: "The answer is", score: "Score", blank: "blank", trapped: "known mistakes",
     timeLeft: "time left", review: "Review", again: "Again", exams: "Full papers",
     startExam: "Start", part: "Part", of: "of", questions: "questions",
+    minuteLeft: "One minute left", halfMinute: "Thirty seconds left",
+    tenSeconds: "Ten seconds left", timeUp: "Time is up, this part was submitted",
     done: "Level cleared", needed: "needed to clear", tipTitle: "The trick",
     howItsDone: "How it's done", seeIt: "How to see it", useWhen: "Use it when",
     worked: "Worked example",
@@ -50,6 +52,8 @@ const T = {
     answerIs: "Đáp án là", score: "Điểm", blank: "bỏ trống", trapped: "lỗi đã biết",
     timeLeft: "thời gian còn", review: "Xem lại", again: "Làm lại", exams: "Đề đầy đủ",
     startExam: "Bắt đầu", part: "Phần", of: "trên", questions: "câu",
+    minuteLeft: "Còn một phút", halfMinute: "Còn ba mươi giây",
+    tenSeconds: "Còn mười giây", timeUp: "Hết giờ, phần này đã được nộp",
     done: "Đã qua cấp này", needed: "cần đúng để qua", tipTitle: "Mẹo",
     howItsDone: "Cách làm", seeIt: "Cách nhận ra", useWhen: "Dùng khi",
     worked: "Ví dụ có lời giải",
@@ -320,6 +324,8 @@ function drill(app) {
   } else {
     const v = S.verdict;
     const box = el("div", "verdict " + (v.correct ? "ok" : "no"));
+    box.setAttribute("role", "status");
+    box.setAttribute("aria-live", "polite");
     box.appendChild(el("strong", "", v.correct ? t().correct : t().notQuite));
     if (!v.correct) {
       box.appendChild(el("p", "mono small", `${t().answerIs} ${v.expected}`));
@@ -405,7 +411,19 @@ function clockScreen(app) {
     : `${skillName(S.skill, S.lang)} · ${t().level} ${S.level} · ${questions.length} ${t().questions}`;
   head.appendChild(el("span", "muted small", label));
   const clockEl = el("span", "clock", clock(seconds));
+  clockEl.setAttribute("role", "timer");
+  clockEl.setAttribute("aria-hidden", "true");   // announced through the live region below
   head.appendChild(clockEl);
+  const announcer = el("div", "sr");
+  announcer.setAttribute("role", "status");
+  announcer.setAttribute("aria-live", "polite");
+  head.appendChild(announcer);
+  const announced = new Set();
+  const announce = (key, text) => {
+    if (announced.has(key)) return;
+    announced.add(key);
+    announcer.textContent = text;
+  };
   stack.appendChild(head);
 
   const rail = el("div", "rail");
@@ -458,7 +476,10 @@ function clockScreen(app) {
     fill.style.width = (frac * 100).toFixed(1) + "%";
     clockEl.classList.toggle("hot", frac < 0.2);
     rail.classList.toggle("hot", frac < 0.2);
-    if (left <= 0) finish(true);
+    if (left <= 60 && left > 55) announce("60", t().minuteLeft);
+    if (left <= 30 && left > 25) announce("30", t().halfMinute);
+    if (left <= 10 && left > 5) announce("10", t().tenSeconds);
+    if (left <= 0) { announce("0", t().timeUp); finish(true); }
   }, 250);
 
   function finish(auto = false) {

@@ -18,7 +18,8 @@
   "scripts": {
     "test": "node --test \"test/**/*.test.js\"",
     "demo": "node scripts/build-demo.mjs",
-    "sample": "node scripts/sample.mjs"
+    "sample": "node scripts/sample.mjs",
+    "audit:a11y": "node scripts/audit-accessibility.mjs"
   },
   "keywords": [
     "education",
@@ -29,5 +30,8 @@
   ],
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^23.11.1"
   }
 }

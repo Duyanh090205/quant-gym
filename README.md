@@ -141,10 +141,14 @@ scripts/        sample.mjs prints papers; build-demo.mjs bundles the demo
 
 ```
 npm test                          run the test suite
-node scripts/sample.mjs           print a sample paper for every skill
+npm run sample                    print a sample paper for every skill
 node scripts/sample.mjs prob.bayes 3 10
-node scripts/build-demo.mjs       rebuild demo/standalone.html
+npm run demo                      rebuild demo/standalone.html
+npm run audit:a11y                contrast, naming and keyboard, in a real browser
 ```
+
+The audit needs `npm i -D puppeteer-core` and a local Chrome; nothing else here
+has a dependency.
 
 Tests check the things that would quietly ruin a lesson: that a seed reproduces
 its paper, that no trap can be confused with a right answer, that every trap and

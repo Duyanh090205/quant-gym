@@ -37,8 +37,9 @@ function runningSteps(a, b, sign, t) {
   digits.forEach((d, i) => {
     const place = d * 10 ** (digits.length - 1 - i);
     if (!place) return;
+    const from = running;
     running = sign === "+" ? running + place : running - place;
-    parts.push(t.aStep(sign, place, running));
+    parts.push(t.aStep(from, sign, place, running));
   });
   return parts.join(", ");
 }
@@ -127,7 +128,7 @@ export function multiply(rng, level, t) {
       answer: a * b,
       solution: t.aSplitBigger(a, b, tens, a % 10),
       traps: [
-        { value: tens * b, why: t.ttOnlyTens(a, tens, a % 10, (a % 10) * b) },
+        { value: tens * b, why: t.ttOnlyTensOfA(tens, b, a % 10, (a % 10) * b) },
         { value: (a % 10) * b + Math.floor(a / 10) * b, why: t.ttNoPlaceValue() },
       ],
       tip: "split-and-add",
@@ -414,7 +415,7 @@ export function percent(rng, level, t) {
     return q({
       prompt: t.aPercentOf(t.n(p), y),
       answer: round4((p * y) / 100),
-      solution: t.aPctBuild(t.n(round4(ten)), t.n(round4(p / 10)), t.n(p), t.n(round4((p * y) / 100))),
+      solution: t.aPctBuild(t.n(round4(ten)), t.n(round4(p / 10)), t.n(p), t.n(round4((p * y) / 100)), y),
       traps: [{ value: round4((p * y) / 1000), why: t.ttFactorOfTenCheck() }],
       tip: "percent-flip",
     });
