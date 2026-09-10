@@ -51,8 +51,8 @@ sent over the wire, or rendered by any framework.
   "answer": 0.75,
   "solution": "Ask how readily each urn gives up a red ball: A does it 1/4 of the time, B does it 3/4 of the time. Both urns were equally likely to be chosen, so that drops out and B's answer is its share of the two: 3/4 ÷ (1/4 + 3/4) = 3/4.",
   "traps": [
-    { "value": 0.5, "why": "That is the prior. Drawing red is evidence, and it favours whichever urn has more red." },
-    { "value": 0.25, "why": "Red counts were compared directly, but the urns hold different totals, so compare proportions." }
+    { "value": 0.5, "why": "That is the chance before you drew anything. A red ball is evidence, and it points at whichever urn is redder." },
+    { "value": 0.25, "why": "Red balls were counted straight up, but the urns hold different numbers of balls, so compare the rates 1/4 and 3/4 instead of the counts." }
   ],
   "tip": "bayes-likelihood-share"
 }

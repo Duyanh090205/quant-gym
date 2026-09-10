@@ -284,13 +284,23 @@ test("explanations stay inside a beginner's vocabulary", () => {
 });
 
 test("tip cards avoid the same jargon, in both languages", () => {
+  // Same bar as the solutions, plus the Vietnamese habit of leaving English
+  // statistics terms untranslated, which helps nobody who is stuck.
+  const BANNED = [
+    /martingale/i, /likelihood/i, /prior[s]?/i, /harmonic/i,
+    /derangement/i, /sample space/i, /posterior/i,
+  ];
+  const offenders = [];
   for (const t of TIPS) {
     for (const lang of ["en", "vi"]) {
       const card = getTip(t.id, lang);
       const all = [card.title, card.why, card.example, ...card.steps].join(" ");
-      assert.ok(!/martingale|likelihood/i.test(all), `${t.id} (${lang}) uses jargon: ${all.slice(0, 90)}`);
+      for (const re of BANNED) {
+        if (re.test(all)) offenders.push(`${t.id} (${lang}): ${all.match(re)[0]}`);
+      }
     }
   }
+  assert.deepEqual(offenders, [], "jargon in tip cards");
 });
 
 /* ── sequences ───────────────────────────────────────────────────────────── */

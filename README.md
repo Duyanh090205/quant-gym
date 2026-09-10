@@ -76,7 +76,8 @@ const marked = gradeSet(paper.questions, ["1/2", "0.6", "", "3/5", "0.25", "1/3"
 marked.score;                    // 5
 marked.blank;                    // 1
 marked.results[2].expected;      // "3/8  ≈ 0.375"
-marked.results[4].why;           // "That is the likelihood on its own. Bayes divides it by …"
+marked.results[4].solution;      // "Ask how readily each urn gives up a red ball: …"
+marked.results[4].why;           // "That is the chance before you drew anything. …" (when we can tell)
 ```
 
 Questions come back as plain objects. Render them with your own components if
