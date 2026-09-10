@@ -1,0 +1,2925 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quant Gym</title>
+<style>
+:root{
+  --bg:#f7f7f5; --surface:#fff; --surface-2:#eeefeb; --line:#dfe2da;
+  --fg:#14181e; --fg-2:#39424d; --fg-3:#6d7783;
+  --accent:#1f6f5c; --accent-soft:#dcece6; --warn:#b4600f; --warn-soft:#f6e8d5;
+  --bad:#a33827; --bad-soft:#f6dfda;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"SF Mono",monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --bg:#0e1116; --surface:#161b22; --surface-2:#1e242d; --line:#2b333d;
+  --fg:#e9ebe7; --fg-2:#c3c9cf; --fg-3:#8c959f;
+  --accent:#4fbf9f; --accent-soft:#12302a; --warn:#e2a459; --warn-soft:#33260f;
+  --bad:#e0715c; --bad-soft:#3a1d18;
+}}
+:root[data-theme=dark]{
+  --bg:#0e1116; --surface:#161b22; --surface-2:#1e242d; --line:#2b333d;
+  --fg:#e9ebe7; --fg-2:#c3c9cf; --fg-3:#8c959f;
+  --accent:#4fbf9f; --accent-soft:#12302a; --warn:#e2a459; --warn-soft:#33260f;
+  --bad:#e0715c; --bad-soft:#3a1d18;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.55;
+     -webkit-font-smoothing:antialiased}
+.wrap{max-width:880px;margin:0 auto;padding:24px 18px 72px}
+h1,h2,h3{margin:0;letter-spacing:-.02em;text-wrap:balance}
+h1{font-size:26px;font-weight:700}
+h2{font-size:18px;font-weight:650}
+h3{font-size:14px;font-weight:650}
+p{margin:0}
+button{font:inherit;cursor:pointer;border-radius:var(--r);border:1px solid var(--line);
+       background:var(--surface);color:var(--fg);padding:9px 14px;transition:border-color .12s,background .12s}
+button:hover{border-color:var(--fg-3)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.primary:hover{filter:brightness(1.08);border-color:var(--accent)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--fg-3)}
+.small{font-size:12.5px}
+
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.brand{display:flex;flex-direction:column;gap:2px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--fg-3)}
+.tools{display:flex;gap:8px;align-items:center}
+.seg{display:flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.seg button{border:0;border-radius:0;padding:6px 11px;font-size:13px;background:var(--surface);color:var(--fg-2)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed=true]{background:var(--fg);color:var(--bg);font-weight:600}
+
+.topic{margin-bottom:26px}
+.topic-head{display:flex;flex-direction:column;gap:3px;margin-bottom:12px}
+.skills{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:10px}
+.skill{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 13px;
+       display:flex;flex-direction:column;gap:9px}
+.skill-name{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.levels{display:flex;gap:6px}
+.lvl{flex:1;padding:7px 0;font-family:var(--mono);font-size:12.5px;text-align:center}
+.lvl[data-done=true]{background:var(--accent-soft);border-color:var(--accent);color:var(--fg);font-weight:600}
+.dots{display:flex;gap:3px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line)}
+.dot[data-on=true]{background:var(--accent);border-color:var(--accent)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.tip{background:var(--warn-soft);border:1px solid var(--warn);border-radius:var(--r);padding:15px 16px;
+     display:flex;flex-direction:column;gap:9px}
+.tip h3{color:var(--fg)}
+.tip ol{margin:0;padding-left:19px;display:flex;flex-direction:column;gap:4px;color:var(--fg-2)}
+.tip .ex{font-family:var(--mono);font-size:13px;background:var(--surface);border-radius:6px;padding:9px 11px;
+         overflow-x:auto;white-space:pre-wrap}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.stack{display:flex;flex-direction:column;gap:16px}
+
+.qbig{font-family:var(--mono);font-size:clamp(22px,4.6vw,32px);font-weight:500;letter-spacing:-.02em;
+      line-height:1.25;word-break:break-word}
+.qbig.words{font-family:var(--sans);font-size:clamp(16px,2.6vw,19px);font-weight:450;line-height:1.5}
+input[type=text]{font-family:var(--mono);font-size:19px;padding:10px 12px;background:var(--surface-2);
+  color:var(--fg);border:1px solid var(--line);border-radius:var(--r);width:min(240px,100%);
+  font-variant-numeric:tabular-nums}
+.verdict{border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:6px;border:1px solid}
+.verdict.ok{background:var(--accent-soft);border-color:var(--accent)}
+.verdict.no{background:var(--bad-soft);border-color:var(--bad)}
+.rail{height:4px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.rail i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.rail.hot i{background:var(--bad)}
+.clock{font-family:var(--mono);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.clock.hot{color:var(--bad)}
+
+.sheet{display:grid;gap:8px}
+.sheet.two{grid-template-columns:repeat(auto-fill,minmax(310px,1fr))}
+.qrow{display:grid;grid-template-columns:24px 1fr 110px;gap:10px;align-items:center;background:var(--surface);
+      border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.qrow.words{grid-template-columns:24px 1fr}
+.qrow.words input{grid-column:2}
+.qn{font-family:var(--mono);font-size:11px;color:var(--fg-3);text-align:right}
+.qq{font-family:var(--mono);font-size:16px;font-variant-numeric:tabular-nums;word-break:break-word}
+.qrow.words .qq{font-family:var(--sans);font-size:14.5px;line-height:1.45}
+.qrow input{width:100%;font-size:15px;padding:6px 8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:1px;background:var(--line);
+       border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.tile{background:var(--surface);padding:12px 13px}
+.tile .tv{font-family:var(--mono);font-size:23px;font-weight:650;letter-spacing:-.02em}
+.tile .tl{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-3)}
+.review{display:flex;flex-direction:column;gap:8px}
+.rev{border:1px solid var(--line);border-left-width:3px;border-radius:8px;padding:10px 12px;background:var(--surface)}
+.rev[data-ok=true]{border-left-color:var(--accent)}
+.rev[data-ok=false]{border-left-color:var(--bad)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+"use strict";
+const __shared = {};
+/* ── src/engine/format.js ─────────────────────────────────── */
+(() => {
+/**
+ * Number formatting and answer parsing.
+ *
+ * Students type answers, they do not pick from options. So the parser has to be
+ * generous about how a human writes a number, and strict about what counts as
+ * the same value.
+ */
+
+/** Round to 4 decimal places, dropping float noise like 0.30000000000000004. */
+const round4 = (x) => Math.round(x * 10000) / 10000;
+
+/** Display a number the way a person would write it. */
+function fmt(x) {
+  if (typeof x === "string") return x;
+  if (!isFinite(x)) return String(x);
+  return Number.isInteger(x) ? String(x) : String(round4(x));
+}
+
+/**
+ * Probabilities read better as fractions, expectations as decimals.
+ * Anything below 1 is searched for a small denominator; 6/11 beats 0.545.
+ */
+function frac(x, maxDen = 130) {
+  if (!isFinite(x)) return String(x);
+  if (x === 0) return "0";
+  if (Math.abs(x) >= 1) return String(Math.round(x * 100) / 100);
+  for (let d = 2; d <= maxDen; d++) {
+    const n = Math.round(x * d);
+    if (n !== 0 && Math.abs(n / d - x) < 1e-9) return `${n}/${d}`;
+  }
+  return String(Math.round(x * 1000) / 1000);
+}
+
+/**
+ * Parse what the student typed.
+ *
+ * Understood: `1234`, `1,234`, `12.5`, `12,5` (comma decimal), `3/8`, `40%`,
+ * leading `+`/`-`, stray spaces. Anything else comes back as an upper-cased
+ * string, which is what letter-sequence answers need.
+ *
+ * Returns a number, a string, or null for empty input.
+ */
+function parseAnswer(raw) {
+  if (raw == null) return null;
+  let s = String(raw).trim();
+  if (!s) return null;
+
+  s = s.replace(/\s+/g, "");
+  const isPercent = s.endsWith("%");
+  if (isPercent) s = s.slice(0, -1);
+
+  // 1,234 is a thousands separator; 0,5 is a decimal comma. Strip the first,
+  // convert the second.
+  s = s.replace(/,(\d{3})(?!\d)/g, "$1").replace(",", ".");
+
+  if (!/^[-+]?[\d.]*\/?[-+]?[\d.]+$/.test(s)) {
+    return String(raw).trim().toUpperCase();
+  }
+
+  let v;
+  if (s.includes("/")) {
+    const [n, d] = s.split("/");
+    v = parseFloat(n) / parseFloat(d);
+  } else {
+    v = parseFloat(s);
+  }
+
+  if (!isFinite(v)) return String(raw).trim().toUpperCase();
+  return isPercent ? v / 100 : v;
+}
+
+/** Compare with both a relative and an absolute tolerance. */
+function near(a, b, rel = 0, abs = 0.0051) {
+  return Math.abs(a - b) <= Math.max(abs, rel * Math.abs(b));
+}
+
+/** Normalise a typed string for letter answers: "  hs " and "HS" are equal. */
+const normal = (s) => String(s).trim().replace(/\s+/g, "").toUpperCase();
+
+const ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const LETTERS = "abcdefghij";
+
+/** n! for the small n this engine uses. */
+function fact(n) {
+  let f = 1;
+  for (let i = 2; i <= n; i++) f *= i;
+  return f;
+}
+
+/** Binomial coefficient. */
+function choose(n, k) {
+  if (k < 0 || k > n) return 0;
+  return fact(n) / (fact(k) * fact(n - k));
+}
+
+/** Ordinal suffix: 1 → "1st". Used in question prompts. */
+function ordinal(n) {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+Object.assign(__shared, { fmt, frac, parseAnswer, near, fact, choose, ordinal, round4, normal, ALPHA, LETTERS });
+})();
+
+/* ── src/engine/rng.js ─────────────────────────────────── */
+(() => {
+/**
+ * Seeded random number generator.
+ *
+ * Every question in Quant Gym is produced from a seed, so the same seed always
+ * yields the same paper. That is what makes classroom assignments possible:
+ * a teacher shares the code `QG-7A3F` and all thirty students sit the same set,
+ * with no server and no database of questions.
+ */
+
+/** Turn any string into a 32-bit integer. */
+function hashSeed(seed) {
+  let h = 2166136261 >>> 0;
+  const s = String(seed);
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h >>> 0;
+}
+
+/**
+ * Create a deterministic RNG. `mulberry32` is small, fast and has a long
+ * enough period for exam papers; it is not cryptographic and does not need to be.
+ */
+function makeRng(seed) {
+  let a = hashSeed(seed);
+  const next = () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+
+  return {
+    /** Float in [0, 1). */
+    float: next,
+    /** Integer in [lo, hi], both inclusive. */
+    int: (lo, hi) => lo + Math.floor(next() * (hi - lo + 1)),
+    /** One element of `arr`. Repeat an element to weight it. */
+    pick: (arr) => arr[Math.floor(next() * arr.length)],
+    /** Fisher-Yates, in place, returns the same array. */
+    shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(next() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    },
+    /** True with probability p. */
+    chance: (p) => next() < p,
+  };
+}
+
+/** Human-friendly assignment code, e.g. "QG-7A3F". Ambiguous glyphs removed. */
+function makeCode(seed = Date.now() + ":" + Math.random()) {
+  const ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+  let h = hashSeed(seed);
+  let out = "";
+  for (let i = 0; i < 4; i++) {
+    out += ALPHABET[h % ALPHABET.length];
+    h = Math.floor(h / ALPHABET.length) + 7919;
+  }
+  return "QG-" + out;
+}
+
+Object.assign(__shared, { hashSeed, makeRng, makeCode });
+})();
+
+/* ── src/engine/tips.js ─────────────────────────────────── */
+(() => {
+/**
+ * Tip cards.
+ *
+ * A tip card is shown twice: once before the first drill of a level, and again
+ * the moment a student gets a question wrong that this tip covers. The second
+ * showing is the one that teaches. A trick delivered while the mistake is still
+ * warm sticks; the same trick in a textbook chapter does not.
+ *
+ * Every card is bilingual. English is the default; `vi` exists because most of
+ * the first cohort reads Vietnamese faster than English, and a student should
+ * never lose a maths point to a language gap.
+ */
+
+const TIPS = [
+  {
+    id: "subtract-hundreds-first",
+    skill: "arith.add-subtract",
+    en: {
+      title: "Subtract the hundreds first, then say the middle number out loud",
+      steps: [
+        "Take away the big part before the small part.",
+        "Say the intermediate number to yourself. That is what stops you dropping a hundred.",
+        "Then take away what is left.",
+      ],
+      example: "823 − 467 → 823 − 400 = 423 → 423 − 60 = 363 → 363 − 7 = 356",
+      why: "Rounding up and adding back feels clever but loses a whole hundred when you are rushed. Going left to right never does.",
+    },
+    vi: {
+      title: "Trừ hàng trăm trước, rồi đọc to số ở giữa",
+      steps: [
+        "Bỏ phần lớn trước, phần nhỏ sau.",
+        "Đọc thầm số trung gian. Đó là thứ giữ cho bạn không rơi mất một trăm.",
+        "Rồi trừ nốt phần còn lại.",
+      ],
+      example: "823 − 467 → 823 − 400 = 423 → 423 − 60 = 363 → 363 − 7 = 356",
+      why: "Cách làm tròn lên rồi cộng bù nghe thông minh nhưng lúc vội rất hay mất nguyên một trăm. Đi từ trái sang phải thì không bao giờ.",
+    },
+  },
+  {
+    id: "split-and-add",
+    skill: "arith.multiply",
+    en: {
+      title: "Split the second number, multiply twice, add",
+      steps: [
+        "Break the smaller factor into tens and units.",
+        "Multiply each part separately.",
+        "Add the two results.",
+      ],
+      example: "17 × 54 → 17 × 50 = 850, 17 × 4 = 68, 850 + 68 = 918",
+      why: "Two easy multiplications beat one hard one. You are never holding more than three digits in your head.",
+    },
+    vi: {
+      title: "Tách số thứ hai, nhân hai lần, rồi cộng",
+      steps: [
+        "Tách thừa số nhỏ hơn thành hàng chục và hàng đơn vị.",
+        "Nhân từng phần riêng.",
+        "Cộng hai kết quả lại.",
+      ],
+      example: "17 × 54 → 17 × 50 = 850, 17 × 4 = 68, 850 + 68 = 918",
+      why: "Hai phép nhân dễ hơn một phép nhân khó. Bạn không bao giờ phải nhớ quá ba chữ số trong đầu.",
+    },
+  },
+  {
+    id: "times-five-and-eleven",
+    skill: "arith.multiply",
+    en: {
+      title: "×5 is half of ×10. ×11 is the digits with their sum in the middle",
+      steps: [
+        "For ×5: multiply by 10, then halve.",
+        "For ×11 on a two-digit number: keep the outer digits, put their sum between them.",
+        "If that sum is 10 or more, carry the 1 into the first digit.",
+      ],
+      example: "48 × 5 → 480 ÷ 2 = 240.   36 × 11 → 3 (3+6) 6 = 396.   78 × 11 → 7 (15) 8 → 858",
+      why: "Both turn a multiplication into an addition or a halving, which are far faster under a clock.",
+    },
+    vi: {
+      title: "×5 là một nửa của ×10. ×11 là giữ hai đầu, đặt tổng vào giữa",
+      steps: [
+        "Với ×5: nhân 10 rồi chia đôi.",
+        "Với ×11 số hai chữ số: giữ hai chữ số ngoài, đặt tổng của chúng vào giữa.",
+        "Nếu tổng đó từ 10 trở lên thì nhớ 1 sang chữ số đầu.",
+      ],
+      example: "48 × 5 → 480 ÷ 2 = 240.   36 × 11 → 3 (3+6) 6 = 396.   78 × 11 → 7 (15) 8 → 858",
+      why: "Cả hai biến phép nhân thành phép cộng hoặc chia đôi, nhanh hơn hẳn khi có đồng hồ.",
+    },
+  },
+  {
+    id: "squares-rule-of-one",
+    skill: "arith.squares",
+    en: {
+      title: "Any square: slide to a round number, then add back",
+      steps: [
+        "n² = (n − d)(n + d) + d², where d slides n to something round.",
+        "Choose d so one factor ends in 0.",
+        "The correction d² is always small.",
+      ],
+      example: "37² → d = 3 → 34 × 40 = 1360 → +9 = 1369.   48² → d = 2 → 46 × 50 = 2300 → +4 = 2304",
+      why: "It turns every square outside the memorised table into one easy multiplication by a multiple of ten.",
+    },
+    vi: {
+      title: "Bình phương bất kỳ: trượt về số tròn, rồi cộng bù",
+      steps: [
+        "n² = (n − d)(n + d) + d², với d là khoảng trượt n về số tròn.",
+        "Chọn d sao cho một thừa số kết thúc bằng 0.",
+        "Phần bù d² luôn nhỏ.",
+      ],
+      example: "37² → d = 3 → 34 × 40 = 1360 → +9 = 1369.   48² → d = 2 → 46 × 50 = 2300 → +4 = 2304",
+      why: "Nó biến mọi bình phương ngoài bảng đã thuộc thành một phép nhân dễ với bội của mười.",
+    },
+  },
+  {
+    id: "cube-root-last-digit",
+    skill: "arith.roots",
+    en: {
+      title: "Cube roots: the last digit gives itself away",
+      steps: [
+        "A cube's last digit determines the root's last digit uniquely.",
+        "0,1,4,5,6,9 map to themselves. Only 2↔8 and 3↔7 swap.",
+        "Use the leading digits to find the tens: 5832 is between 10³ and 20³, so the root is 1_.",
+      ],
+      example: "∛5832 → ends in 2, so root ends in 8 → between 10 and 20 → 18",
+      why: "You never divide anything. Two glances and the answer is forced.",
+    },
+    vi: {
+      title: "Căn bậc ba: chữ số cuối tự khai ra",
+      steps: [
+        "Chữ số cuối của lập phương xác định duy nhất chữ số cuối của căn.",
+        "0,1,4,5,6,9 giữ nguyên. Chỉ có 2↔8 và 3↔7 đổi chỗ.",
+        "Dùng các chữ số đầu để tìm hàng chục: 5832 nằm giữa 10³ và 20³ nên căn là 1_.",
+      ],
+      example: "∛5832 → tận cùng 2, nên căn tận cùng 8 → nằm giữa 10 và 20 → 18",
+      why: "Không phải chia gì cả. Nhìn hai lần là đáp án bị ép ra.",
+    },
+  },
+  {
+    id: "reduce-before-dividing",
+    skill: "arith.divide",
+    en: {
+      title: "Cancel first, divide once",
+      steps: [
+        "Look for a common factor on both sides before doing any long division.",
+        "Halve both numbers as often as they are both even.",
+        "Then do the one division that is left.",
+      ],
+      example: "8 × 240 = 24 × ? → cancel 8 → 240 = 3 × ? → 80",
+      why: "Most 4-digit-by-2-digit questions are built to cancel. Grinding through the division is the slow path the setter expects you to take.",
+    },
+    vi: {
+      title: "Rút gọn trước, chia một lần",
+      steps: [
+        "Tìm thừa số chung hai vế trước khi làm phép chia dài.",
+        "Chia đôi cả hai số chừng nào cả hai còn chẵn.",
+        "Rồi làm nốt một phép chia còn lại.",
+      ],
+      example: "8 × 240 = 24 × ? → rút 8 → 240 = 3 × ? → 80",
+      why: "Phần lớn câu chia 4 chữ số cho 2 chữ số được dựng để rút gọn được. Cắm đầu chia là con đường chậm mà người ra đề mong bạn đi.",
+    },
+  },
+  {
+    id: "fraction-anchors",
+    skill: "arith.fractions",
+    en: {
+      title: "Learn eight anchors, read every percentage off them",
+      steps: [
+        "1/2 = 50%, 1/3 = 33.3%, 1/4 = 25%, 1/5 = 20%",
+        "1/6 = 16.7%, 1/8 = 12.5%, 1/10 = 10%, 1/16 = 6.25%",
+        "Everything else is an anchor plus or minus another anchor.",
+      ],
+      example: "3/8 = 25% + 12.5% = 37.5%.   5/6 = 100% − 16.7% = 83.3%",
+      why: "Eight facts cover almost every fraction that appears. Deriving them each time costs seconds you do not have.",
+    },
+    vi: {
+      title: "Thuộc tám cái mốc, mọi phần trăm khác đọc ra từ đó",
+      steps: [
+        "1/2 = 50%, 1/3 = 33,3%, 1/4 = 25%, 1/5 = 20%",
+        "1/6 = 16,7%, 1/8 = 12,5%, 1/10 = 10%, 1/16 = 6,25%",
+        "Mọi cái khác là một mốc cộng hoặc trừ một mốc khác.",
+      ],
+      example: "3/8 = 25% + 12,5% = 37,5%.   5/6 = 100% − 16,7% = 83,3%",
+      why: "Tám con số phủ gần hết các phân số hay gặp. Tính lại từ đầu mỗi lần tốn đúng số giây bạn không có.",
+    },
+  },
+  {
+    id: "percent-flip",
+    skill: "arith.percent",
+    en: {
+      title: "Percentages commute, so flip to the easy side",
+      steps: ["x% of y is always equal to y% of x.", "Pick whichever of the two is easier to compute."],
+      example: "18% of 50 is hard. 50% of 18 is 9.   4% of 75 → 75% of 4 = 3",
+      why: "Free, exact, and it turns roughly a third of percentage questions into something you can say instantly.",
+    },
+    vi: {
+      title: "Phần trăm đổi chỗ được, nên lật về phía dễ",
+      steps: ["x% của y luôn bằng y% của x.", "Chọn cái nào trong hai cái dễ tính hơn."],
+      example: "18% của 50 thì khó. 50% của 18 là 9.   4% của 75 → 75% của 4 = 3",
+      why: "Miễn phí, chính xác, và biến khoảng một phần ba câu phần trăm thành thứ nói ra được ngay.",
+    },
+  },
+  {
+    id: "sequence-differences",
+    skill: "seq.find-rule",
+    en: {
+      title: "Differences, then ratios, then look inside the digits",
+      steps: [
+        "Write the gaps between consecutive terms. Constant gap means arithmetic.",
+        "Gaps growing steadily means quadratic; take the differences of the differences.",
+        "Constant ratio means geometric. If neither works, check digit sums, or two sequences interleaved.",
+      ],
+      example: "3, 8, 17, 30, 47 → gaps 5, 9, 13, 17 → gaps of gaps 4, 4, 4 → quadratic",
+      why: "This order finds the rule for four families out of five in under ten seconds, and tells you fast when to move on.",
+    },
+    vi: {
+      title: "Xét hiệu, rồi tỉ số, rồi soi vào bên trong chữ số",
+      steps: [
+        "Viết khoảng cách giữa các số liền nhau. Hiệu không đổi là cấp số cộng.",
+        "Hiệu tăng đều là bậc hai; lấy hiệu của hiệu.",
+        "Tỉ số không đổi là cấp số nhân. Nếu đều không phải, xem tổng chữ số, hoặc hai dãy đan xen.",
+      ],
+      example: "3, 8, 17, 30, 47 → hiệu 5, 9, 13, 17 → hiệu của hiệu 4, 4, 4 → bậc hai",
+      why: "Thứ tự này tìm ra quy luật của bốn trên năm họ trong chưa tới mười giây, và báo sớm khi nào nên bỏ qua.",
+    },
+  },
+  {
+    id: "odd-one-out-majority",
+    skill: "seq.odd-one-out",
+    en: {
+      title: "Find the rule the majority obeys, then the outlier names itself",
+      steps: [
+        "Do not hunt for the odd term. Find the pattern that most terms fit.",
+        "Use the first two or three terms to guess the rule; the first term is never the broken one.",
+        "Walk forward and the first term that disagrees is the answer.",
+      ],
+      example: "2, 5, 11, 23, 46, 95 → doubling and adding 1 → 46 should be 47",
+      why: "Staring at six numbers asking 'which looks wrong' has no method and no end. Fitting the majority does.",
+    },
+    vi: {
+      title: "Tìm quy luật mà số đông tuân theo, kẻ lạc sẽ tự lộ",
+      steps: [
+        "Đừng đi săn số lệch. Hãy tìm quy luật mà phần lớn các số khớp.",
+        "Dùng hai ba số đầu để đoán quy luật; số đầu tiên không bao giờ là số bị phá.",
+        "Đi tới, số đầu tiên không khớp chính là đáp án.",
+      ],
+      example: "2, 5, 11, 23, 46, 95 → nhân đôi cộng 1 → 46 lẽ ra phải là 47",
+      why: "Nhìn sáu con số rồi hỏi 'cái nào trông sai' thì không có phương pháp và không có điểm dừng. Khớp số đông thì có.",
+    },
+  },
+  {
+    id: "equally-likely",
+    skill: "prob.counting",
+    en: {
+      title: "Count the outcomes, and keep them equally likely",
+      steps: [
+        "Write the sample space so every outcome has the same chance.",
+        "Probability is then favourable divided by total.",
+        "Two dice have 36 equally likely outcomes, not 11 sums.",
+      ],
+      example: "P(sum = 5) → (1,4)(2,3)(3,2)(4,1) → 4/36 = 1/9, not 1/11",
+      why: "Almost every wrong answer in basic probability comes from counting a space whose outcomes are not equally likely.",
+    },
+    vi: {
+      title: "Đếm các kết quả, và giữ cho chúng đồng khả năng",
+      steps: [
+        "Viết không gian mẫu sao cho mọi kết quả có cùng cơ hội.",
+        "Xác suất khi đó là số thuận lợi chia tổng.",
+        "Hai xúc xắc có 36 kết quả đồng khả năng, không phải 11 tổng.",
+      ],
+      example: "P(tổng = 5) → (1,4)(2,3)(3,2)(4,1) → 4/36 = 1/9, không phải 1/11",
+      why: "Gần như mọi đáp án sai trong xác suất cơ bản đến từ việc đếm một không gian mà các kết quả không đồng khả năng.",
+    },
+  },
+  {
+    id: "at-least-one-complement",
+    skill: "prob.counting",
+    en: {
+      title: "'At least one' means one minus 'none'",
+      steps: [
+        "Never add up the cases for one, two, three successes.",
+        "Compute the probability of zero successes and subtract from 1.",
+      ],
+      example: "At least one 6 in 3 rolls → 1 − (5/6)³ = 1 − 125/216 = 91/216",
+      why: "'None' is a single product. The direct sum is three or four terms and one of them is always miscounted.",
+    },
+    vi: {
+      title: "'Ít nhất một' nghĩa là một trừ 'không có cái nào'",
+      steps: [
+        "Đừng cộng các trường hợp một, hai, ba lần thành công.",
+        "Tính xác suất không thành công lần nào rồi lấy 1 trừ đi.",
+      ],
+      example: "Ít nhất một mặt 6 trong 3 lần tung → 1 − (5/6)³ = 1 − 125/216 = 91/216",
+      why: "'Không có cái nào' chỉ là một phép nhân. Cộng trực tiếp thì ba bốn số hạng và luôn có một cái đếm sai.",
+    },
+  },
+  {
+    id: "expectation-is-a-weighted-average",
+    skill: "prob.expected-value",
+    en: {
+      title: "Expected value is a weighted average, and it adds",
+      steps: [
+        "Multiply each payoff by its probability and add.",
+        "E[X + Y] = E[X] + E[Y] always, even when X and Y are dependent.",
+        "E[X × Y] = E[X] × E[Y] only when they are independent.",
+      ],
+      example: "One die: (1+2+3+4+5+6)/6 = 3.5. Two dice, sum: 3.5 + 3.5 = 7",
+      why: "Adding expectations is the single most reusable move in the whole subject. It needs no independence and no case analysis.",
+    },
+    vi: {
+      title: "Kỳ vọng là trung bình có trọng số, và nó cộng được",
+      steps: [
+        "Nhân mỗi khoản với xác suất của nó rồi cộng lại.",
+        "E[X + Y] = E[X] + E[Y] luôn đúng, kể cả khi X và Y phụ thuộc nhau.",
+        "E[X × Y] = E[X] × E[Y] chỉ đúng khi chúng độc lập.",
+      ],
+      example: "Một xúc xắc: (1+2+3+4+5+6)/6 = 3,5. Hai xúc xắc, tổng: 3,5 + 3,5 = 7",
+      why: "Cộng kỳ vọng là nước đi dùng lại được nhiều nhất trong cả môn này. Không cần độc lập, không cần chia trường hợp.",
+    },
+  },
+  {
+    id: "expectation-not-one-path",
+    skill: "prob.expected-value",
+    en: {
+      title: "The expected value is not the typical path",
+      steps: [
+        "For a product of independent factors, multiply the expectations.",
+        "Up 10% then down 10% gives 0.99 of your money, but that is one path.",
+        "The expectation of each day's factor is (1.1 + 0.9)/2 = 1.0, so the expected price never moves.",
+      ],
+      example: "100, ±10% daily, 2 days → E = 100 × 1.0 × 1.0 = 100, not 99",
+      why: "This gap between the average outcome and the typical outcome is the whole reason volatility matters in finance. It is the most interviewed idea on this list.",
+    },
+    vi: {
+      title: "Kỳ vọng không phải là đường đi điển hình",
+      steps: [
+        "Với tích các thừa số độc lập, hãy nhân các kỳ vọng.",
+        "Tăng 10% rồi giảm 10% còn 0,99 số tiền, nhưng đó là một đường đi.",
+        "Kỳ vọng của hệ số mỗi ngày là (1,1 + 0,9)/2 = 1,0, nên giá kỳ vọng không đổi.",
+      ],
+      example: "100, ±10% mỗi ngày, 2 ngày → E = 100 × 1,0 × 1,0 = 100, không phải 99",
+      why: "Khoảng cách giữa kết quả trung bình và kết quả điển hình chính là lý do biến động quan trọng trong tài chính. Đây là ý được hỏi nhiều nhất trong danh sách này.",
+    },
+  },
+  {
+    id: "condition-shrinks-the-space",
+    skill: "prob.conditional",
+    en: {
+      title: "Conditioning throws away outcomes, it does not merge them",
+      steps: [
+        "Write the full space, cross out what the condition rules out, recount.",
+        "Two children are BB, BG, GB, GG. BG and GB are different outcomes.",
+        "'At least one boy' leaves three, of which one is BB.",
+      ],
+      example: "P(both boys | at least one boy) = 1/3, but P(both boys | the elder is a boy) = 1/2",
+      why: "The intuitive 1/2 is wrong because it silently merges BG and GB. Which fact you are told changes the answer, so read the wording twice.",
+    },
+    vi: {
+      title: "Điều kiện loại bớt kết quả, chứ không gộp chúng lại",
+      steps: [
+        "Viết cả không gian, gạch đi phần điều kiện loại trừ, rồi đếm lại.",
+        "Hai con là BB, BG, GB, GG. BG và GB là hai kết quả khác nhau.",
+        "'Có ít nhất một con trai' còn lại ba, trong đó một là BB.",
+      ],
+      example: "P(cả hai trai | có ít nhất một trai) = 1/3, nhưng P(cả hai trai | con lớn là trai) = 1/2",
+      why: "Trực giác 1/2 sai vì nó lặng lẽ gộp BG với GB. Bạn được cho biết điều gì sẽ đổi đáp án, nên đọc đề hai lần.",
+    },
+  },
+  {
+    id: "bayes-likelihood-share",
+    skill: "prob.bayes",
+    en: {
+      title: "When the priors are equal, Bayes is just a share of the likelihoods",
+      steps: [
+        "Write each hypothesis's chance of producing what you saw.",
+        "The answer is your hypothesis's number divided by the sum of all of them.",
+        "Equal priors cancel top and bottom, so you never multiply by 1/3.",
+      ],
+      example: "Coins with P(H) = 1/4, 1/2, 3/4, one flip lands heads → P(it was the 3/4 coin) = (3/4) / (1/4 + 1/2 + 3/4) = 1/2",
+      why: "It turns Bayes from a formula you half-remember into a division you can do out loud.",
+    },
+    vi: {
+      title: "Khi các prior bằng nhau, Bayes chỉ là chia phần của likelihood",
+      steps: [
+        "Viết ra khả năng mỗi giả thuyết tạo ra thứ bạn vừa thấy.",
+        "Đáp án là số của giả thuyết bạn hỏi chia cho tổng tất cả.",
+        "Prior bằng nhau thì triệt tiêu trên dưới, nên không cần nhân 1/3.",
+      ],
+      example: "Ba xu P(ngửa) = 1/4, 1/2, 3/4, tung một lần ra ngửa → P(là xu 3/4) = (3/4) / (1/4 + 1/2 + 3/4) = 1/2",
+      why: "Nó biến Bayes từ một công thức nhớ mang máng thành một phép chia đọc ra miệng được.",
+    },
+  },
+  {
+    id: "waiting-time-one-over-p",
+    skill: "prob.waiting-time",
+    en: {
+      title: "Waiting for something with probability p takes 1/p tries",
+      steps: [
+        "One 6 on a die: p = 1/6, so 6 rolls on average.",
+        "Want it k times and they need not be consecutive? Just k/p, because expectations add.",
+        "Consecutive is a different problem: a break sends you back to the start.",
+      ],
+      example: "Three 5s, not necessarily in a row → 3 × 6 = 18 rolls. But HH in a row → 6 flips, while HT → 4",
+      why: "HT is 4 and HH is 6 because after a head, another head still keeps you waiting for the tail, but a tail resets the run of heads.",
+    },
+    vi: {
+      title: "Chờ một biến cố có xác suất p thì mất 1/p lần thử",
+      steps: [
+        "Một mặt 6 trên xúc xắc: p = 1/6, nên trung bình 6 lần tung.",
+        "Muốn nó xảy ra k lần và không cần liên tiếp? Chỉ là k/p, vì kỳ vọng cộng được.",
+        "Liên tiếp lại là bài toán khác: đứt một cái là về lại từ đầu.",
+      ],
+      example: "Ba mặt 5, không cần liên tiếp → 3 × 6 = 18 lần. Nhưng HH liên tiếp → 6 lần, còn HT → 4",
+      why: "HT là 4 còn HH là 6 vì sau một mặt ngửa, thêm một mặt ngửa nữa vẫn đang chờ mặt sấp, nhưng một mặt sấp thì xoá sạch chuỗi ngửa.",
+    },
+  },
+  {
+    id: "ruin-and-first-mover",
+    skill: "prob.classics",
+    en: {
+      title: "Fair ruin is i/N, and going first is 1/(2 − p)",
+      steps: [
+        "In a fair game, your chance of reaching N before 0 from i is exactly i/N.",
+        "Taking turns, first to succeed wins: P(first player) = p / (1 − (1 − p)²) = 1/(2 − p).",
+        "The second form comes from one line: you win now, or both miss and the position repeats.",
+      ],
+      example: "3 coins against 2 → 3/5.   First to roll a 6 → 1/(2 − 1/6) = 6/11 ≈ 0.545",
+      why: "Both look like they need infinite series and neither does. Setting up 'the position repeats' is the move worth practising.",
+    },
+    vi: {
+      title: "Ruin công bằng là i/N, và đi trước là 1/(2 − p)",
+      steps: [
+        "Trong trò công bằng, xác suất từ i lên tới N trước khi về 0 đúng bằng i/N.",
+        "Thay phiên nhau, ai thành công trước thì thắng: P(người đi trước) = p / (1 − (1 − p)²) = 1/(2 − p).",
+        "Dạng thứ hai ra từ một dòng: hoặc bạn thắng ngay, hoặc cả hai trượt và ván cờ lặp lại.",
+      ],
+      example: "3 đồng đấu 2 đồng → 3/5.   Ai ra mặt 6 trước → 1/(2 − 1/6) = 6/11 ≈ 0,545",
+      why: "Cả hai trông như cần chuỗi vô hạn mà thật ra không cần. Dựng được ý 'ván cờ lặp lại' mới là nước đáng luyện.",
+    },
+  },
+  {
+    id: "symmetry-orderings",
+    skill: "prob.symmetry",
+    en: {
+      title: "If nothing distinguishes the positions, every ordering is equally likely",
+      steps: [
+        "n distinct continuous draws produce n! orderings, all equally likely.",
+        "So the chance they come out in one named order is 1/n!.",
+        "And the chance any particular one of them is the largest is 1/n.",
+      ],
+      example: "5 random numbers, strictly decreasing → 1/120.   3 draws, the 2nd is the largest → 1/3",
+      why: "No integration, no counting. Ask whether the labels carry any information; usually they carry none.",
+    },
+    vi: {
+      title: "Nếu không có gì phân biệt các vị trí thì mọi thứ tự đều đồng khả năng",
+      steps: [
+        "n lần rút liên tục khác nhau tạo ra n! thứ tự, tất cả đồng khả năng.",
+        "Nên xác suất chúng ra theo đúng một thứ tự được nêu là 1/n!.",
+        "Và xác suất một vị trí bất kỳ trong đó là lớn nhất là 1/n.",
+      ],
+      example: "5 số ngẫu nhiên, giảm dần ngặt → 1/120.   3 lần rút, cái thứ 2 lớn nhất → 1/3",
+      why: "Không tích phân, không đếm. Hãy hỏi các nhãn có mang thông tin gì không; thường là không.",
+    },
+  },
+];
+
+const BY_ID = new Map(TIPS.map((t) => [t.id, t]));
+const BY_SKILL = TIPS.reduce((m, t) => {
+  (m[t.skill] ||= []).push(t);
+  return m;
+}, {});
+
+/** One tip card, already resolved to a language. Returns null for unknown ids. */
+function getTip(id, lang = "en") {
+  const t = BY_ID.get(id);
+  if (!t) return null;
+  return { id: t.id, skill: t.skill, ...(t[lang] || t.en) };
+}
+
+/** Every tip attached to a skill, resolved to a language. */
+function tipsForSkill(skillId, lang = "en") {
+  return (BY_SKILL[skillId] || []).map((t) => getTip(t.id, lang));
+}
+
+Object.assign(__shared, { getTip, tipsForSkill, TIPS });
+})();
+
+/* ── src/engine/curriculum.js ─────────────────────────────────── */
+(() => {
+/**
+ * The ladder.
+ *
+ * Nineteen skills in three topics, ordered so that a student who has never seen
+ * any of this can start at the top and never hit a wall they were not prepared
+ * for. Each skill has three levels, and each level has two modes:
+ *
+ *   drill  — no clock, feedback after every question. This is where learning happens.
+ *   clock  — fixed count, fixed time. This is where it becomes automatic.
+ *
+ * `pass` is how many of the clocked questions must be right to master the level.
+ * Mastery unlocks the next level; mastering level 3 unlocks the next skill.
+ * A student in a hurry can skip straight to any level's clock and test out.
+ */
+
+const lv = (count, seconds, pass) => ({ count, seconds, pass });
+
+const skill = (id, en, vi, levels, opts = {}) => ({
+  id,
+  name: { en, vi },
+  drill: opts.drill ?? 8,
+  levels,
+  ...opts,
+});
+
+const CURRICULUM = [
+  {
+    id: "arithmetic",
+    name: { en: "Mental arithmetic", vi: "Tính nhẩm" },
+    blurb: {
+      en: "Speed with numbers, without a calculator and without paper. Everything later rests on this.",
+      vi: "Nhanh với con số, không máy tính và không giấy bút. Mọi thứ về sau đều dựa trên phần này.",
+    },
+    skills: [
+      skill("arith.times-tables", "Times tables", "Bảng cửu chương",
+        [lv(20, 90, 17), lv(20, 80, 17), lv(20, 90, 16)]),
+      skill("arith.add-subtract", "Add and subtract", "Cộng và trừ",
+        [lv(20, 120, 16), lv(20, 150, 16), lv(15, 180, 12)]),
+      skill("arith.multiply", "Multiply", "Nhân",
+        [lv(15, 120, 12), lv(15, 120, 12), lv(12, 180, 9)]),
+      skill("arith.divide", "Divide", "Chia",
+        [lv(15, 110, 12), lv(15, 130, 12), lv(12, 180, 9)]),
+      skill("arith.squares", "Squares", "Bình phương",
+        [lv(15, 90, 13), lv(15, 100, 12), lv(12, 150, 9)]),
+      skill("arith.roots", "Roots and powers", "Căn và luỹ thừa",
+        [lv(12, 100, 10), lv(12, 120, 9), lv(10, 150, 7)]),
+      skill("arith.fractions", "Fractions and decimals", "Phân số và thập phân",
+        [lv(15, 100, 12), lv(12, 130, 9), lv(12, 160, 9)]),
+      skill("arith.percent", "Percentages", "Phần trăm",
+        [lv(15, 110, 12), lv(15, 140, 11), lv(12, 160, 9)]),
+      skill("arith.estimate", "Estimation", "Ước lượng",
+        [lv(10, 100, 8), lv(10, 110, 7), lv(10, 120, 7)]),
+      skill("arith.puzzles", "Number puzzles", "Câu đố số học",
+        [lv(10, 150, 8), lv(10, 180, 7), lv(8, 200, 6)]),
+    ],
+  },
+  {
+    id: "sequences",
+    name: { en: "Sequences", vi: "Dãy số" },
+    blurb: {
+      en: "Spot the rule behind a row of numbers, then spot the one term that disobeys it.",
+      vi: "Nhận ra quy luật đằng sau một dãy số, rồi tìm đúng một số không tuân theo.",
+    },
+    skills: [
+      skill("seq.find-rule", "Find the rule", "Tìm quy luật",
+        [lv(12, 180, 10), lv(12, 240, 9), lv(10, 300, 7)]),
+      skill("seq.odd-one-out", "Odd one out", "Tìm số lạc",
+        [lv(12, 240, 10), lv(12, 300, 9), lv(20, 720, 14)]),
+    ],
+  },
+  {
+    id: "probability",
+    name: { en: "Probability and expected value", vi: "Xác suất và kỳ vọng" },
+    blurb: {
+      en: "Seven ideas that answer almost every probability question a trading firm asks.",
+      vi: "Bảy ý trả lời được gần như mọi câu xác suất mà một công ty giao dịch hỏi.",
+    },
+    skills: [
+      skill("prob.counting", "Counting outcomes", "Đếm kết quả",
+        [lv(10, 240, 8), lv(10, 300, 8), lv(10, 360, 7)]),
+      skill("prob.expected-value", "Expected value", "Kỳ vọng",
+        [lv(10, 240, 8), lv(10, 360, 7), lv(8, 400, 6)]),
+      skill("prob.conditional", "Conditional probability", "Xác suất có điều kiện",
+        [lv(8, 240, 6), lv(8, 300, 6), lv(8, 360, 6)]),
+      skill("prob.bayes", "Bayes", "Bayes",
+        [lv(8, 300, 6), lv(8, 360, 6), lv(8, 400, 6)]),
+      skill("prob.waiting-time", "Waiting times", "Thời gian chờ",
+        [lv(8, 240, 6), lv(8, 300, 6), lv(8, 360, 6)]),
+      skill("prob.symmetry", "Symmetry and ordering", "Đối xứng và thứ tự",
+        [lv(8, 240, 6), lv(8, 300, 6), lv(8, 400, 6)]),
+      skill("prob.classics", "Classic puzzles", "Câu đố kinh điển",
+        [lv(8, 300, 6), lv(8, 360, 6), lv(8, 420, 5)]),
+    ],
+  },
+];
+
+/**
+ * Exam papers. These are not part of the ladder; they are the thing the ladder
+ * is preparing you for, unlocked once the probability topic is mastered.
+ *
+ * `maven-round-1` reproduces a real first-round paper sat on 9 September 2026:
+ * every question of a part on one page, typed answers, a countdown, and no
+ * negative marking anywhere, so a blank is strictly worse than a guess.
+ */
+const EXAMS = [
+  {
+    id: "maven-round-1",
+    name: { en: "Maven Securities, round 1", vi: "Maven Securities, vòng 1" },
+    note: {
+      en: "The real format: 50 arithmetic in 5 minutes, 20 odd-one-out in 12, 15 probability in 15. +1 for correct, 0 for wrong, 0 for blank.",
+      vi: "Format thật: 50 câu tính nhẩm trong 5 phút, 20 câu tìm số lạc trong 12, 15 câu xác suất trong 15. Đúng +1, sai 0, bỏ trống 0.",
+    },
+    parts: [
+      { skill: "arith.mixed", level: 3, count: 50, seconds: 300 },
+      { skill: "seq.odd-one-out", level: 3, count: 20, seconds: 720 },
+      { skill: "prob.mixed", level: 2, count: 15, seconds: 900 },
+    ],
+  },
+  {
+    id: "sprint-60",
+    name: { en: "Sixty-second sprint", vi: "Chạy nước rút 60 giây" },
+    note: {
+      en: "Twenty arithmetic questions, sixty seconds, mixed levels. Good for a warm-up or a class competition.",
+      vi: "Hai mươi câu tính nhẩm, sáu mươi giây, trộn cấp độ. Hợp để khởi động hoặc thi đua trong lớp.",
+    },
+    parts: [{ skill: "arith.mixed", level: 2, count: 20, seconds: 60 }],
+  },
+];
+
+/* ── lookups ─────────────────────────────────────────────────────────────── */
+
+const ALL_SKILLS = CURRICULUM.flatMap((t) =>
+  t.skills.map((s) => ({ ...s, topic: t.id, topicName: t.name }))
+);
+
+const SKILL_BY_ID = new Map(ALL_SKILLS.map((s) => [s.id, s]));
+
+const getSkill = (id) => SKILL_BY_ID.get(id) || null;
+
+/** Skills in ladder order, so `next` and `previous` are well defined. */
+const SKILL_ORDER = ALL_SKILLS.map((s) => s.id);
+
+function nextSkill(id) {
+  const i = SKILL_ORDER.indexOf(id);
+  return i >= 0 && i + 1 < SKILL_ORDER.length ? SKILL_ORDER[i + 1] : null;
+}
+
+/** Resolve a skill name in one language, falling back to English. */
+function skillName(id, lang = "en") {
+  const s = SKILL_BY_ID.get(id);
+  if (!s) return id;
+  return s.name[lang] || s.name.en;
+}
+
+Object.assign(__shared, { nextSkill, skillName, CURRICULUM, EXAMS, ALL_SKILLS, getSkill, SKILL_ORDER });
+})();
+
+/* ── src/engine/arithmetic.js ─────────────────────────────────── */
+(() => {
+/**
+ * Mental arithmetic generators.
+ *
+ * Every generator takes `(rng, level)` and returns a question. Levels run 1 to 3
+ * and mean the same thing everywhere: 1 is where a beginner starts and should
+ * mostly succeed, 2 is the working level, 3 is where the trick in the tip card
+ * stops being optional.
+ *
+ * Traps are not decoration. Each one is a specific wrong route with a sentence
+ * saying what went wrong, so a miss tells the student which mistake they made
+ * rather than only that they made one.
+ */
+
+const { round4, fact } = __shared;
+
+const q = (o) => ({ traps: [], ...o });
+
+/* ── 1. Times tables ─────────────────────────────────────────────────────── */
+function timesTables(rng, level) {
+  const hi = level === 1 ? 9 : level === 2 ? 12 : 19;
+  const lo = level === 3 ? 11 : 2;
+  const a = rng.int(lo, hi);
+  const b = rng.int(2, level === 1 ? 9 : 12);
+  return q({
+    prompt: `${a} × ${b}`,
+    answer: a * b,
+    traps: [
+      { value: a * (b - 1), why: "One row too early in the table." },
+      { value: a * (b + 1), why: "One row too far down the table." },
+      { value: a + b, why: "Added instead of multiplied." },
+    ],
+    tip: "split-and-add",
+  });
+}
+
+/* ── 2. Addition and subtraction ─────────────────────────────────────────── */
+function addSubtract(rng, level) {
+  const range = [[23, 99], [100, 999], [1000, 9999]][level - 1];
+  const isAdd = rng.chance(0.5);
+  const a = rng.int(range[0], range[1]);
+
+  if (isAdd) {
+    const b = rng.int(range[0], range[1]);
+    return q({
+      prompt: `${a} + ${b}`,
+      answer: a + b,
+      traps: [
+        { value: a + b - 10, why: "A ten was dropped while carrying." },
+        { value: a + b - 100, why: "A hundred was dropped while carrying." },
+      ],
+      tip: "subtract-hundreds-first",
+    });
+  }
+
+  // Always positive: the real papers never ask for a negative result, and the
+  // sign costs time without testing the technique.
+  const b = rng.int(range[0], Math.max(range[0] + 1, a - Math.floor(range[1] / 10)));
+  return q({
+    prompt: `${a} − ${b}`,
+    answer: a - b,
+    traps: [
+      { value: a - b + 100, why: "A hundred was left in. This is what rounding up and adding back tends to do under time." },
+      { value: a - b - 100, why: "A hundred was taken twice." },
+      { value: a - b + 10, why: "A borrow was missed in the tens." },
+    ],
+    tip: "subtract-hundreds-first",
+  });
+}
+
+/* ── 3. Multiplication ───────────────────────────────────────────────────── */
+function multiply(rng, level) {
+  if (level === 1) {
+    const a = rng.int(12, 99);
+    const b = rng.int(3, 9);
+    return q({
+      prompt: `${a} × ${b}`,
+      answer: a * b,
+      traps: [
+        { value: Math.floor(a / 10) * 10 * b, why: "Only the tens were multiplied; the units were left behind." },
+        { value: (a % 10) * b + Math.floor(a / 10) * b, why: "The partial products were added without their place value." },
+      ],
+      tip: "split-and-add",
+    });
+  }
+
+  if (level === 2) {
+    const a = rng.int(12, 49);
+    const b = rng.pick([5, 11, 15, 20, 25, 50, 12, 9, 99]);
+    return q({
+      prompt: `${a} × ${b}`,
+      answer: a * b,
+      traps: [
+        { value: a * b - a, why: "One copy of the first number is missing. Check the last step of the split." },
+        { value: a * b + a, why: `One copy of ${a} too many. Count the parts of the split again.` },
+      ],
+      tip: "times-five-and-eleven",
+    });
+  }
+
+  const a = rng.int(23, 99);
+  const b = rng.int(23, 99);
+  const tens = Math.floor(b / 10) * 10;
+  return q({
+    prompt: `${a} × ${b}`,
+    answer: a * b,
+    traps: [
+      { value: a * tens, why: "The units part of the second factor was never added." },
+      { value: a * (b % 10), why: "Only the units part was used." },
+      { value: a * b - a * 10, why: "A ten went missing between the two partial products." },
+    ],
+    tip: "split-and-add",
+  });
+}
+
+/* ── 4. Division ─────────────────────────────────────────────────────────── */
+function divide(rng, level) {
+  if (level === 1) {
+    const b = rng.int(2, 9);
+    const ans = rng.int(4, 20);
+    return q({
+      prompt: `${b * ans} ÷ ${b}`,
+      answer: ans,
+      traps: [{ value: ans * b, why: "Multiplied instead of divided." }],
+      tip: "reduce-before-dividing",
+    });
+  }
+
+  if (level === 2) {
+    const b = rng.int(3, 19);
+    const ans = rng.int(11, 60);
+    return q({
+      prompt: `${b * ans} ÷ ${b}`,
+      answer: ans,
+      traps: [
+        { value: ans + 1, why: `One too high. Multiply back to check: ${b} times your answer should return the number you started with.` },
+        { value: ans - 1, why: `One too low. Multiply back to check: ${b} times your answer should return the number you started with.` },
+      ],
+      tip: "reduce-before-dividing",
+    });
+  }
+
+  const b = rng.int(12, 29);
+  const ans = rng.int(21, 99);
+  return q({
+    prompt: `${b * ans} ÷ ${b}`,
+    answer: ans,
+    traps: [
+      { value: ans + 10, why: "A ten too many in the quotient; the place value slipped." },
+      { value: ans - 10, why: "A ten short in the quotient." },
+    ],
+    tip: "reduce-before-dividing",
+  });
+}
+
+/* ── 5. Squares ──────────────────────────────────────────────────────────── */
+function squares(rng, level) {
+  const range = [[11, 25], [21, 40], [26, 59]][level - 1];
+  const n = rng.int(range[0], range[1]);
+  const d = n % 10 <= 5 ? n % 10 : n % 10 - 10;
+  const slid = (n - d) * (n + d); // the rule-of-one product, before adding d²
+  return q({
+    prompt: `${n}²`,
+    answer: n * n,
+    traps: [
+      { value: slid, why: `The correction was never added. (n−d)(n+d) = ${slid}, and you still owe d² = ${d * d}.` },
+      { value: n * n - 2 * n + 1, why: `That is ${n - 1}². Off by one before squaring.` },
+      { value: n * 2, why: "Doubled instead of squared." },
+    ],
+    tip: "squares-rule-of-one",
+  });
+}
+
+/* ── 6. Roots and powers ─────────────────────────────────────────────────── */
+function roots(rng, level) {
+  if (level === 1) {
+    const n = rng.int(11, 30);
+    return q({
+      prompt: `√${n * n}`,
+      answer: n,
+      traps: [{ value: (n * n) / 2, why: "Halved instead of taking a square root." }],
+      tip: "squares-rule-of-one",
+    });
+  }
+
+  if (level === 2) {
+    if (rng.chance(0.5)) {
+      const n = rng.int(2, 12);
+      return q({
+        prompt: `${n}³`,
+        answer: n ** 3,
+        traps: [
+          { value: n * n, why: "Squared instead of cubed." },
+          { value: n * 3, why: "Multiplied by 3 instead of raising to the third power." },
+        ],
+        tip: "cube-root-last-digit",
+      });
+    }
+    const [b, e] = rng.pick([[2, rng.int(5, 11)], [3, rng.int(3, 6)], [5, rng.int(3, 5)]]);
+    return q({
+      prompt: `${b}^${e}`,
+      answer: b ** e,
+      traps: [
+        { value: b ** (e - 1), why: `That is ${b}^${e - 1}. One factor short; the exponent counts the factors, so there are ${e} of them.` },
+        { value: b * e, why: "Multiplied the base by the exponent." },
+      ],
+      tip: "cube-root-last-digit",
+    });
+  }
+
+  const n = rng.int(11, 25);
+  const cube = n ** 3;
+  const lastDigitTrap = { 2: 2, 3: 3, 7: 7, 8: 8 }[n % 10];
+  const traps = [{ value: Math.round(cube / 3), why: "Divided by 3 instead of taking a cube root." }];
+  if (lastDigitTrap != null) {
+    traps.unshift({
+      value: n - (n % 10) + lastDigitTrap,
+      why: "The last digit of a cube swaps 2 with 8 and 3 with 7. It does not stay put.",
+    });
+  }
+  return q({
+    prompt: `∛${cube.toLocaleString("en-US")}`,
+    answer: n,
+    traps,
+    tip: "cube-root-last-digit",
+  });
+}
+
+/* ── 7. Fractions ────────────────────────────────────────────────────────── */
+const DENOMS = [2, 4, 5, 8, 10, 16, 20, 25, 40, 50];
+
+function fractions(rng, level) {
+  if (level === 1) {
+    const d = rng.pick([2, 4, 5, 8, 10]);
+    const n = rng.int(1, d - 1);
+    return q({
+      prompt: `${n}/${d} as a decimal`,
+      answer: round4(n / d),
+      traps: [{ value: round4(d / n), why: "The fraction was read upside down." }],
+      tip: "fraction-anchors",
+    });
+  }
+
+  const d1 = rng.pick(DENOMS);
+  const d2 = rng.pick(DENOMS);
+  const n1 = rng.int(1, d1 - 1);
+  const n2 = rng.int(1, d2 - 1);
+
+  if (level === 2) {
+    return q({
+      prompt: `${n1}/${d1} × ${n2}/${d2}`,
+      answer: round4((n1 * n2) / (d1 * d2)),
+      traps: [
+        { value: round4(n1 / d1 + n2 / d2), why: "Added instead of multiplied." },
+        { value: round4((n1 * n2) / (d1 + d2)), why: "Denominators were added, not multiplied." },
+      ],
+      tip: "fraction-anchors",
+    });
+  }
+
+  return q({
+    prompt: `${n1}/${d1} + ${n2}/${d2}`,
+    answer: round4(n1 / d1 + n2 / d2),
+    traps: [
+      { value: round4((n1 + n2) / (d1 + d2)), why: "Tops added and bottoms added. Fractions do not work that way; you need a common denominator." },
+      { value: round4((n1 * n2) / (d1 * d2)), why: "Multiplied instead of added." },
+    ],
+    tip: "fraction-anchors",
+  });
+}
+
+/* ── 8. Percentages ──────────────────────────────────────────────────────── */
+function percent(rng, level) {
+  if (level === 1) {
+    const p = rng.pick([10, 20, 25, 50, 5]);
+    const y = rng.pick([40, 60, 80, 120, 200, 240, 400, 500]);
+    return q({
+      prompt: `${p}% of ${y}`,
+      answer: round4((p * y) / 100),
+      traps: [
+        { value: round4((p * y) / 10), why: "Out by a factor of ten. Per cent means per hundred." },
+        { value: round4(y / p), why: "Divided by the percentage instead of taking that share of it." },
+      ],
+      tip: "percent-flip",
+    });
+  }
+
+  if (level === 2) {
+    const p = rng.pick([12.5, 15, 30, 35, 40, 45, 60, 75, 80, 90, 2.5, 7.5, 17.5]);
+    const y = rng.pick([64, 96, 150, 160, 250, 320, 360, 480, 640, 800, 1200]);
+    return q({
+      prompt: `${p}% of ${y}`,
+      answer: round4((p * y) / 100),
+      traps: [{ value: round4((p * y) / 1000), why: "Out by a factor of ten." }],
+      tip: "percent-flip",
+    });
+  }
+
+  const y = rng.pick([40, 50, 80, 120, 160, 200, 250, 400, 500, 800]);
+  let x = rng.pick([2, 4, 5, 8, 10, 16, 20, 25, 32, 40, 50, 60, 75, 100, 120, 150, 200]);
+  x = Math.min(x, y);
+  return q({
+    prompt: `${x} is what % of ${y}`,
+    answer: round4((100 * x) / y),
+    traps: [
+      { value: round4((100 * y) / x), why: "The two numbers were swapped. The number after 'of' is the whole." },
+      { value: round4(x / y), why: "The share is right but it was never turned into a percentage." },
+    ],
+    tip: "percent-flip",
+  });
+}
+
+/* ── 9. Estimation ───────────────────────────────────────────────────────── */
+function estimate(rng, level) {
+  const kind = level === 1 ? rng.pick(["div", "div", "sqrt"]) : rng.pick(["div", "mul", "sqrt"]);
+  if (kind === "div") {
+    const a = rng.int(1000, 9999);
+    const b = rng.int(11, 97);
+    return q({ prompt: `≈ ${a} ÷ ${b}`, answer: a / b, approx: true, tip: "reduce-before-dividing" });
+  }
+  if (kind === "mul") {
+    const a = rng.int(101, 999);
+    const b = rng.int(11, 99) / 100;
+    return q({ prompt: `≈ ${a} × ${b}`, answer: a * b, approx: true, tip: "percent-flip" });
+  }
+  const a = rng.int(150, 9000);
+  return q({ prompt: `≈ √${a}`, answer: Math.sqrt(a), approx: true, tip: "squares-rule-of-one" });
+}
+
+/* ── 10. Puzzles: missing digit, balance, two quantities ─────────────────── */
+function maskDigit(rng, n) {
+  const s = String(n);
+  const i = s.length > 1 ? rng.int(1, s.length - 1) : 0; // never mask the leading digit
+  return [s.slice(0, i) + "□" + s.slice(i + 1), +s[i]];
+}
+
+function puzzles(rng, level) {
+  const kinds = level === 1 ? ["balance"] : level === 2 ? ["balance", "missing"] : ["missing", "relation", "largest"];
+  const kind = rng.pick(kinds);
+
+  if (kind === "balance") {
+    for (let t = 0; t < 60; t++) {
+      const a = rng.pick([2, 3, 4, 5, 6, 8]);
+      const c = rng.pick([8, 12, 15, 16, 20, 24, 25, 32, 40, 45]);
+      const ans = rng.int(11, 99);
+      if ((c * ans) % a) continue;
+      const b = (c * ans) / a;
+      if (b < 20 || b > 999) continue;
+      return q({
+        prompt: `${a} × ${b} = ${c} × ?`,
+        answer: ans,
+        traps: [
+          { value: round4((a * b) / c + 1), why: "Off by one in the final division." },
+          { value: a * b, why: "The left side was computed but never divided by the right factor." },
+        ],
+        tip: "reduce-before-dividing",
+      });
+    }
+    return q({ prompt: "2 × 232 = 16 × ?", answer: 29, tip: "reduce-before-dividing" });
+  }
+
+  if (kind === "missing") {
+    if (rng.chance(0.4)) {
+      const a = rng.pick([20, 25, 30, 40, 50, 60, 70, 80, 120, 150]);
+      const b = rng.int(105, 989);
+      const [masked, digit] = maskDigit(rng, b);
+      return q({
+        prompt: `${a} × ${masked} = ${a * b}`,
+        answer: digit,
+        hint: "digit",
+        tip: "split-and-add",
+      });
+    }
+    const a = rng.int(1000, 9999);
+    const b = rng.int(100, 989);
+    const [masked, digit] = maskDigit(rng, a);
+    const plus = rng.chance(0.5);
+    return q({
+      prompt: plus ? `${masked} + ${b} = ${a + b}` : `${masked} − ${b} = ${a - b}`,
+      answer: digit,
+      hint: "digit",
+      tip: "subtract-hundreds-first",
+    });
+  }
+
+  if (kind === "relation") {
+    for (let t = 0; t < 80; t++) {
+      const b1 = rng.pick([160, 200, 240, 320, 400, 480]);
+      const fr = rng.pick([[1, 4], [3, 8], [1, 2], [5, 8], [3, 4], [2, 5], [1, 5]]);
+      const b2 = rng.pick([120, 160, 200, 240, 260, 300, 400]);
+      const p = rng.pick([10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 75]);
+      const A = (b1 * fr[0]) / fr[1];
+      const B = (b2 * p) / 100;
+      if (A - B < 1) continue;
+      return q({
+        prompt: `A = ${fr[0]}/${fr[1]} of ${b1},  B = ${p}% of ${b2}.  A − B`,
+        answer: round4(A - B),
+        traps: [
+          { value: round4(B - A), why: "Subtracted the wrong way round." },
+          { value: round4(A + B), why: "Added instead of subtracted." },
+        ],
+        tip: "fraction-anchors",
+      });
+    }
+    return q({ prompt: "A = 3/4 of 200,  B = 35% of 260.  A − B", answer: 59, tip: "fraction-anchors" });
+  }
+
+  // largest: comparing powers, answered by letter
+  const lo = rng.int(3, 5);
+  const items = [];
+  for (let b = lo; b < lo + 4; b++) items.push([`${b}^${lo + 7 - b}`, Math.pow(b, lo + 7 - b)]);
+  const plain = rng.int(150, 900);
+  items.push([String(plain), plain]);
+  rng.shuffle(items);
+  let best = 0;
+  for (let i = 1; i < items.length; i++) if (items[i][1] > items[best][1]) best = i;
+  return q({
+    prompt: "Which is largest?",
+    options: items.map((it) => it[0]),
+    answer: "abcde"[best],
+    format: "letter",
+    tip: null,
+    traps: [],
+    note: "Comparing only the bases is not enough: 4^7 beats 3^7 and also beats 6^5. Work each one out.",
+  });
+}
+
+const ARITHMETIC = {
+  "arith.times-tables": timesTables,
+  "arith.add-subtract": addSubtract,
+  "arith.multiply": multiply,
+  "arith.divide": divide,
+  "arith.squares": squares,
+  "arith.roots": roots,
+  "arith.fractions": fractions,
+  "arith.percent": percent,
+  "arith.estimate": estimate,
+  "arith.puzzles": puzzles,
+};
+
+Object.assign(__shared, { timesTables, addSubtract, multiply, divide, squares, roots, fractions, percent, estimate, puzzles, ARITHMETIC });
+})();
+
+/* ── src/engine/sequences.js ─────────────────────────────────── */
+(() => {
+/**
+ * Sequence families, and the two things you can ask about a sequence.
+ *
+ * A family returns `{ terms, next, family }`. From that one object we build both
+ * question types: "what comes next" and "which term breaks the rule". The second
+ * is what Maven actually asks, and it is the harder skill, because you have to
+ * hold a candidate rule while testing it against every term.
+ */
+
+const { ALPHA } = __shared;
+
+/* ── the families, easiest first ─────────────────────────────────────────── */
+
+const arithmetic = (rng) => {
+  const a = rng.int(-20, 60);
+  const d = rng.pick([-9, -7, -6, -4, -3, 3, 4, 6, 7, 8, 9, 11, 12, 13, 15, 17]);
+  const s = [...Array(6)].map((_, i) => a + d * i);
+  return { terms: s.slice(0, 5), next: s[5], family: "arithmetic" };
+};
+
+const geometric = (rng) => {
+  if (rng.chance(0.5)) {
+    const a = rng.pick([1, 2, 3, 4, 5, 6, 7]);
+    const r = rng.pick([2, 3, 4, -2, -3]);
+    const s = [...Array(6)].map((_, i) => a * r ** i);
+    return { terms: s.slice(0, 5), next: s[5], family: "geometric" };
+  }
+  const r = rng.pick([2, 3]);
+  const a = r ** 5 * rng.pick([1, 2, 3]);
+  const s = [...Array(6)].map((_, i) => a / r ** i);
+  return { terms: s.slice(0, 5), next: s[5], family: "geometric" };
+};
+
+const quadratic = (rng) => {
+  const a = rng.pick([1, 1, 2, 3, -1]);
+  const b = rng.int(-5, 6);
+  const c = rng.int(-10, 15);
+  const s = [...Array(6)].map((_, i) => a * i * i + b * i + c);
+  return { terms: s.slice(0, 5), next: s[5], family: "quadratic" };
+};
+
+const fibonacci = (rng) => {
+  const s = [rng.int(1, 9), rng.int(1, 12)];
+  while (s.length < 6) s.push(s[s.length - 1] + s[s.length - 2]);
+  return { terms: s.slice(0, 5), next: s[5], family: "Fibonacci" };
+};
+
+const affine = (rng) => {
+  const a = rng.pick([2, 2, 3, 3, -2]);
+  const b = rng.pick([-3, -1, 1, 2, 3, 5, -5]);
+  const s = [rng.int(1, 8)];
+  while (s.length < 6) s.push(s[s.length - 1] * a + b);
+  return { terms: s.slice(0, 5), next: s[5], family: "affine" };
+};
+
+const interleaved = (rng) => {
+  const a1 = rng.int(1, 30);
+  const d1 = rng.pick([2, 3, 4, 5, 7, -3, -2]);
+  const a2 = rng.int(1, 60);
+  const d2 = rng.pick([-5, -4, -3, 3, 5, 6, 10]);
+  const s = [];
+  for (let i = 0; i < 4; i++) s.push(a1 + d1 * i, a2 + d2 * i);
+  const n = rng.pick([6, 7]);
+  return { terms: s.slice(0, n), next: s[n], family: "interleaved" };
+};
+
+const alternatingOps = (rng) => {
+  const add = rng.int(1, 5);
+  const mul = rng.pick([2, 3]);
+  const s = [rng.int(1, 9)];
+  while (s.length < 7) {
+    const last = s[s.length - 1];
+    s.push(s.length % 2 ? last * mul : last + add);
+  }
+  return { terms: s.slice(0, 6), next: s[6], family: "alternating ops" };
+};
+
+const specials = (rng) => {
+  const kind = rng.pick(["sq", "cb", "pr", "tri", "fac"]);
+  const off = rng.pick([0, 0, 1, -1, 2, 3]);
+  // "fac" only has seven entries, so it cannot start as late as the others.
+  const st = kind === "fac" ? rng.int(1, 2) : rng.int(1, 4);
+  const PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41];
+  const f = {
+    sq: (n) => n * n,
+    cb: (n) => n ** 3,
+    pr: (n) => PRIMES[n - 1],
+    tri: (n) => (n * (n + 1)) / 2,
+    fac: (n) => [1, 2, 6, 24, 120, 720, 5040][n - 1],
+  }[kind];
+  const s = [...Array(6)].map((_, i) => f(st + i) + off);
+  return { terms: s.slice(0, 5), next: s[5], family: "special numbers" };
+};
+
+const growingDiff = (rng) => {
+  let x = rng.int(1, 15);
+  let step = rng.int(1, 5);
+  const dd = rng.pick([1, 2, 3]);
+  const s = [x];
+  while (s.length < 6) {
+    x += step;
+    step += dd;
+    s.push(x);
+  }
+  return { terms: s.slice(0, 5), next: s[5], family: "growing differences" };
+};
+
+const letters = (rng) => {
+  const kind = rng.pick(["step", "step", "grow", "pair", "mix"]);
+  let s;
+  if (kind === "step") {
+    const st = rng.int(0, 12);
+    const d = rng.pick([2, 3, 4, 5, -2, -3]);
+    s = [...Array(6)].map((_, i) => ALPHA[(((st + d * i) % 26) + 26) % 26]);
+  } else if (kind === "grow") {
+    let p = rng.int(0, 6);
+    let d = rng.int(1, 3);
+    s = [ALPHA[p]];
+    while (s.length < 6) {
+      p += d;
+      d++;
+      s.push(ALPHA[p % 26]);
+    }
+  } else if (kind === "pair") {
+    const st = rng.int(0, 10);
+    s = [...Array(6)].map((_, i) => ALPHA[(st + i) % 26] + ALPHA[(25 - st - i + 26) % 26]);
+  } else {
+    const st = rng.int(0, 12);
+    const d = rng.pick([2, 3, 4]);
+    s = [...Array(6)].map((_, i) => ALPHA[(st + d * i) % 26] + String(i + 1));
+  }
+  return { terms: s.slice(0, 5), next: s[5], family: "letters" };
+};
+
+const cubic = (rng) => {
+  const a = rng.pick([1, 1, 2, -1]);
+  const b = rng.int(-4, 5);
+  const c = rng.int(-6, 8);
+  const s = [...Array(6)].map((_, i) => a * i ** 3 + b * i + c);
+  return { terms: s.slice(0, 5), next: s[5], family: "cubic" };
+};
+
+const productOfPrev = (rng) => {
+  const s = [rng.int(2, 4), rng.int(2, 4)];
+  while (s.length < 6) {
+    const v = s[s.length - 1] * s[s.length - 2];
+    if (v > 2e6) break;
+    s.push(v);
+  }
+  if (s.length < 6) return fibonacci(rng);
+  return { terms: s.slice(0, 5), next: s[5], family: "product of previous two" };
+};
+
+const digitSum = (rng) => {
+  const dsum = (n) => String(Math.abs(n)).split("").reduce((a, d) => a + +d, 0);
+  const s = [rng.int(10, 60)];
+  while (s.length < 6) s.push(s[s.length - 1] + dsum(s[s.length - 1]));
+  return { terms: s.slice(0, 5), next: s[5], family: "add digit sum" };
+};
+
+const threeInterleaved = (rng) => {
+  const starts = [rng.int(1, 20), rng.int(20, 60), rng.int(60, 99)];
+  const ds = [rng.pick([3, 5, 7]), rng.pick([-4, -6, 8]), rng.pick([2, -3, 6])];
+  const s = [];
+  for (let i = 0; i < 4; i++) for (let k = 0; k < 3; k++) s.push(starts[k] + ds[k] * i);
+  return { terms: s.slice(0, 9), next: s[9], family: "three interleaved" };
+};
+
+const letterSquare = (rng) => {
+  const st = rng.int(0, 8);
+  const d = rng.pick([2, 3]);
+  const s = [...Array(6)].map((_, i) => ALPHA[(st + d * i) % 26] + String((i + 1) ** 2));
+  return { terms: s.slice(0, 5), next: s[5], family: "letter + square" };
+};
+
+const geometricDiff = (rng) => {
+  const a = rng.int(2, 12);
+  const d0 = rng.pick([2, 3, 4, 5]);
+  const r = rng.pick([2, 3, -2, -3]);
+  const s = [a];
+  let d = d0;
+  while (s.length < 7) {
+    s.push(s[s.length - 1] + d);
+    d *= r;
+  }
+  return { terms: s.slice(0, 6), next: s[6], family: "geometric differences" };
+};
+
+const affineBig = (rng) => {
+  for (let t = 0; t < 40; t++) {
+    const a = rng.pick([2, 3]);
+    const b = rng.pick([7, 9, 11, 13, 17, 19, 23]);
+    const s = [rng.int(4, 19)];
+    while (s.length < 5) s.push(s[s.length - 1] * a + b);
+    if (s.every((v) => v > 0 && v < 6000)) {
+      return { terms: s.slice(0, 4), next: s[4], family: "affine, large coefficients" };
+    }
+  }
+  return { terms: [19, 28, 55, 136], next: 379, family: "affine, large coefficients" };
+};
+
+const skipList = (rng) => {
+  const PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101];
+  const kind = rng.pick(["prime", "square", "tri", "cube"]);
+  const list =
+    kind === "prime" ? PRIMES
+    : kind === "square" ? [...Array(20)].map((_, i) => (i + 1) ** 2)
+    : kind === "tri" ? [...Array(20)].map((_, i) => ((i + 1) * (i + 2)) / 2)
+    : [...Array(14)].map((_, i) => (i + 1) ** 3);
+  const skip = rng.pick([2, 2, 3]);
+  const st = rng.int(0, Math.max(0, list.length - 1 - skip * 5));
+  const s = [...Array(6)].map((_, i) => list[st + i * skip]).filter((v) => v != null);
+  if (s.length < 6) return { terms: [37, 43, 53, 61, 71], next: 79, family: "skip · primes" };
+  const label = { prime: "primes", square: "squares", tri: "triangular", cube: "cubes" }[kind];
+  return { terms: s.slice(0, 5), next: s[5], family: "skip · " + label };
+};
+
+const WORD_LISTS = [
+  ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve"],
+  ["First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth"],
+  ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+  ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+];
+
+const wordInitials = (rng) => {
+  const list = rng.pick(WORD_LISTS);
+  const st = rng.int(0, list.length - 6);
+  const s = [...Array(6)].map((_, i) => list[st + i][0]);
+  return { terms: s.slice(0, 5), next: s[5], family: "word initials" };
+};
+
+/* ── family pools by level ───────────────────────────────────────────────── */
+
+const EASY = [arithmetic, arithmetic, geometric, geometric, fibonacci, specials];
+const MEDIUM = [quadratic, affine, interleaved, alternatingOps, growingDiff, letters, specials, fibonacci, cubic];
+const HARD = [
+  geometricDiff, affineBig, skipList, wordInitials, threeInterleaved,
+  digitSum, letterSquare, productOfPrev, cubic, interleaved, letters,
+];
+
+const POOLS = { 1: EASY, 2: MEDIUM, 3: HARD };
+
+function drawFamily(rng, level) {
+  return rng.pick(POOLS[level] || MEDIUM)(rng);
+}
+
+/* ── question type 1: what comes next ────────────────────────────────────── */
+function findRule(rng, level) {
+  const s = drawFamily(rng, level);
+  const isLetters = typeof s.next === "string";
+  return {
+    prompt: s.terms.join(",  ") + ",  ?",
+    answer: s.next,
+    format: isLetters ? "letter-term" : "number",
+    family: s.family,
+    traps: [],
+    tip: "sequence-differences",
+  };
+}
+
+/* ── question type 2: which term breaks the rule ─────────────────────────── */
+function oddOneOut(rng, level) {
+  for (let attempt = 0; attempt < 60; attempt++) {
+    const s = drawFamily(rng, level);
+    const full = [...s.terms, s.next].slice(0, 10);
+    if (full.length < 6) continue;
+
+    const i = rng.int(1, full.length - 1); // never break the first term
+    let broken;
+    if (typeof full[i] === "string") {
+      broken = full[i].replace(/[A-Z]/, (ch) => ALPHA[(ALPHA.indexOf(ch) + rng.pick([1, -1, 2, -2]) + 26) % 26]);
+    } else {
+      const v = full[i];
+      const mag = Math.abs(v) >= 60 ? Math.max(2, Math.round(Math.abs(v) * 0.08)) : rng.pick([1, 2, 3]);
+      broken = v + rng.pick([mag, -mag]);
+    }
+
+    // The broken term must be unmistakable: not equal to what it replaced, and
+    // not a duplicate of some other term, or the question has two valid answers.
+    if (String(broken) === String(full[i])) continue;
+    if (full.map(String).includes(String(broken))) continue;
+
+    const shown = full.slice();
+    shown[i] = broken;
+    return {
+      prompt: shown.join(",  "),
+      answer: String(broken),
+      format: "odd-term",
+      terms: shown.map(String),
+      position: i,
+      shouldBe: String(full[i]),
+      family: s.family,
+      traps: [],
+      tip: "odd-one-out-majority",
+    };
+  }
+  return {
+    prompt: "3,  6,  10,  12,  15,  18",
+    answer: "10",
+    format: "odd-term",
+    terms: ["3", "6", "10", "12", "15", "18"],
+    position: 2,
+    shouldBe: "9",
+    family: "arithmetic",
+    traps: [],
+    tip: "odd-one-out-majority",
+  };
+}
+
+const SEQUENCES = {
+  "seq.find-rule": findRule,
+  "seq.odd-one-out": oddOneOut,
+};
+
+Object.assign(__shared, { drawFamily, findRule, oddOneOut, SEQUENCES });
+})();
+
+/* ── src/engine/probability.js ─────────────────────────────────── */
+(() => {
+/**
+ * Probability and expected value.
+ *
+ * These are the questions a trading firm actually asks, reduced to the seven
+ * ideas that generate almost all of them. Every distractor here is a route a
+ * real student really takes, and carries the sentence explaining where it went
+ * wrong. That is the point of the module: a wrong answer should name the
+ * misconception, not just fail.
+ *
+ * Sources for the classics: Zhou's *A Practical Guide to Quantitative Finance
+ * Interviews*, and questions repeatedly reported from Optiver, SIG, IMC and
+ * Jane Street first rounds.
+ */
+
+const { fact, choose, frac } = __shared;
+
+const q = (o) => ({ format: "probability", traps: [], ...o });
+
+/* ── 1. Counting ─────────────────────────────────────────────────────────── */
+function counting(rng, level) {
+  if (level === 1) {
+    const v = rng.pick([
+      ["a 6 when rolling a fair die", 1 / 6, [[1 / 3, "There are six faces, not three."], [1 / 2, "A die is not a coin."]]],
+      ["heads when flipping a fair coin", 1 / 2, [[1 / 4, "That is two heads in a row."]]],
+      ["a number greater than 4 when rolling a die", 1 / 3, [[1 / 6, "Two faces qualify, 5 and 6, not one."], [1 / 2, "Greater than 4 is not the same as greater than 3."]]],
+      ["a heart when drawing one card from a full deck", 1 / 4, [[1 / 13, "That is one particular rank, not one suit."], [1 / 52, "That is one specific card."]]],
+      ["an even number when rolling a die", 1 / 2, [[1 / 3, "Three faces out of six are even."]]],
+    ]);
+    return q({
+      prompt: `Probability of getting ${v[0]}?`,
+      answer: v[1],
+      traps: v[2].map(([value, why]) => ({ value, why })),
+      tip: "equally-likely",
+    });
+  }
+
+  if (level === 2) {
+    const s = rng.int(2, 12);
+    const ways = 6 - Math.abs(s - 7);
+    return q({
+      prompt: `Roll two fair dice. Probability the sum is ${s}?`,
+      answer: ways / 36,
+      traps: [
+        { value: 1 / 11, why: "There are 11 possible sums but they are not equally likely. Count the 36 ordered pairs instead." },
+        { value: ways / 21, why: "Unordered pairs were counted. (2,5) and (5,2) are two different outcomes." },
+        { value: 1 / 36, why: "That is one specific pair, not every pair with this sum." },
+      ],
+      tip: "equally-likely",
+    });
+  }
+
+  const ev = rng.pick([
+    ["at least one 6", 1 / 6, "Roll a fair die"],
+    ["at least one head", 1 / 2, "Flip a fair coin"],
+    ["at least one heart", 1 / 4, "Draw a card with replacement"],
+    ["at least one ace", 1 / 13, "Draw a card with replacement"],
+    ["at least one 1 or 2", 1 / 3, "Roll a fair die"],
+  ]);
+  const n = rng.int(2, 6);
+  const p = ev[1];
+  const ans = 1 - (1 - p) ** n;
+  return q({
+    prompt: `${ev[2]} ${n} times. Probability of ${ev[0]}?`,
+    answer: ans,
+    traps: [
+      { value: (1 - p) ** n, why: "That is the probability of none. The question asks for at least one, so subtract it from 1." },
+      { value: Math.min(1, n * p), why: "Probabilities of overlapping events cannot simply be added; you double-count the cases where it happens twice." },
+      { value: p, why: "That is a single trial. The question asks across all of them." },
+    ],
+    tip: "at-least-one-complement",
+  });
+}
+
+/* ── 2. Expected value ───────────────────────────────────────────────────── */
+function expectedValue(rng, level) {
+  if (level === 1) {
+    const v = rng.pick([
+      ["the value shown on one fair die", 3.5, [[3, "The average of 1 to 6 is 3.5, not 3. There is no middle face."], [6, "That is the maximum, not the average."]]],
+      ["the sum of two fair dice", 7, [[3.5, "That is one die. Expectations add, so double it."], [6, "The most likely single face is not the expected sum."]]],
+      ["the number of heads in 4 flips of a fair coin", 2, [[4, "That is the number of flips."], [0.5, "That is the chance per flip, not the count."]]],
+    ]);
+    return q({ prompt: `Expected value of ${v[0]}?`, answer: v[1], format: "number", traps: v[2].map(([value, why]) => ({ value, why })), tip: "expectation-is-a-weighted-average" });
+  }
+
+  if (level === 2) {
+    if (rng.chance(0.5)) {
+      const v = rng.pick([
+        ["the product of two fair dice", 12.25, [[7, "That is the expected sum."], [21, "That is 3.5 × 6."], [12, "Close, but E[XY] = 3.5 × 3.5 = 12.25 exactly."]]],
+        ["the larger of two fair dice", 161 / 36, [[3.5, "That is one die on its own; taking a maximum pulls the average up."], [6, "That is the largest possible value, not the average."]]],
+        ["the smaller of two fair dice", 91 / 36, [[3.5, "Taking a minimum pulls the average down."], [1, "That is the smallest possible value."]]],
+      ]);
+      return q({ prompt: `Expected value of ${v[0]}?`, answer: v[1], format: "number", traps: v[2].map(([value, why]) => ({ value, why })), tip: "expectation-is-a-weighted-average" });
+    }
+    const S = rng.pick([100, 200, 50]);
+    const x = rng.pick([0.1, 0.2, 0.05]);
+    const n = rng.pick([2, 2, 3]);
+    const pct = Math.round(x * 100);
+    return q({
+      prompt: `A stock is at ${S}. Each day it goes up ${pct}% or down ${pct}%, equally likely. Expected price after ${n} days?`,
+      answer: S,
+      format: "number",
+      traps: [
+        { value: S * (1 - x * x) ** Math.floor(n / 2), why: "Up then down gives back less than you started with, but that is one path out of many. The average over all paths is unchanged." },
+        { value: S * (1 + x) ** n, why: "That is the best case, every day up." },
+        { value: S * (1 - x) ** n, why: "That is the worst case, every day down." },
+      ],
+      tip: "expectation-not-one-path",
+    });
+  }
+
+  const k = rng.pick([1, 1, 2]);
+  return q({
+    prompt: `Roll a die and you are paid its face value. You may re-roll up to ${k === 1 ? "once" : k + " times"}, discarding the previous roll. Playing optimally, what is the expected payoff?`,
+    answer: k === 1 ? 4.25 : 14 / 3,
+    format: "number",
+    traps: [
+      { value: 3.5, why: "That is a single roll with no re-roll. The option to re-roll is worth something, so the answer must exceed 3.5." },
+      { value: k === 1 ? 14 / 3 : 4.25, why: "That is the answer for a different number of re-rolls." },
+      { value: 5, why: "Re-rolling only helps when the first roll is below the value of rolling again; you keep a 4, 5 or 6." },
+    ],
+    tip: "expectation-is-a-weighted-average",
+  });
+}
+
+/* ── 3. Conditional probability ──────────────────────────────────────────── */
+function conditional(rng, level) {
+  if (level === 1) {
+    const v = rng.pick(["least", "least", "elder", "leastG"]);
+    const stem = "A family has two children, boys and girls equally likely. ";
+    if (v === "elder") {
+      return q({
+        prompt: stem + "The older child is a boy. Probability both are boys?",
+        answer: 1 / 2,
+        traps: [{ value: 1 / 3, why: "That is the answer to 'at least one is a boy'. Naming the older child fixes one slot, which leaves only two cases." }],
+        tip: "condition-shrinks-the-space",
+      });
+    }
+    if (v === "leastG") {
+      return q({
+        prompt: stem + "At least one is a girl. Probability both are girls?",
+        answer: 1 / 3,
+        traps: [{ value: 1 / 2, why: "GB and BG are two different outcomes. The condition leaves GG, GB, BG, and only one of those is two girls." }],
+        tip: "condition-shrinks-the-space",
+      });
+    }
+    return q({
+      prompt: stem + "At least one is a boy. Probability both are boys?",
+      answer: 1 / 3,
+      traps: [
+        { value: 1 / 2, why: "BG and GB are two different outcomes. The condition leaves BB, BG, GB, and only one of those is two boys." },
+        { value: 1 / 4, why: "That is the unconditional chance of two boys, before you were told anything." },
+      ],
+      tip: "condition-shrinks-the-space",
+    });
+  }
+
+  if (level === 2) {
+    const s = rng.pick([7, 8, 9, 10]);
+    const total = 13 - s;
+    return q({
+      prompt: `Two fair dice are rolled and the sum is ${s}. Probability at least one die shows a 6?`,
+      answer: 2 / total,
+      traps: [
+        { value: 1 / 6, why: "That is the unconditional chance for one die. Knowing the sum changes it." },
+        { value: 11 / 36, why: "That is the unconditional chance of at least one 6 in two rolls." },
+        { value: 1 / total, why: "There are two ordered pairs containing a 6, not one, because the 6 can be on either die." },
+      ],
+      tip: "condition-shrinks-the-space",
+    });
+  }
+
+  const r = rng.int(2, 6);
+  const b = rng.int(2, 6);
+  const N = r + b;
+  return q({
+    prompt: `An urn holds ${r} red and ${b} blue balls. You draw 2 without replacement. Probability both are red?`,
+    answer: (r * (r - 1)) / (N * (N - 1)),
+    traps: [
+      { value: (r / N) ** 2, why: "That assumes replacement. After the first red is taken out, both the reds and the total are one smaller." },
+      { value: r / N, why: "That is the first draw only." },
+      { value: (r - 1) / (N - 1), why: "That is the second draw given the first was red; you still have to multiply by the first." },
+    ],
+    tip: "condition-shrinks-the-space",
+  });
+}
+
+/* ── 4. Bayes ────────────────────────────────────────────────────────────── */
+function bayes(rng, level) {
+  if (level === 1) {
+    const set = rng.pick([[1 / 4, 1 / 2, 3 / 4], [1 / 10, 1 / 2, 9 / 10], [1 / 3, 1 / 2, 2 / 3], [1 / 5, 2 / 5, 4 / 5]]);
+    const k = rng.int(0, 2);
+    const total = set[0] + set[1] + set[2];
+    return q({
+      prompt: `Three coins have P(heads) = ${set.map((x) => frac(x)).join(", ")}. You pick one at random and flip heads. Probability it was the coin with P(heads) = ${frac(set[k])}?`,
+      answer: set[k] / total,
+      traps: [
+        { value: set[k], why: "That is the likelihood on its own. Bayes divides it by the sum of all three likelihoods." },
+        { value: 1 / 3, why: "That is the prior, before you saw the flip. The heads result is evidence and must move it." },
+        { value: set[k] / 3, why: "The 1/3 priors cancel between numerator and denominator; do not divide by 3 as well." },
+      ],
+      tip: "bayes-likelihood-share",
+    });
+  }
+
+  if (level === 2) {
+    const pool = [[3, 1], [1, 3], [2, 2], [1, 1], [4, 1], [1, 4], [2, 1], [1, 2], [3, 2], [2, 3], [5, 1], [1, 5]];
+    for (let t = 0; t < 50; t++) {
+      const A = rng.pick(pool);
+      const B = rng.pick(pool);
+      const rA = A[1] / (A[0] + A[1]);
+      const rB = B[1] / (B[0] + B[1]);
+      if (rA === rB) continue;
+      return q({
+        prompt: `Urn A holds ${A[0]} blue and ${A[1]} red. Urn B holds ${B[0]} blue and ${B[1]} red. You pick an urn at random and draw a red ball. Probability it was urn B?`,
+        answer: rB / (rA + rB),
+        traps: [
+          { value: rB, why: "That is urn B's own share of red. Bayes compares it against urn A's share as well." },
+          { value: 1 / 2, why: "That is the prior. Drawing red is evidence, and it favours whichever urn has more red." },
+          { value: B[1] / (A[1] + B[1]), why: "Red counts were compared directly, but the urns hold different totals, so compare proportions." },
+        ],
+        tip: "bayes-likelihood-share",
+      });
+    }
+  }
+
+  const n = rng.int(1, 3);
+  return q({
+    prompt: `A box holds 3 coins: one fair, one two-headed, one two-tailed. You pick one at random and flip it ${n === 1 ? "once: heads" : n + " times: all heads"}. Probability it is the fair coin?`,
+    answer: 1 / 2 ** n / (1 / 2 ** n + 1),
+    traps: [
+      { value: 1 / 3, why: "That is the prior. Seeing only heads is evidence against the fair coin." },
+      { value: 1 / 2, why: "Two coins can produce heads, but not equally readily: the two-headed coin does it every time." },
+      { value: 1 / 2 ** n, why: "That is the fair coin's likelihood alone, not its share of the total." },
+    ],
+    tip: "bayes-likelihood-share",
+  });
+}
+
+/* ── 5. Waiting time ─────────────────────────────────────────────────────── */
+function waitingTime(rng, level) {
+  if (level === 1) {
+    const ev = rng.pick([
+      ["a 6 when rolling a die", 6],
+      ["heads when flipping a coin", 2],
+      ["a 5 or 6 when rolling a die", 3],
+      ["a heart when drawing cards with replacement", 4],
+    ]);
+    return q({
+      prompt: `Expected number of trials until you first get ${ev[0]}?`,
+      answer: ev[1],
+      format: "number",
+      traps: [
+        { value: 1 / ev[1], why: "That is the probability. The expected wait is its reciprocal." },
+        { value: ev[1] - 1, why: "The trial that succeeds counts too." },
+      ],
+      tip: "waiting-time-one-over-p",
+    });
+  }
+
+  if (level === 2) {
+    const ev = rng.pick([["a 6", 6, "rolling a die"], ["heads", 2, "flipping a coin"], ["a 5 or 6", 3, "rolling a die"]]);
+    const k = rng.int(2, 4);
+    return q({
+      prompt: `Expected number of trials until ${ev[0]} has come up ${k === 2 ? "twice" : k + " times"}, not necessarily in a row, when ${ev[2]}?`,
+      answer: ev[1] * k,
+      format: "number",
+      traps: [
+        { value: ev[1], why: "That is the wait for the first one. Each further one costs the same again, because expectations add." },
+        { value: ev[1] ** k, why: "Waits add, they do not multiply. Multiplying is for probabilities of joint events." },
+        { value: k, why: "That is the number of successes wanted, not the number of trials needed." },
+      ],
+      tip: "waiting-time-one-over-p",
+    });
+  }
+
+  if (rng.chance(0.6)) {
+    const pat = rng.pick([
+      ["heads then tails", 4, "After a head, another head does not hurt: you are still waiting for the tail."],
+      ["tails then heads", 4, "After a tail, another tail does not hurt: you are still waiting for the head."],
+      ["two heads in a row", 6, "A tail after a head destroys the run, so you start over. That is why this is 6 and HT is only 4."],
+      ["two tails in a row", 6, "A head after a tail destroys the run, so you start over. That is why this is 6 and TH is only 4."],
+    ]);
+    return q({
+      prompt: `Flip a fair coin repeatedly. Expected number of flips until you first see ${pat[0]}?`,
+      answer: pat[1],
+      format: "number",
+      traps: [
+        { value: pat[1] === 4 ? 6 : 4, why: pat[2] },
+        { value: 2, why: "That is the wait for one particular face, not for a two-flip pattern." },
+      ],
+      tip: "waiting-time-one-over-p",
+    });
+  }
+
+  const v = rng.pick([
+    ["all 6 faces of a die", 6],
+    ["all 4 suits, drawing cards with replacement", 4],
+    ["both faces of a coin", 2],
+  ]);
+  const n = v[1];
+  let h = 0;
+  for (let i = 1; i <= n; i++) h += 1 / i;
+  return q({
+    prompt: `Expected number of trials to see ${v[0]} at least once each?`,
+    answer: n * h,
+    format: "number",
+    traps: [
+      { value: n, why: "That is the minimum possible, which assumes you never repeat one you already have." },
+      { value: n * n, why: "Too big. The wait is n times the harmonic sum 1 + 1/2 + … + 1/n, which grows slowly." },
+    ],
+    tip: "waiting-time-one-over-p",
+  });
+}
+
+/* ── 6. Symmetry ─────────────────────────────────────────────────────────── */
+function symmetry(rng, level) {
+  if (level === 1) {
+    const n = rng.int(3, 5);
+    const j = rng.int(1, n);
+    const ord = ["1st", "2nd", "3rd", "4th", "5th"][j - 1];
+    return q({
+      prompt: `${n} independent Uniform[0,1] values are drawn in order. Probability the ${ord} one is the largest?`,
+      answer: 1 / n,
+      traps: [
+        { value: j / n, why: "The position carries no information. Being drawn later does not make a value bigger." },
+        { value: 1 / 2, why: "That would be the answer for two draws only." },
+        { value: 1 / fact(n), why: "That is the chance of one full ordering, not of one value being the maximum." },
+      ],
+      tip: "symmetry-orderings",
+    });
+  }
+
+  if (level === 2) {
+    const n = rng.int(3, 5);
+    const dir = rng.pick(["strictly increasing", "strictly decreasing"]);
+    return q({
+      prompt: `${n} independent draws from a continuous distribution. Probability they come out ${dir} in the order drawn?`,
+      answer: 1 / fact(n),
+      traps: [
+        { value: 1 / n, why: "That is the chance of one value being the largest. Here all n! orderings compete and exactly one qualifies." },
+        { value: 2 / fact(n), why: "Increasing and decreasing are two different orderings; the question asks for one of them." },
+        { value: 1 / 2 ** n, why: "Ordering is not a sequence of independent coin flips." },
+      ],
+      tip: "symmetry-orderings",
+    });
+  }
+
+  const k = rng.pick([2, 3, 3, 4]);
+  const N = rng.pick([6, 8, 10, 10, 12]);
+  if (rng.chance(0.35)) {
+    const c = choose(N, k);
+    return q({
+      prompt: `Pick ${k} numbers from 1–${N}, each pick independent so repeats are possible, in order. Probability they are strictly increasing?`,
+      answer: c / N ** k,
+      traps: [
+        { value: 1 / fact(k), why: "That is the answer when the picks must be distinct. Here repeats are possible and a repeat is never increasing, so the answer is smaller." },
+        { value: 1 / k, why: "Not a per-item chance; count the increasing selections against all N^k sequences." },
+      ],
+      tip: "symmetry-orderings",
+    });
+  }
+  return q({
+    prompt: `Pick ${k} distinct numbers from 1–${N}, revealed in random order. Probability they come out strictly increasing?`,
+    answer: 1 / fact(k),
+    traps: [
+      { value: 1 / N, why: "The size of the pool does not matter once the numbers are distinct; only the number of orderings does." },
+      { value: k / N, why: "The pool size cancels. Any k distinct values have k! equally likely orderings and one is increasing." },
+    ],
+    tip: "symmetry-orderings",
+  });
+}
+
+/* ── 7. Classic puzzles ──────────────────────────────────────────────────── */
+function classics(rng, level) {
+  if (level === 1) {
+    const sw = rng.chance(0.66);
+    return q({
+      prompt: `Three doors hide one car and two goats. You pick a door. The host, who knows where the car is, opens a different door revealing a goat. Probability you win the car if you ${sw ? "switch to the remaining door" : "stay with your first door"}?`,
+      answer: sw ? 2 / 3 : 1 / 3,
+      traps: [
+        { value: 1 / 2, why: "Two doors remain but they are not equally likely. The host never opens the car, so his choice carries information about the door he avoided." },
+        { value: sw ? 1 / 3 : 2 / 3, why: "That is the chance for the other strategy. Read carefully which one the question asks about." },
+      ],
+      tip: "ruin-and-first-mover",
+    });
+  }
+
+  if (level === 2) {
+    if (rng.chance(0.5)) {
+      const N = rng.pick([4, 5, 5, 6, 8, 10]);
+      const i = rng.int(1, N - 1);
+      return q({
+        prompt: `A holds ${i} coins and B holds ${N - i}. They play a fair game; each round the loser hands the winner one coin, until someone has none. Probability A ends up with everything?`,
+        answer: i / N,
+        traps: [
+          { value: 1 / 2, why: "The game is fair per round, but the player with fewer coins runs out sooner. Starting stack decides it." },
+          { value: (N - i) / N, why: "That is B's chance of winning, not A's. The two must add to 1." },
+          { value: 1 / N, why: "The chance is proportional to the whole starting stack, not to a single coin." },
+        ],
+        tip: "ruin-and-first-mover",
+      });
+    }
+    const ev = rng.pick([["rolls a 6", 1 / 6], ["flips heads", 1 / 2], ["rolls a 5 or 6", 1 / 3]]);
+    const p = ev[1];
+    return q({
+      prompt: `A and B take turns and whoever ${ev[0]} first wins. A goes first. Probability A wins?`,
+      answer: 1 / (2 - p),
+      traps: [
+        { value: 1 / 2, why: "Going first is a real advantage: A can win before B ever gets a turn." },
+        { value: p, why: "That is only A's first turn. A also wins if both miss and the position repeats." },
+        { value: (1 + p) / 2, why: "Set it up as one equation: A wins now with probability p, or both miss and the same position returns." },
+      ],
+      tip: "ruin-and-first-mover",
+    });
+  }
+
+  const kind = rng.pick(["derange", "walk", "cards", "unit"]);
+  if (kind === "derange") {
+    const n = rng.pick([3, 3, 4, 5]);
+    const D = { 3: 2, 4: 9, 5: 44 }[n];
+    const none = D / fact(n);
+    const asksNone = rng.chance(0.66);
+    return q({
+      prompt: `${n} letters are placed at random into ${n} addressed envelopes. Probability that ${asksNone ? "no letter" : "at least one letter"} reaches the right envelope?`,
+      answer: asksNone ? none : 1 - none,
+      traps: [
+        { value: asksNone ? 1 - none : none, why: "That is the complement; read which way the question is asked." },
+        { value: 1 / n, why: "That is the chance for one named letter, not for the whole arrangement." },
+        { value: 1 / fact(n), why: "That is the chance of the one perfect arrangement where every letter is right." },
+      ],
+      tip: "symmetry-orderings",
+    });
+  }
+  if (kind === "walk") {
+    const n = rng.pick([1, 2, 3]);
+    return q({
+      prompt: `A walker on the integers takes each step +1 or −1 with probability ½. Probability of standing back at the start after ${2 * n} steps?`,
+      answer: choose(2 * n, n) / 4 ** n,
+      traps: [
+        { value: 1 / 2, why: "Returning needs equal numbers of steps each way, which is one particular count out of many." },
+        { value: 1 / 2 ** n, why: "Count the paths: C(2n, n) of the 2^(2n) equally likely paths come home." },
+      ],
+      tip: "equally-likely",
+    });
+  }
+  if (kind === "cards") {
+    const v = rng.pick([
+      ["of the same suit", 12 / 51, [[1 / 4, "That is the chance the second card is a named suit; here it only has to match the first, and one card of that suit is already gone."], [1 / 13, "That is about ranks, not suits."]]],
+      ["a pair, meaning the same rank", 3 / 51, [[1 / 13, "Three of the rank remain out of 51 cards, not four out of 52."], [1 / 52, "That is one specific card."]]],
+      ["both red", 25 / 102, [[1 / 4, "Close, but drawing without replacement leaves 25 reds among 51 cards, not 26 among 52."], [1 / 2, "That is the chance the first card is red. Both cards have to be."]]],
+    ]);
+    return q({
+      prompt: `Draw 2 cards from a standard 52-card deck without replacement. Probability they are ${v[0]}?`,
+      answer: v[1],
+      traps: v[2].map(([value, why]) => ({ value, why })),
+      tip: "condition-shrinks-the-space",
+    });
+  }
+  const v = rng.pick([
+    ["|X − Y| < ½", 3 / 4, [[1 / 2, "Draw the unit square: the band around the diagonal is the region, and the two corner triangles it excludes are each 1/8."], [1 / 4, "That is the excluded part, both corners together."]]],
+    ["X + Y < 1", 1 / 2, [[1 / 4, "The region is the triangle below the anti-diagonal, which is half the square."]]],
+    ["X > 2Y", 1 / 4, [[1 / 2, "The line y = x/2 cuts off a triangle of area 1/4, not half the square."]]],
+  ]);
+  return q({
+    prompt: `X and Y are independent Uniform[0,1]. Probability that ${v[0]}?`,
+    answer: v[1],
+    traps: v[2].map(([value, why]) => ({ value, why })),
+    tip: "equally-likely",
+  });
+}
+
+const PROBABILITY = {
+  "prob.counting": counting,
+  "prob.expected-value": expectedValue,
+  "prob.conditional": conditional,
+  "prob.bayes": bayes,
+  "prob.waiting-time": waitingTime,
+  "prob.symmetry": symmetry,
+  "prob.classics": classics,
+};
+
+Object.assign(__shared, { counting, expectedValue, conditional, bayes, waitingTime, symmetry, classics, PROBABILITY });
+})();
+
+/* ── src/engine/grade.js ─────────────────────────────────── */
+(() => {
+/**
+ * Marking.
+ *
+ * One rule throughout: mark the value, not the spelling. A student who types
+ * `0.33` for 1/3, or `1,234` for 1234, or `hs` for HS, has the answer. Making
+ * them guess a format is testing the interface, not the maths.
+ *
+ * The return value always says *why* a wrong answer is wrong when the engine
+ * knows, because that sentence is the product.
+ */
+
+const { parseAnswer, near, normal, fmt, frac, LETTERS } = __shared;
+
+/** How the correct answer should be shown in a review screen. */
+function displayAnswer(qn) {
+  switch (qn.format) {
+    case "letter": {
+      const i = LETTERS.indexOf(qn.answer);
+      const label = qn.options?.[i];
+      return label ? `(${qn.answer}) ${label}` : String(qn.answer);
+    }
+    case "odd-term":
+      return `${qn.answer}`;
+    case "probability": {
+      const f = frac(qn.answer);
+      const dec = Math.round(qn.answer * 1000) / 1000;
+      return f.includes("/") ? `${f}  ≈ ${dec}` : String(f);
+    }
+    default:
+      return qn.approx ? `≈ ${Math.round(qn.answer * 10) / 10}` : fmt(qn.answer);
+  }
+}
+
+/** Did this input hit one of the question's known traps? */
+function findTrap(qn, value) {
+  if (!qn.traps?.length || typeof value !== "number") return null;
+  const tol = qn.format === "probability" ? 0.0051 : 0.5;
+  return qn.traps.find((t) => isFinite(t.value) && Math.abs(value - t.value) <= tol) || null;
+}
+
+/**
+ * Mark one answer.
+ *
+ * @returns {{answered:boolean, correct:boolean, given:string, expected:string,
+ *            trap:{value:number,why:string}|null, why:string|null}}
+ */
+function grade(qn, raw) {
+  const given = raw == null ? "" : String(raw).trim();
+  const base = { answered: given !== "", given, expected: displayAnswer(qn), trap: null, why: null };
+  if (!base.answered) return { ...base, correct: false };
+
+  const parsed = parseAnswer(given);
+
+  // Multiple options labelled (a), (b)…: accept the letter or the option text.
+  if (qn.format === "letter") {
+    const i = LETTERS.indexOf(qn.answer);
+    const correct =
+      given.toLowerCase() === qn.answer ||
+      (qn.options && normal(given) === normal(qn.options[i]));
+    return { ...base, correct, why: correct ? null : qn.note || null };
+  }
+
+  // Odd one out: the answer is the offending term itself.
+  if (qn.format === "odd-term") {
+    const want = parseAnswer(qn.answer);
+    const correct =
+      typeof parsed === "number" && typeof want === "number"
+        ? Math.abs(parsed - want) < 1e-9
+        : normal(given) === normal(qn.answer);
+    let why = null;
+    if (!correct) {
+      why =
+        normal(given) === normal(qn.shouldBe)
+          ? `That is what the term should have been. The question asks for the value actually printed, which is ${qn.answer}.`
+          : `${qn.answer} is the one that breaks the rule; in position ${qn.position + 1} the pattern needs ${qn.shouldBe}.`;
+    }
+    return { ...base, correct, why };
+  }
+
+  // Letter sequences: "HS", " hs ", "Hs" are the same answer.
+  if (qn.format === "letter-term" || typeof qn.answer === "string") {
+    return { ...base, correct: normal(given) === normal(qn.answer) };
+  }
+
+  if (typeof parsed !== "number") return { ...base, correct: false };
+
+  // Probabilities accept two-decimal rounding: 0.33 is 1/3.
+  const correct = qn.approx
+    ? near(parsed, qn.answer, 0.05, 0)
+    : near(parsed, qn.answer, 0, 0.0051);
+
+  if (correct) return { ...base, correct: true };
+
+  const trap = findTrap(qn, parsed);
+  return { ...base, correct: false, trap, why: trap ? trap.why : null };
+}
+
+/** Mark a whole paper. Blanks score zero and are counted separately. */
+function gradeSet(questions, answers) {
+  const results = questions.map((qn, i) => grade(qn, answers[i]));
+  const score = results.filter((r) => r.correct).length;
+  const answered = results.filter((r) => r.answered).length;
+  const trapped = results.filter((r) => r.trap).length;
+  return {
+    results,
+    score,
+    total: questions.length,
+    answered,
+    blank: questions.length - answered,
+    wrong: answered - score,
+    trapped,
+  };
+}
+
+Object.assign(__shared, { displayAnswer, grade, gradeSet });
+})();
+
+/* ── src/engine/index.js ─────────────────────────────────── */
+(() => {
+/**
+ * Quant Gym engine, public API.
+ *
+ * No DOM, no framework, no dependencies. Give it a skill, a level and a seed;
+ * it gives you questions as plain objects. Render them however you like, or use
+ * the React module in `src/ui`.
+ *
+ *   import { generateSet, gradeSet } from "quant-gym/engine";
+ *
+ *   const paper = generateSet({ skill: "prob.bayes", level: 2, count: 8, seed: "QG-7A3F" });
+ *   const marked = gradeSet(paper.questions, ["1/2", "0.6", ...]);
+ */
+
+const { makeRng, makeCode, hashSeed } = __shared;
+const { ARITHMETIC } = __shared;
+const { SEQUENCES } = __shared;
+const { PROBABILITY } = __shared;
+const { CURRICULUM, EXAMS, ALL_SKILLS, getSkill, nextSkill, skillName, SKILL_ORDER } = __shared;
+const { TIPS, getTip, tipsForSkill } = __shared;
+const { grade, gradeSet, displayAnswer } = __shared;
+const { frac, fmt, parseAnswer } = __shared;
+
+/* Weights inside the two "mixed" pseudo-skills, tuned to the real Maven paper:
+   arithmetic is dominated by add/subtract and multiplication, and probability
+   spreads evenly across the seven ideas. */
+const MIXED = {
+  "arith.mixed": [
+    ["arith.add-subtract", 22], ["arith.multiply", 18], ["arith.divide", 10],
+    ["arith.percent", 12], ["arith.fractions", 9], ["arith.squares", 8],
+    ["arith.roots", 7], ["arith.puzzles", 9], ["arith.estimate", 5],
+  ],
+  "prob.mixed": [
+    ["prob.counting", 16], ["prob.expected-value", 16], ["prob.conditional", 14],
+    ["prob.bayes", 14], ["prob.waiting-time", 14], ["prob.symmetry", 13],
+    ["prob.classics", 13],
+  ],
+  "seq.mixed": [["seq.find-rule", 50], ["seq.odd-one-out", 50]],
+};
+
+const GENERATORS = { ...ARITHMETIC, ...SEQUENCES, ...PROBABILITY };
+
+function pickWeighted(rng, pairs) {
+  const total = pairs.reduce((a, p) => a + p[1], 0);
+  let r = rng.float() * total;
+  for (const [id, w] of pairs) {
+    r -= w;
+    if (r <= 0) return id;
+  }
+  return pairs[0][0];
+}
+
+function resolve(skillId, rng) {
+  if (MIXED[skillId]) return pickWeighted(rng, MIXED[skillId]);
+  return skillId;
+}
+
+/** Every id `generate` accepts, including the mixed pseudo-skills. */
+const GENERATOR_IDS = [...Object.keys(GENERATORS), ...Object.keys(MIXED)];
+
+/**
+ * One question.
+ *
+ * @param {string} skillId  e.g. "prob.bayes", or "arith.mixed"
+ * @param {1|2|3} level
+ * @param {string|number} seed  same seed, same question
+ */
+function generate(skillId, level = 1, seed = Math.random()) {
+  const rng = makeRng(`${skillId}|${level}|${seed}`);
+  return build(skillId, level, rng, 0);
+}
+
+function build(skillId, level, rng, index) {
+  const resolved = resolve(skillId, rng);
+  const gen = GENERATORS[resolved];
+  if (!gen) throw new Error(`Unknown skill: ${skillId}`);
+  const lv = Math.min(3, Math.max(1, level | 0));
+  const raw = gen(rng, lv);
+  const topic = resolved.split(".")[0];
+  const qn = {
+    id: `${resolved}.L${lv}#${index}`,
+    skill: resolved,
+    requested: skillId,
+    topic: topic === "arith" ? "arithmetic" : topic === "seq" ? "sequences" : "probability",
+    level: lv,
+    format: "number",
+    traps: [],
+    ...raw,
+  };
+  qn.traps = cleanTraps(qn);
+  return qn;
+}
+
+/**
+ * Drop any trap that marking could not tell apart from the right answer, and
+ * any duplicate. Generators build traps from formulas, so for small parameters
+ * a "wrong route" sometimes lands exactly on the answer: 2 × 2 = 4 and
+ * "added instead of multiplied" is also 4. Left in, that trap would either mark
+ * a correct answer wrong or explain a right answer as a mistake.
+ */
+function cleanTraps(qn) {
+  if (!qn.traps?.length || typeof qn.answer !== "number") return qn.traps || [];
+  const tol = qn.approx ? 0.05 * Math.abs(qn.answer) : 0.0051;
+  const seen = new Set();
+  return qn.traps.filter((t) => {
+    if (t == null || !isFinite(t.value)) return false;
+    if (Math.abs(t.value - qn.answer) <= tol) return false;
+    const key = Math.round(t.value * 10000);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+/**
+ * A whole paper, with no repeated prompt and a cap of `Math.ceil(count/6)`
+ * questions from any one skill, so a mixed paper is never nine divisions.
+ *
+ * @returns {{seed:string, code:string, skill:string, level:number,
+ *            seconds:number|null, questions:object[]}}
+ */
+function generateSet({ skill, level = 1, count = 10, seed, seconds = null }) {
+  const useSeed = seed ?? makeCode();
+  const rng = makeRng(`${skill}|${level}|${useSeed}`);
+  const cap = Math.max(2, Math.ceil(count / 6));
+
+  const questions = [];
+  const seen = new Set();
+  const perSkill = {};
+
+  for (let guard = 0; questions.length < count && guard < count * 120; guard++) {
+    const qn = build(skill, level, rng, questions.length);
+    if (seen.has(qn.prompt)) continue;
+    if (MIXED[skill] && (perSkill[qn.skill] || 0) >= cap) continue;
+    seen.add(qn.prompt);
+    perSkill[qn.skill] = (perSkill[qn.skill] || 0) + 1;
+    questions.push(qn);
+  }
+  // If the pool ran dry, lift the per-skill cap before giving up on variety.
+  for (let guard = 0; questions.length < count && guard < count * 200; guard++) {
+    const qn = build(skill, level, rng, questions.length);
+    if (seen.has(qn.prompt)) continue;
+    seen.add(qn.prompt);
+    questions.push(qn);
+  }
+  const distinct = questions.length;
+  // Last resort: a narrow skill at level 1 may simply not have `count` distinct
+  // questions in it. Repeating one is better than handing back a short paper,
+  // because a short paper silently changes what the class was scored out of.
+  while (questions.length < count) {
+    const qn = build(skill, level, rng, questions.length);
+    questions.push(qn);
+  }
+
+  return { seed: String(useSeed), code: makeCode(useSeed), skill, level, seconds, questions, distinct };
+}
+
+/** Build an exam from `EXAMS`, one generated part per entry. */
+function generateExam(examId, seed = makeCode()) {
+  const exam = EXAMS.find((e) => e.id === examId);
+  if (!exam) throw new Error(`Unknown exam: ${examId}`);
+  return {
+    id: exam.id,
+    name: exam.name,
+    note: exam.note,
+    seed: String(seed),
+    code: makeCode(seed),
+    parts: exam.parts.map((p, i) =>
+      generateSet({ ...p, seed: `${seed}|part${i}`, seconds: p.seconds })
+    ),
+  };
+}
+
+
+
+Object.assign(__shared, { generate, generateSet, generateExam, GENERATOR_IDS, CURRICULUM, EXAMS, ALL_SKILLS, SKILL_ORDER, getSkill, nextSkill, skillName, TIPS, getTip, tipsForSkill, grade, gradeSet, displayAnswer, makeRng, makeCode, hashSeed, frac, fmt, parseAnswer });
+})();
+
+/* ── demo/app.js ─────────────────────────────────── */
+/**
+ * Quant Gym demo shell.
+ *
+ * Deliberately plain: vanilla DOM, no framework, no build step. Its job is to
+ * show what the engine can do and to act as a reference for the React module
+ * that will live inside the host application. Everything interesting happens in
+ * `src/engine`; this file only draws it.
+ *
+ * Note how little state there is. Progress here goes to `localStorage` purely so
+ * the demo remembers itself between refreshes. In a real integration the host
+ * owns progress: it passes `initialProgress` in and listens for events out.
+ */
+
+const {
+  CURRICULUM, generateSet, generateExam, EXAMS, grade, gradeSet,
+  displayAnswer, getTip, getSkill, skillName, nextSkill,
+} = __shared;
+
+/* ── translations for the shell itself ───────────────────────────────────── */
+const T = {
+  en: {
+    tagline: "Mental maths, sequences and probability, the way trading firms ask them.",
+    ladder: "The ladder", practice: "Practice", noClock: "no clock, feedback every question",
+    beatClock: "Beat the clock", mastered: "mastered", level: "Level",
+    back: "Back", next: "Next question", check: "Check", submit: "Submit",
+    yourAnswer: "your answer", correct: "Correct", notQuite: "Not quite",
+    answerIs: "The answer is", score: "Score", blank: "blank", trapped: "known mistakes",
+    timeLeft: "time left", review: "Review", again: "Again", exams: "Full papers",
+    startExam: "Start", part: "Part", of: "of", questions: "questions",
+    done: "Level cleared", needed: "needed to clear", tipTitle: "The trick",
+    whyItWorks: "Why it works", blankWarn: (n) => `${n} still blank. A blank is a guaranteed zero, so guess.`,
+    autoSubmit: "Runs out on its own. Nothing is deducted for a wrong answer.",
+    typeHint: "Fractions like 3/8, decimals like 0.375, or 37.5% all count.",
+  },
+  vi: {
+    tagline: "Tính nhẩm, dãy số và xác suất, đúng kiểu các công ty giao dịch hỏi.",
+    ladder: "Cái thang", practice: "Luyện tập", noClock: "không đồng hồ, phản hồi từng câu",
+    beatClock: "Chạy với đồng hồ", mastered: "đã thạo", level: "Cấp",
+    back: "Quay lại", next: "Câu tiếp", check: "Kiểm tra", submit: "Nộp bài",
+    yourAnswer: "bạn trả lời", correct: "Đúng", notQuite: "Chưa đúng",
+    answerIs: "Đáp án là", score: "Điểm", blank: "bỏ trống", trapped: "lỗi đã biết",
+    timeLeft: "thời gian còn", review: "Xem lại", again: "Làm lại", exams: "Đề đầy đủ",
+    startExam: "Bắt đầu", part: "Phần", of: "trên", questions: "câu",
+    done: "Đã qua cấp này", needed: "cần đúng để qua", tipTitle: "Mẹo",
+    whyItWorks: "Vì sao dùng được", blankWarn: (n) => `Còn ${n} ô trống. Bỏ trống chắc chắn 0 điểm, nên cứ đoán.`,
+    autoSubmit: "Hết giờ tự nộp. Sai không bị trừ điểm.",
+    typeHint: "Gõ phân số như 3/8, thập phân như 0.375, hay 37.5% đều được.",
+  },
+};
+
+/* ── state ───────────────────────────────────────────────────────────────── */
+const KEY = "quant-gym-demo-v1";
+const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } };
+const save = (p) => { try { localStorage.setItem(KEY, JSON.stringify(p)); } catch { /* private mode */ } };
+
+let S = {
+  screen: "ladder",
+  lang: (navigator.language || "en").startsWith("vi") ? "vi" : "en",
+  progress: load(),
+};
+const t = () => T[S.lang];
+const tr = (obj) => (obj ? obj[S.lang] || obj.en : "");
+const isMastered = (skill, level) => !!S.progress[`${skill}|${level}`];
+
+/* ── tiny DOM helpers ────────────────────────────────────────────────────── */
+const el = (tag, cls, text) => {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text != null) n.textContent = text;
+  return n;
+};
+const btn = (label, cls, onClick) => {
+  const b = el("button", cls, label);
+  b.type = "button";
+  b.onclick = onClick;
+  return b;
+};
+const clock = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+/** Word problems need prose type; bare arithmetic needs tabular figures. */
+const isWordy = (q) => q.prompt.length > 40 || /[a-z]{4}/.test(q.prompt);
+
+function render() {
+  const app = document.getElementById("app");
+  app.innerHTML = "";
+  app.appendChild(topbar());
+  ({ ladder, level: levelScreen, drill, clock: clockScreen, results }[S.screen] || ladder)(app);
+  window.scrollTo(0, 0);
+}
+
+function topbar() {
+  const bar = el("div", "topbar");
+  const brand = el("div", "brand");
+  brand.appendChild(el("span", "eyebrow", "Quant Gym"));
+  brand.appendChild(el("h1", "", S.screen === "ladder" ? "Quant Gym" : skillName(S.skill, S.lang)));
+  if (S.screen === "ladder") brand.appendChild(el("p", "muted small", t().tagline));
+  bar.appendChild(brand);
+
+  const tools = el("div", "tools");
+  if (S.screen !== "ladder") tools.appendChild(btn("← " + t().back, "", () => { stopTimer(); S.screen = "ladder"; render(); }));
+  const seg = el("div", "seg");
+  for (const lang of ["en", "vi"]) {
+    const b = btn(lang.toUpperCase(), "", () => { S.lang = lang; render(); });
+    b.setAttribute("aria-pressed", String(S.lang === lang));
+    seg.appendChild(b);
+  }
+  tools.appendChild(seg);
+  bar.appendChild(tools);
+  return bar;
+}
+
+/* ── screen 1: the ladder ────────────────────────────────────────────────── */
+function ladder(app) {
+  for (const topic of CURRICULUM) {
+    const box = el("div", "topic");
+    const head = el("div", "topic-head");
+    head.appendChild(el("h2", "", tr(topic.name)));
+    head.appendChild(el("p", "muted small", tr(topic.blurb)));
+    box.appendChild(head);
+
+    const grid = el("div", "skills");
+    for (const sk of topic.skills) {
+      const card = el("div", "skill");
+      const nameRow = el("div", "skill-name");
+      nameRow.appendChild(el("h3", "", tr(sk.name)));
+      const dots = el("div", "dots");
+      for (let i = 1; i <= 3; i++) {
+        const d = el("span", "dot");
+        d.dataset.on = String(isMastered(sk.id, i));
+        dots.appendChild(d);
+      }
+      nameRow.appendChild(dots);
+      card.appendChild(nameRow);
+
+      const levels = el("div", "levels");
+      for (let i = 1; i <= 3; i++) {
+        const b = btn(t().level + " " + i, "lvl", () => { S.skill = sk.id; S.level = i; S.screen = "level"; render(); });
+        b.dataset.done = String(isMastered(sk.id, i));
+        levels.appendChild(b);
+      }
+      card.appendChild(levels);
+      grid.appendChild(card);
+    }
+    box.appendChild(grid);
+    app.appendChild(box);
+  }
+
+  const exams = el("div", "topic");
+  exams.appendChild(el("h2", "", t().exams));
+  const grid = el("div", "skills");
+  for (const e of EXAMS) {
+    const card = el("div", "skill");
+    card.appendChild(el("h3", "", tr(e.name)));
+    card.appendChild(el("p", "muted small", tr(e.note)));
+    card.appendChild(btn(t().startExam, "primary", () => startExam(e.id)));
+    grid.appendChild(card);
+  }
+  exams.appendChild(grid);
+  app.appendChild(exams);
+}
+
+/* ── screen 2: the level, with its tip card ──────────────────────────────── */
+function levelScreen(app) {
+  const sk = getSkill(S.skill);
+  const cfg = sk.levels[S.level - 1];
+  const stack = el("div", "stack");
+
+  const q0 = generateSet({ skill: S.skill, level: S.level, count: 1, seed: "tip" }).questions[0];
+  const tip = q0.tip ? getTip(q0.tip, S.lang) : null;
+  if (tip) {
+    const card = el("div", "tip");
+    card.appendChild(el("span", "eyebrow", t().tipTitle));
+    card.appendChild(el("h3", "", tip.title));
+    const ol = el("ol");
+    for (const step of tip.steps) ol.appendChild(el("li", "", step));
+    card.appendChild(ol);
+    card.appendChild(el("div", "ex", tip.example));
+    card.appendChild(el("p", "small muted", `${t().whyItWorks}: ${tip.why}`));
+    stack.appendChild(card);
+  }
+
+  const choose = el("div", "card stack");
+  const a = el("div", "row");
+  a.appendChild(btn(`${t().practice} · ${sk.drill} ${t().questions}`, "primary", () => startDrill()));
+  a.appendChild(el("span", "muted small", t().noClock));
+  choose.appendChild(a);
+
+  const b = el("div", "row");
+  b.appendChild(btn(`${t().beatClock} · ${cfg.count} ${t().questions} / ${clock(cfg.seconds)}`, "", () => startClock()));
+  b.appendChild(el("span", "muted small", `${cfg.pass}/${cfg.count} ${t().needed}`));
+  choose.appendChild(b);
+  stack.appendChild(choose);
+
+  app.appendChild(stack);
+}
+
+/* ── screen 3: practice, one question at a time ──────────────────────────── */
+function startDrill() {
+  const sk = getSkill(S.skill);
+  S.paper = generateSet({ skill: S.skill, level: S.level, count: sk.drill, seed: Date.now() });
+  S.i = 0;
+  S.verdict = null;
+  S.screen = "drill";
+  render();
+}
+
+function drill(app) {
+  const qn = S.paper.questions[S.i];
+  const stack = el("div", "stack");
+
+  const rail = el("div", "rail");
+  rail.appendChild(Object.assign(el("i"), { style: `width:${(S.i / S.paper.questions.length) * 100}%` }));
+  stack.appendChild(rail);
+  stack.appendChild(el("p", "muted small mono", `${S.i + 1} / ${S.paper.questions.length}`));
+
+  const card = el("div", "card stack");
+  card.appendChild(el("div", "qbig" + (isWordy(qn) ? " words" : ""), qn.prompt));
+  if (qn.options) {
+    card.appendChild(el("div", "mono small muted", qn.options.map((o, j) => `(${"abcde"[j]}) ${o}`).join("    ")));
+  }
+
+  if (!S.verdict) {
+    const input = el("input");
+    input.type = "text";
+    input.autocomplete = "off";
+    input.spellcheck = false;
+    input.setAttribute("aria-label", t().yourAnswer);
+    const submit = () => { S.verdict = grade(qn, input.value); render(); };
+    input.onkeydown = (e) => { if (e.key === "Enter") submit(); };
+    card.appendChild(input);
+    const row = el("div", "row");
+    row.appendChild(btn(t().check, "primary", submit));
+    if (qn.format === "probability") row.appendChild(el("span", "muted small", t().typeHint));
+    card.appendChild(row);
+    setTimeout(() => input.focus(), 0);
+  } else {
+    const v = S.verdict;
+    const box = el("div", "verdict " + (v.correct ? "ok" : "no"));
+    box.appendChild(el("strong", "", v.correct ? t().correct : t().notQuite));
+    if (!v.correct) {
+      box.appendChild(el("p", "mono small", `${t().answerIs} ${v.expected}`));
+      // The sentence that makes a miss worth something: not "wrong", but which
+      // wrong route you took.
+      if (v.why) box.appendChild(el("p", "", v.why));
+      const tip = qn.tip ? getTip(qn.tip, S.lang) : null;
+      if (tip) box.appendChild(el("p", "small", `${t().tipTitle}: ${tip.title}. ${tip.example}`));
+    }
+    card.appendChild(box);
+    const isLast = S.i + 1 >= S.paper.questions.length;
+    card.appendChild(btn(isLast ? t().back : t().next, "primary", () => {
+      if (isLast) { S.screen = "level"; S.verdict = null; render(); return; }
+      S.i++; S.verdict = null; render();
+    }));
+  }
+
+  stack.appendChild(card);
+  app.appendChild(stack);
+}
+
+/* ── screen 4: the clock, every question on one page ─────────────────────── */
+let timer = null;
+const stopTimer = () => { if (timer) { clearInterval(timer); timer = null; } };
+
+function startClock() {
+  const cfg = getSkill(S.skill).levels[S.level - 1];
+  S.paper = generateSet({ skill: S.skill, level: S.level, count: cfg.count, seconds: cfg.seconds, seed: Date.now() });
+  S.parts = [{ paper: S.paper, answers: new Array(cfg.count).fill("") }];
+  S.partIndex = 0;
+  S.exam = null;
+  S.screen = "clock";
+  render();
+}
+
+function startExam(examId) {
+  const exam = generateExam(examId, Date.now());
+  S.exam = exam;
+  S.skill = exam.parts[0].skill;
+  S.parts = exam.parts.map((p) => ({ paper: p, answers: new Array(p.questions.length).fill("") }));
+  S.partIndex = 0;
+  S.screen = "clock";
+  render();
+}
+
+function clockScreen(app) {
+  const part = S.parts[S.partIndex];
+  const { questions, seconds } = part.paper;
+  const deadline = Date.now() + seconds * 1000;
+
+  const stack = el("div", "stack");
+  const head = el("div", "row");
+  head.style.justifyContent = "space-between";
+  const label = S.exam
+    ? `${t().part} ${S.partIndex + 1} ${t().of} ${S.parts.length} · ${questions.length} ${t().questions}`
+    : `${skillName(S.skill, S.lang)} · ${t().level} ${S.level} · ${questions.length} ${t().questions}`;
+  head.appendChild(el("span", "muted small", label));
+  const clockEl = el("span", "clock", clock(seconds));
+  head.appendChild(clockEl);
+  stack.appendChild(head);
+
+  const rail = el("div", "rail");
+  const fill = el("i");
+  fill.style.width = "100%";
+  rail.appendChild(fill);
+  stack.appendChild(rail);
+
+  const wordy = questions.some(isWordy);
+  const sheet = el("div", "sheet " + (wordy ? "" : "two"));
+  const inputs = [];
+  questions.forEach((qn, i) => {
+    const row = el("div", "qrow" + (isWordy(qn) ? " words" : ""));
+    row.appendChild(el("span", "qn", String(i + 1)));
+    const text = qn.options
+      ? qn.prompt + "   " + qn.options.map((o, j) => `(${"abcde"[j]}) ${o}`).join("   ")
+      : qn.prompt;
+    row.appendChild(el("span", "qq", text));
+    const input = el("input");
+    input.type = "text";
+    input.autocomplete = "off";
+    input.spellcheck = false;
+    input.value = part.answers[i];
+    input.setAttribute("aria-label", `${t().yourAnswer} ${i + 1}`);
+    input.oninput = () => { part.answers[i] = input.value; };
+    input.onkeydown = (e) => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      const nextInput = inputs[i + 1];
+      if (nextInput) { nextInput.focus(); nextInput.select(); }
+    };
+    inputs.push(input);
+    row.appendChild(input);
+    sheet.appendChild(row);
+  });
+  stack.appendChild(sheet);
+
+  const foot = el("div", "row");
+  foot.appendChild(btn(t().submit, "primary", finish));
+  foot.appendChild(el("span", "muted small", t().autoSubmit));
+  stack.appendChild(foot);
+  app.appendChild(stack);
+  setTimeout(() => inputs[0]?.focus(), 0);
+
+  stopTimer();
+  timer = setInterval(() => {
+    const left = Math.max(0, (deadline - Date.now()) / 1000);
+    clockEl.textContent = clock(left);
+    const frac = left / seconds;
+    fill.style.width = (frac * 100).toFixed(1) + "%";
+    clockEl.classList.toggle("hot", frac < 0.2);
+    rail.classList.toggle("hot", frac < 0.2);
+    if (left <= 0) finish(true);
+  }, 250);
+
+  function finish(auto = false) {
+    if (!auto) {
+      const blank = part.answers.filter((a) => !a.trim()).length;
+      if (blank && !confirm(t().blankWarn(blank))) return;
+    }
+    stopTimer();
+    part.marked = gradeSet(questions, part.answers);
+    if (S.partIndex + 1 < S.parts.length) { S.partIndex++; render(); return; }
+    S.screen = "results";
+    recordProgress();
+    render();
+  }
+}
+
+function recordProgress() {
+  if (S.exam) return; // exams do not unlock ladder levels
+  const cfg = getSkill(S.skill).levels[S.level - 1];
+  const { score } = S.parts[0].marked;
+  if (score >= cfg.pass) {
+    S.progress[`${S.skill}|${S.level}`] = { score, at: Date.now() };
+    save(S.progress);
+  }
+  // In a real integration this is where the host is told, and the host decides
+  // what to persist: onEvent({ type:"level-complete", skill, level, score, ... })
+}
+
+/* ── screen 5: results, with the explanation for every miss ──────────────── */
+function results(app) {
+  const stack = el("div", "stack");
+
+  const totals = S.parts.reduce(
+    (a, p) => ({
+      score: a.score + p.marked.score, total: a.total + p.marked.total,
+      blank: a.blank + p.marked.blank, trapped: a.trapped + p.marked.trapped,
+    }),
+    { score: 0, total: 0, blank: 0, trapped: 0 }
+  );
+
+  const tiles = el("div", "tiles");
+  const tile = (v, l) => { const d = el("div", "tile"); d.appendChild(el("div", "tv", v)); d.appendChild(el("div", "tl", l)); return d; };
+  tiles.appendChild(tile(`${totals.score}/${totals.total}`, t().score));
+  tiles.appendChild(tile(String(totals.blank), t().blank));
+  tiles.appendChild(tile(String(totals.trapped), t().trapped));
+  stack.appendChild(tiles);
+
+  if (!S.exam) {
+    const cfg = getSkill(S.skill).levels[S.level - 1];
+    const passed = totals.score >= cfg.pass;
+    const note = el("div", "verdict " + (passed ? "ok" : "no"));
+    note.appendChild(el("strong", "", passed ? `${t().done} · ${t().level} ${S.level}` : `${cfg.pass}/${cfg.total || cfg.count} ${t().needed}`));
+    if (passed && nextSkill(S.skill)) note.appendChild(el("p", "small", skillName(nextSkill(S.skill), S.lang)));
+    stack.appendChild(note);
+  }
+
+  for (const part of S.parts) {
+    const review = el("div", "review");
+    part.paper.questions.forEach((qn, i) => {
+      const r = part.marked.results[i];
+      if (r.correct) return;
+      const box = el("div", "rev");
+      box.dataset.ok = "false";
+      box.appendChild(el("p", isWordy(qn) ? "" : "mono", qn.prompt));
+      const line = el("p", "small mono muted");
+      line.textContent = `${t().answerIs} ${r.expected}` + (r.answered ? `   ·   ${t().yourAnswer}: ${r.given}` : `   ·   ${t().blank}`);
+      box.appendChild(line);
+      if (r.why) box.appendChild(el("p", "small", r.why));
+      review.appendChild(box);
+    });
+    if (review.children.length) stack.appendChild(review);
+  }
+
+  const row = el("div", "row");
+  row.appendChild(btn(t().again, "primary", () => (S.exam ? startExam(S.exam.id) : startClock())));
+  row.appendChild(btn(t().back, "", () => { S.screen = "ladder"; render(); }));
+  stack.appendChild(row);
+  app.appendChild(stack);
+}
+
+render();
+
+</script>
+</body>
+</html>

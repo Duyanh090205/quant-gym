@@ -1,0 +1,113 @@
+/**
+ * Marking.
+ *
+ * One rule throughout: mark the value, not the spelling. A student who types
+ * `0.33` for 1/3, or `1,234` for 1234, or `hs` for HS, has the answer. Making
+ * them guess a format is testing the interface, not the maths.
+ *
+ * The return value always says *why* a wrong answer is wrong when the engine
+ * knows, because that sentence is the product.
+ */
+
+import { parseAnswer, near, normal, fmt, frac, LETTERS } from "./format.js";
+
+/** How the correct answer should be shown in a review screen. */
+export function displayAnswer(qn) {
+  switch (qn.format) {
+    case "letter": {
+      const i = LETTERS.indexOf(qn.answer);
+      const label = qn.options?.[i];
+      return label ? `(${qn.answer}) ${label}` : String(qn.answer);
+    }
+    case "odd-term":
+      return `${qn.answer}`;
+    case "probability": {
+      const f = frac(qn.answer);
+      const dec = Math.round(qn.answer * 1000) / 1000;
+      return f.includes("/") ? `${f}  ≈ ${dec}` : String(f);
+    }
+    default:
+      return qn.approx ? `≈ ${Math.round(qn.answer * 10) / 10}` : fmt(qn.answer);
+  }
+}
+
+/** Did this input hit one of the question's known traps? */
+function findTrap(qn, value) {
+  if (!qn.traps?.length || typeof value !== "number") return null;
+  const tol = qn.format === "probability" ? 0.0051 : 0.5;
+  return qn.traps.find((t) => isFinite(t.value) && Math.abs(value - t.value) <= tol) || null;
+}
+
+/**
+ * Mark one answer.
+ *
+ * @returns {{answered:boolean, correct:boolean, given:string, expected:string,
+ *            trap:{value:number,why:string}|null, why:string|null}}
+ */
+export function grade(qn, raw) {
+  const given = raw == null ? "" : String(raw).trim();
+  const base = { answered: given !== "", given, expected: displayAnswer(qn), trap: null, why: null };
+  if (!base.answered) return { ...base, correct: false };
+
+  const parsed = parseAnswer(given);
+
+  // Multiple options labelled (a), (b)…: accept the letter or the option text.
+  if (qn.format === "letter") {
+    const i = LETTERS.indexOf(qn.answer);
+    const correct =
+      given.toLowerCase() === qn.answer ||
+      (qn.options && normal(given) === normal(qn.options[i]));
+    return { ...base, correct, why: correct ? null : qn.note || null };
+  }
+
+  // Odd one out: the answer is the offending term itself.
+  if (qn.format === "odd-term") {
+    const want = parseAnswer(qn.answer);
+    const correct =
+      typeof parsed === "number" && typeof want === "number"
+        ? Math.abs(parsed - want) < 1e-9
+        : normal(given) === normal(qn.answer);
+    let why = null;
+    if (!correct) {
+      why =
+        normal(given) === normal(qn.shouldBe)
+          ? `That is what the term should have been. The question asks for the value actually printed, which is ${qn.answer}.`
+          : `${qn.answer} is the one that breaks the rule; in position ${qn.position + 1} the pattern needs ${qn.shouldBe}.`;
+    }
+    return { ...base, correct, why };
+  }
+
+  // Letter sequences: "HS", " hs ", "Hs" are the same answer.
+  if (qn.format === "letter-term" || typeof qn.answer === "string") {
+    return { ...base, correct: normal(given) === normal(qn.answer) };
+  }
+
+  if (typeof parsed !== "number") return { ...base, correct: false };
+
+  // Probabilities accept two-decimal rounding: 0.33 is 1/3.
+  const correct = qn.approx
+    ? near(parsed, qn.answer, 0.05, 0)
+    : near(parsed, qn.answer, 0, 0.0051);
+
+  if (correct) return { ...base, correct: true };
+
+  const trap = findTrap(qn, parsed);
+  return { ...base, correct: false, trap, why: trap ? trap.why : null };
+}
+
+/** Mark a whole paper. Blanks score zero and are counted separately. */
+export function gradeSet(questions, answers) {
+  const results = questions.map((qn, i) => grade(qn, answers[i]));
+  const score = results.filter((r) => r.correct).length;
+  const answered = results.filter((r) => r.answered).length;
+  const trapped = results.filter((r) => r.trap).length;
+  return {
+    results,
+    score,
+    total: questions.length,
+    answered,
+    blank: questions.length - answered,
+    wrong: answered - score,
+    trapped,
+  };
+}

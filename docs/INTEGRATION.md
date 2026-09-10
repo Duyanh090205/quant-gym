@@ -1,0 +1,119 @@
+# Putting Quant Gym in a website
+
+The engine is deliberately small and rude about its boundaries: it generates
+questions and marks answers, and it does nothing else. It never reads storage,
+never asks who the user is, never routes, and never calls your API. Your
+application already does all of that better than a drop-in widget could.
+
+## The fastest path
+
+Copy `src/engine/` into your project and import it.
+
+```
+your-app/
+  src/
+    features/quant/
+      engine/        ← copied from this repo, unchanged
+      QuantGym.jsx   ← your UI, or ours
+```
+
+```js
+import { generateSet, gradeSet, CURRICULUM, getTip } from "./engine/index.js";
+```
+
+It is plain ES modules with no dependencies, so Vite, Next, Webpack, Rollup and a
+bare `<script type="module">` all handle it without configuration. It runs in
+Node too, which is what the tests do.
+
+## The component contract
+
+The React module in phase 2 takes props in and sends events out. Nothing else.
+
+```jsx
+<QuantGym
+  user={session.user}          // whatever your auth already returns
+  lang="en"                    // "en" | "vi"
+  theme={theme}                // "light" | "dark"
+  initialProgress={progress}   // loaded by you, shape below
+  onEvent={handleEvent}
+/>
+```
+
+```js
+function handleEvent(e) {
+  // e.type is one of:
+  //   "question-answered"  { skill, level, questionId, correct, trapHit, seconds }
+  //   "level-complete"     { skill, level, score, total, blank, trapped, seconds, mastered }
+  //   "exam-complete"      { examId, parts: [{ skill, score, total, blank }], seconds }
+  //   "tip-opened"         { tipId, skill }
+  fetch("/api/quant/progress", { method: "POST", body: JSON.stringify(e) });
+}
+```
+
+`initialProgress` is a flat map, which is all the ladder needs to decide what is
+unlocked:
+
+```json
+{
+  "arith.squares|1": { "score": 14, "at": 1757400000000 },
+  "arith.squares|2": { "score": 13, "at": 1757400600000 }
+}
+```
+
+Store it however you like. It is small, it is JSON, and it never needs a schema
+migration because unknown keys are ignored.
+
+## If you would rather use your own question UI
+
+Then skip the component and call the engine directly. This is the better choice
+if you already have a practice-question screen you like, because the questions
+will look native rather than like an embedded product.
+
+```js
+const paper = generateSet({ skill: "prob.mixed", level: 2, count: 15, seed: assignmentCode });
+
+// render paper.questions with your own components
+// collect answers into an array in the same order
+
+const marked = gradeSet(paper.questions, answers);
+```
+
+Two things to carry through if you build your own screen, because they are where
+most of the teaching value is:
+
+1. **Show `result.why` when an answer is wrong.** That sentence names the specific
+   mistake. Without it the module is just a timer with sums in it.
+2. **Show the tip card on a miss**, via `getTip(question.tip, lang)`. A trick
+   lands when the mistake is still warm.
+
+## Classroom assignments without a backend
+
+Because generation is seeded, a shared code is a shared paper.
+
+```js
+const code = "QG-7A3F";                       // teacher generates once, writes on the board
+const paper = generateSet({ skill: "arith.mixed", level: 2, count: 20, seconds: 300, seed: code });
+```
+
+Every student who enters that code gets the identical twenty questions in the
+identical order. Nothing is stored server-side, and the questions cannot leak in
+advance because they do not exist until the code is used.
+
+## Language
+
+Everything a student reads comes from one of three places:
+
+- **Question prompts** are generated in English. They are mostly symbols and short
+  sentences; translating them means adding a `vi` branch in the generator files.
+- **Tip cards** are already bilingual. `getTip(id, "vi")` returns Vietnamese.
+- **Trap explanations** are English only today. They are ordinary strings inside
+  the generator files and are the next thing to translate, because they are the
+  part a struggling student most needs to read in their own language.
+
+Interface labels belong to your application, not to the engine.
+
+## What is deliberately missing
+
+No analytics, no telemetry, no network calls, no cookies, no `localStorage` in the
+engine. The demo uses `localStorage`, but that is the demo remembering itself, not
+the engine. If you see a network request from this code, something is wrong.
