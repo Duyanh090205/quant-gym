@@ -3,14 +3,14 @@
 Read before trusting the content. This is an honest account of what has been
 checked, by what, and what has not.
 
-Last read end to end: 10 September 2026, all 21 tip cards in both languages,
+Last read end to end: 10 September 2026, all 24 tip cards in both languages,
 plus every generator's questions, solutions and traps.
 
 ---
 
 ## What a machine verifies
 
-`npm test` runs 31 tests. Three of them do the load-bearing work, and they are
+`npm test` runs 37 tests. Three of them do the load-bearing work, and they are
 deliberately independent of one another, because a formula and the generator that
 produced it can be wrong in the same way.
 
@@ -18,7 +18,7 @@ produced it can be wrong in the same way.
 |---|---|---|
 | `engine.test.js` | every generated answer, re-derived from a formula written separately from the generator | ~1,000 questions per run |
 | `simulate.test.js` | the same answers, by playing the game instead of computing it | 265 distinct question shapes, 120,000 trials each |
-| `tip-arithmetic.test.js` | the hand-written tip cards, parsing and evaluating both sides of every equation printed on them | 100 equations across 21 cards in two languages |
+| `tip-arithmetic.test.js` | the hand-written tip cards, parsing and evaluating both sides of every equation printed on them | 140 equations across 24 cards in two languages |
 
 Simulation is the one worth explaining. It ignores the formulas entirely and
 rolls the dice, draws the balls, shuffles the envelopes, walks the walks and plays
@@ -40,8 +40,8 @@ Also enforced, because they are the failure modes that would quietly ruin a less
 
 ## What no machine checks
 
-**Prose reasoning.** 122 instruction steps, 42 "why it works" lines and 42 "use it
-when" lines are arguments in words. The numbers inside them are checked; the
+**Prose reasoning.** Around 140 instruction steps, and a "why it works" and a
+"use it when" line on each of 24 cards in two languages, are arguments in words. The numbers inside them are checked; the
 arguments are not, and cannot be. They have been read end to end once, on the date
 above. If you change one, nothing will catch a new mistake in it.
 
