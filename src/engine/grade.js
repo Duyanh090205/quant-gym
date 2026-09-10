@@ -39,11 +39,20 @@ export function displayAnswer(qn) {
   }
 }
 
-/** Did this input hit one of the question's known traps? */
+/**
+ * Did this input hit one of the question's known traps?
+ *
+ * A trap fires only when the typed value would have been marked *correct* had
+ * the trap been the answer: the same test `grade` runs below, against a
+ * different target. Anything looser tells a student they made a particular
+ * mistake they did not make, which is worse than saying nothing. On a fractions
+ * question every answer lives between 0 and 10, so a fixed half-unit window
+ * swallowed numbers that had nothing to do with the trap.
+ */
 function findTrap(qn, value) {
   if (!qn.traps?.length || typeof value !== "number") return null;
-  const tol = qn.format === "probability" ? 0.0051 : 0.5;
-  return qn.traps.find((t) => isFinite(t.value) && Math.abs(value - t.value) <= tol) || null;
+  const hits = (t) => (qn.approx ? near(value, t.value, 0.05, 0) : near(value, t.value, 0, 0.0051));
+  return qn.traps.find((t) => isFinite(t.value) && hits(t)) || null;
 }
 
 /**
@@ -62,9 +71,9 @@ export function grade(qn, raw) {
   };
   if (!base.answered) return { ...base, correct: false };
 
-  const parsed = parseAnswer(given);
+  const parsed = parseAnswer(given, qn.lang);
   // Both readings of an ambiguous comma, so 0,272 and 1,234 each work.
-  const candidates = parseCandidates(given).filter((v) => typeof v === "number");
+  const candidates = parseCandidates(given, qn.lang).filter((v) => typeof v === "number");
 
   // Multiple options labelled (a), (b)…: accept the letter or the option text.
   if (qn.format === "letter") {

@@ -15,7 +15,7 @@ import {
   generateReview, weakSpots, accumulate,
   grade, gradeSet, displayAnswer,
   CURRICULUM, EXAMS, ALL_SKILLS, TIPS, getTip, tipsForSkill,
-  frac, makeCode, makeRng,
+  frac, makeCode, makeRng, parseAnswer,
 } from "../src/engine/index.js";
 
 const LEVELS = [1, 2, 3];
@@ -566,6 +566,70 @@ test("tips are reachable from the skill they belong to", () => {
   }
 });
 
+
+/* ── marking tells the truth about which mistake was made ────────────────── */
+
+test("a trap only explains an answer that really landed on it", () => {
+  // A trap says "you made this exact mistake". Said about a number that is
+  // merely in the neighbourhood, it teaches a mistake the student never made.
+  // The window has to be the one marking itself uses, no wider.
+  const blamed = [];
+  let fired = 0;
+
+  for (const skill of ["arith.fractions", "arith.percent"]) {
+    for (const level of LEVELS) {
+      const { questions } = generateSet({ skill, level, count: 40, seed: `trapwin|${skill}|${level}` });
+      for (const q of questions) {
+        for (const tr of q.traps) {
+          // Landing on the trap must still be explained.
+          const onIt = grade(q, String(tr.value));
+          if (!onIt.correct) {
+            assert.ok(onIt.trap, `${q.prompt}: typed the trap ${tr.value} and got no explanation`);
+            fired++;
+          }
+          // A quarter away is a different wrong answer, not this mistake.
+          const near = tr.value + 0.25;
+          const isAnswer = Math.abs(near - q.answer) < 0.02;
+          const isAnotherTrap = q.traps.some((o) => Math.abs(near - o.value) < 0.02);
+          if (!isAnswer && !isAnotherTrap && grade(q, String(near)).trap) {
+            blamed.push(`${q.prompt}: typed ${near}, blamed on the trap at ${tr.value}`);
+          }
+        }
+      }
+    }
+  }
+
+  assert.deepEqual(blamed.slice(0, 5), [], `${blamed.length} answers blamed on a trap they missed`);
+  assert.ok(fired > 100, `only ${fired} traps fired on a direct hit`);
+});
+
+test("the exported parser reads a comma the way marking does", () => {
+  // `grade` tries both readings of an ambiguous comma. `parseAnswer` is exported
+  // as well, so a host may use it to check input before submitting; if it picks
+  // the other reading, the host disagrees with its own marking.
+  assert.equal(parseAnswer("0,272", "vi"), 0.272);
+  assert.equal(parseAnswer("1,5", "vi"), 1.5);
+  assert.equal(parseAnswer("1,234", "vi"), 1.234);
+  assert.equal(parseAnswer("1,234", "en"), 1234);
+
+  // With no language given, only a real thousands grouping reads as one: nobody
+  // writes 272 as "0,272" or 15 as "1,5".
+  assert.equal(parseAnswer("0,272"), 0.272);
+  assert.equal(parseAnswer("1,5"), 1.5);
+  assert.equal(parseAnswer("0,5"), 0.5);
+  assert.equal(parseAnswer("1,234"), 1234);
+
+  // And marking keeps accepting either habit, whatever the question's language.
+  for (const lang of ["en", "vi"]) {
+    const { questions } = generateSet({ skill: "prob.mixed", level: 2, count: 30, seed: `comma|${lang}`, lang });
+    for (const q of questions) {
+      if (typeof q.answer !== "number" || Number.isInteger(q.answer)) continue;
+      const dot = String(Math.round(q.answer * 1000) / 1000);
+      assert.ok(grade(q, dot).correct, `${lang}: "${dot}" rejected for ${q.answer}`);
+      assert.ok(grade(q, dot.replace(".", ",")).correct, `${lang}: "${dot.replace(".", ",")}" rejected for ${q.answer}`);
+    }
+  }
+});
 /* ── the RNG itself ──────────────────────────────────────────────────────── */
 
 test("the seeded generator is uniform enough to build papers from", () => {

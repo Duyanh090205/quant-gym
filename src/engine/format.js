@@ -66,8 +66,8 @@ export function frac(x, maxDen = 130) {
  *
  * Returns a number, a string, or null for empty input.
  */
-export function parseAnswer(raw) {
-  const all = parseCandidates(raw);
+export function parseAnswer(raw, lang) {
+  const all = parseCandidates(raw, lang);
   return all.length ? all[0] : (raw == null || String(raw).trim() === "" ? null : String(raw).trim().toUpperCase());
 }
 
@@ -82,7 +82,7 @@ export function parseAnswer(raw) {
  *
  * Returns numbers, or a single upper-cased string for letter answers.
  */
-export function parseCandidates(raw) {
+export function parseCandidates(raw, lang) {
   if (raw == null) return [];
   let s = String(raw).trim();
   if (!s) return [];
@@ -96,8 +96,18 @@ export function parseCandidates(raw) {
     // A dot is already doing the decimal work, so any comma groups thousands.
     readings.add(s.replace(/,/g, ""));
   } else if (s.includes(",")) {
-    readings.add(s.replace(/,/g, ""));      // English: a thousands separator
-    readings.add(s.replace(/,/g, "."));     // Vietnamese: a decimal mark
+    // A comma only separates thousands if it actually separates thousands:
+    // every run after a comma is exactly three digits, and the leading run is
+    // not zero-padded. Without that test `0,272` reads as 272 and `1,5` as 15.
+    const groupsThousands = /^[-+]?[1-9]\d{0,2}(?:,\d{3})+$/.test(s);
+    const thousands = groupsThousands ? s.replace(/,/g, "") : null;
+    const decimal = s.replace(/,/g, ".");
+    // When the question's language is known its own convention is read first,
+    // and `parseAnswer` returns that one. Marking still tries both, so a
+    // student who types the other habit out of muscle memory keeps the mark.
+    for (const r of lang === "vi" ? [decimal, thousands] : [thousands, decimal]) {
+      if (r) readings.add(r);
+    }
   } else {
     readings.add(s);
   }

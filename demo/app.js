@@ -399,7 +399,12 @@ function startExam(examId) {
 function clockScreen(app) {
   const part = S.parts[S.partIndex];
   const { questions, seconds } = part.paper;
-  const deadline = Date.now() + seconds * 1000;
+  // Set once, when the part opens, and kept on the part itself. A re-render must
+  // not hand back spent time: switching language mid-paper used to put every
+  // second back on the clock, which made the timing worth nothing.
+  if (part.deadline == null) part.deadline = Date.now() + seconds * 1000;
+  const deadline = part.deadline;
+  const remaining = () => Math.max(0, (deadline - Date.now()) / 1000);
 
   const stack = el("div", "stack");
   const head = el("div", "row");
@@ -410,7 +415,7 @@ function clockScreen(app) {
     ? `${t().weakTitle} · ${questions.length} ${t().questions}`
     : `${skillName(S.skill, S.lang)} · ${t().level} ${S.level} · ${questions.length} ${t().questions}`;
   head.appendChild(el("span", "muted small", label));
-  const clockEl = el("span", "clock", clock(seconds));
+  const clockEl = el("span", "clock", clock(remaining()));
   clockEl.setAttribute("role", "timer");
   clockEl.setAttribute("aria-hidden", "true");   // announced through the live region below
   head.appendChild(clockEl);
@@ -470,7 +475,7 @@ function clockScreen(app) {
 
   stopTimer();
   timer = setInterval(() => {
-    const left = Math.max(0, (deadline - Date.now()) / 1000);
+    const left = remaining();
     clockEl.textContent = clock(left);
     const frac = left / seconds;
     fill.style.width = (frac * 100).toFixed(1) + "%";
@@ -483,6 +488,7 @@ function clockScreen(app) {
   }, 250);
 
   function finish(auto = false) {
+    if (part.marked) return;   // already submitted: scoring it again would count it again
     if (!auto) {
       const blank = part.answers.filter((a) => !a.trim()).length;
       if (blank && !confirm(t().blankWarn(blank))) return;

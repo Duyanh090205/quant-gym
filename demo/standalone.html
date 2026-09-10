@@ -215,8 +215,8 @@ function frac(x, maxDen = 130) {
  *
  * Returns a number, a string, or null for empty input.
  */
-function parseAnswer(raw) {
-  const all = parseCandidates(raw);
+function parseAnswer(raw, lang) {
+  const all = parseCandidates(raw, lang);
   return all.length ? all[0] : (raw == null || String(raw).trim() === "" ? null : String(raw).trim().toUpperCase());
 }
 
@@ -231,7 +231,7 @@ function parseAnswer(raw) {
  *
  * Returns numbers, or a single upper-cased string for letter answers.
  */
-function parseCandidates(raw) {
+function parseCandidates(raw, lang) {
   if (raw == null) return [];
   let s = String(raw).trim();
   if (!s) return [];
@@ -245,8 +245,18 @@ function parseCandidates(raw) {
     // A dot is already doing the decimal work, so any comma groups thousands.
     readings.add(s.replace(/,/g, ""));
   } else if (s.includes(",")) {
-    readings.add(s.replace(/,/g, ""));      // English: a thousands separator
-    readings.add(s.replace(/,/g, "."));     // Vietnamese: a decimal mark
+    // A comma only separates thousands if it actually separates thousands:
+    // every run after a comma is exactly three digits, and the leading run is
+    // not zero-padded. Without that test `0,272` reads as 272 and `1,5` as 15.
+    const groupsThousands = /^[-+]?[1-9]\d{0,2}(?:,\d{3})+$/.test(s);
+    const thousands = groupsThousands ? s.replace(/,/g, "") : null;
+    const decimal = s.replace(/,/g, ".");
+    // When the question's language is known its own convention is read first,
+    // and `parseAnswer` returns that one. Marking still tries both, so a
+    // student who types the other habit out of muscle memory keeps the mark.
+    for (const r of lang === "vi" ? [decimal, thousands] : [thousands, decimal]) {
+      if (r) readings.add(r);
+    }
   } else {
     readings.add(s);
   }
@@ -4070,11 +4080,20 @@ function displayAnswer(qn) {
   }
 }
 
-/** Did this input hit one of the question's known traps? */
+/**
+ * Did this input hit one of the question's known traps?
+ *
+ * A trap fires only when the typed value would have been marked *correct* had
+ * the trap been the answer: the same test `grade` runs below, against a
+ * different target. Anything looser tells a student they made a particular
+ * mistake they did not make, which is worse than saying nothing. On a fractions
+ * question every answer lives between 0 and 10, so a fixed half-unit window
+ * swallowed numbers that had nothing to do with the trap.
+ */
 function findTrap(qn, value) {
   if (!qn.traps?.length || typeof value !== "number") return null;
-  const tol = qn.format === "probability" ? 0.0051 : 0.5;
-  return qn.traps.find((t) => isFinite(t.value) && Math.abs(value - t.value) <= tol) || null;
+  const hits = (t) => (qn.approx ? near(value, t.value, 0.05, 0) : near(value, t.value, 0, 0.0051));
+  return qn.traps.find((t) => isFinite(t.value) && hits(t)) || null;
 }
 
 /**
@@ -4093,9 +4112,9 @@ function grade(qn, raw) {
   };
   if (!base.answered) return { ...base, correct: false };
 
-  const parsed = parseAnswer(given);
+  const parsed = parseAnswer(given, qn.lang);
   // Both readings of an ambiguous comma, so 0,272 and 1,234 each work.
-  const candidates = parseCandidates(given).filter((v) => typeof v === "number");
+  const candidates = parseCandidates(given, qn.lang).filter((v) => typeof v === "number");
 
   // Multiple options labelled (a), (b)…: accept the letter or the option text.
   if (qn.format === "letter") {
@@ -4851,7 +4870,12 @@ function startExam(examId) {
 function clockScreen(app) {
   const part = S.parts[S.partIndex];
   const { questions, seconds } = part.paper;
-  const deadline = Date.now() + seconds * 1000;
+  // Set once, when the part opens, and kept on the part itself. A re-render must
+  // not hand back spent time: switching language mid-paper used to put every
+  // second back on the clock, which made the timing worth nothing.
+  if (part.deadline == null) part.deadline = Date.now() + seconds * 1000;
+  const deadline = part.deadline;
+  const remaining = () => Math.max(0, (deadline - Date.now()) / 1000);
 
   const stack = el("div", "stack");
   const head = el("div", "row");
@@ -4862,7 +4886,7 @@ function clockScreen(app) {
     ? `${t().weakTitle} · ${questions.length} ${t().questions}`
     : `${skillName(S.skill, S.lang)} · ${t().level} ${S.level} · ${questions.length} ${t().questions}`;
   head.appendChild(el("span", "muted small", label));
-  const clockEl = el("span", "clock", clock(seconds));
+  const clockEl = el("span", "clock", clock(remaining()));
   clockEl.setAttribute("role", "timer");
   clockEl.setAttribute("aria-hidden", "true");   // announced through the live region below
   head.appendChild(clockEl);
@@ -4922,7 +4946,7 @@ function clockScreen(app) {
 
   stopTimer();
   timer = setInterval(() => {
-    const left = Math.max(0, (deadline - Date.now()) / 1000);
+    const left = remaining();
     clockEl.textContent = clock(left);
     const frac = left / seconds;
     fill.style.width = (frac * 100).toFixed(1) + "%";
@@ -4935,6 +4959,7 @@ function clockScreen(app) {
   }, 250);
 
   function finish(auto = false) {
+    if (part.marked) return;   // already submitted: scoring it again would count it again
     if (!auto) {
       const blank = part.answers.filter((a) => !a.trim()).length;
       if (blank && !confirm(t().blankWarn(blank))) return;
