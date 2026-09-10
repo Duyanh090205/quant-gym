@@ -232,7 +232,7 @@ function levelScreen(app) {
   const cfg = sk.levels[S.level - 1];
   const stack = el("div", "stack");
 
-  const q0 = generateSet({ skill: S.skill, level: S.level, count: 1, seed: "tip" }).questions[0];
+  const q0 = generateSet({ skill: S.skill, level: S.level, count: 1, seed: "tip", lang: S.lang }).questions[0];
   const tip = q0.tip ? getTip(q0.tip, S.lang) : null;
   if (tip) {
     const card = el("div", "tip");
@@ -281,7 +281,7 @@ function levelScreen(app) {
 /* ── screen 3: practice, one question at a time ──────────────────────────── */
 function startDrill() {
   const sk = getSkill(S.skill);
-  S.paper = generateSet({ skill: S.skill, level: S.level, count: sk.drill, seed: Date.now() });
+  S.paper = generateSet({ skill: S.skill, level: S.level, count: sk.drill, seed: Date.now(), lang: S.lang });
   S.i = 0;
   S.verdict = null;
   S.screen = "drill";
@@ -358,7 +358,7 @@ const stopTimer = () => { if (timer) { clearInterval(timer); timer = null; } };
 
 function startClock() {
   const cfg = getSkill(S.skill).levels[S.level - 1];
-  S.paper = generateSet({ skill: S.skill, level: S.level, count: cfg.count, seconds: cfg.seconds, seed: Date.now() });
+  S.paper = generateSet({ skill: S.skill, level: S.level, count: cfg.count, seconds: cfg.seconds, seed: Date.now(), lang: S.lang });
   S.parts = [{ paper: S.paper, answers: new Array(cfg.count).fill("") }];
   S.partIndex = 0;
   S.exam = null;
@@ -368,7 +368,7 @@ function startClock() {
 }
 
 function startReview() {
-  const paper = generateReview({ stats: S.stats, count: 12, seconds: 420, seed: Date.now() });
+  const paper = generateReview({ stats: S.stats, count: 12, seconds: 420, seed: Date.now(), lang: S.lang });
   S.paper = paper;
   S.parts = [{ paper, answers: new Array(paper.questions.length).fill("") }];
   S.partIndex = 0;
@@ -380,7 +380,7 @@ function startReview() {
 }
 
 function startExam(examId) {
-  const exam = generateExam(examId, Date.now());
+  const exam = generateExam(examId, Date.now(), S.lang);
   S.exam = exam;
   S.skill = exam.parts[0].skill;
   S.parts = exam.parts.map((p) => ({ paper: p, answers: new Array(p.questions.length).fill("") }));

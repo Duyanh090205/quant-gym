@@ -22,6 +22,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const MODULES = [
   "src/engine/format.js",
   "src/engine/rng.js",
+  "src/engine/text.js",
   "src/engine/tips.js",
   "src/engine/curriculum.js",
   "src/engine/arithmetic.js",

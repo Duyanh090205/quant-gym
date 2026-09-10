@@ -41,6 +41,11 @@ Both are written for someone meeting this for the first time. A test enforces
 that: it fails the build on words like *likelihood*, *prior* or *martingale*, and
 on C(n,k) appearing without "ways to choose k from n" beside it.
 
+Everything a student reads exists in English and Vietnamese: the question, the
+worked solution, the explanation of the mistake, and the tip card. Pass `lang` and
+the same generator produces either. Numbers follow the reader too, so a Vietnamese
+student sees 0,545 rather than 0.545, and marking accepts either convention.
+
 Attached to each skill is a **tip card**, shown before the first drill and again
 the moment a relevant question is missed. A trick delivered while the mistake is
 still warm sticks; the same trick in a textbook chapter does not. Cards are

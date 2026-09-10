@@ -10,10 +10,17 @@
  * A student should never see only "wrong".
  */
 
-import { parseAnswer, near, normal, fmt, frac, LETTERS } from "./format.js";
+import { parseAnswer, parseCandidates, near, normal, fmt, frac, LETTERS } from "./format.js";
 
-/** How the correct answer should be shown in a review screen. */
+/**
+ * How the correct answer should be shown in a review screen.
+ *
+ * It follows the question's own language: a Vietnamese question that says 0,51
+ * in its working must not answer itself with 0.51, or a student who is already
+ * unsure reads two different numbers.
+ */
 export function displayAnswer(qn) {
+  const dec = (text) => (qn.lang === "vi" ? String(text).replace(/\./g, ",") : String(text));
   switch (qn.format) {
     case "letter": {
       const i = LETTERS.indexOf(qn.answer);
@@ -24,11 +31,11 @@ export function displayAnswer(qn) {
       return `${qn.answer}`;
     case "probability": {
       const f = frac(qn.answer);
-      const dec = Math.round(qn.answer * 1000) / 1000;
-      return f.includes("/") ? `${f}  ≈ ${dec}` : String(f);
+      const rounded = Math.round(qn.answer * 1000) / 1000;
+      return f.includes("/") ? `${f}  ≈ ${dec(rounded)}` : dec(f);
     }
     default:
-      return qn.approx ? `≈ ${Math.round(qn.answer * 10) / 10}` : fmt(qn.answer);
+      return qn.approx ? `≈ ${dec(Math.round(qn.answer * 10) / 10)}` : dec(fmt(qn.answer));
   }
 }
 
@@ -56,6 +63,8 @@ export function grade(qn, raw) {
   if (!base.answered) return { ...base, correct: false };
 
   const parsed = parseAnswer(given);
+  // Both readings of an ambiguous comma, so 0,272 and 1,234 each work.
+  const candidates = parseCandidates(given).filter((v) => typeof v === "number");
 
   // Multiple options labelled (a), (b)…: accept the letter or the option text.
   if (qn.format === "letter") {
@@ -70,8 +79,8 @@ export function grade(qn, raw) {
   if (qn.format === "odd-term") {
     const want = parseAnswer(qn.answer);
     const correct =
-      typeof parsed === "number" && typeof want === "number"
-        ? Math.abs(parsed - want) < 1e-9
+      typeof want === "number" && candidates.length
+        ? candidates.some((v) => Math.abs(v - want) < 1e-9)
         : normal(given) === normal(qn.answer);
     let why = null;
     if (!correct) {
@@ -88,16 +97,13 @@ export function grade(qn, raw) {
     return { ...base, correct: normal(given) === normal(qn.answer) };
   }
 
-  if (typeof parsed !== "number") return { ...base, correct: false };
+  if (typeof parsed !== "number" && !candidates.length) return { ...base, correct: false };
 
   // Probabilities accept two-decimal rounding: 0.33 is 1/3.
-  const correct = qn.approx
-    ? near(parsed, qn.answer, 0.05, 0)
-    : near(parsed, qn.answer, 0, 0.0051);
+  const hits = (v) => (qn.approx ? near(v, qn.answer, 0.05, 0) : near(v, qn.answer, 0, 0.0051));
+  if (candidates.some(hits)) return { ...base, correct: true };
 
-  if (correct) return { ...base, correct: true };
-
-  const trap = findTrap(qn, parsed);
+  const trap = candidates.map((v) => findTrap(qn, v)).find(Boolean) || null;
   return { ...base, correct: false, trap, why: trap ? trap.why : null };
 }
 

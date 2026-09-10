@@ -216,6 +216,303 @@ const en = {
   ttAOnly: () => "That is A on its own. B still has to come off.",
   ttLargestNote: () => "Comparing the bases alone does not work: a smaller base with a bigger exponent often wins, as 4^7 beats both 3^7 and 6^5. Work each one out.",
 
+  /* probability — event names, reused across prompts */
+  pEvents: {
+    die6: "a 6 when rolling a fair die",
+    coinH: "heads when flipping a fair coin",
+    dieOver4: "a number greater than 4 when rolling a die",
+    heart: "a heart when drawing one card from a full deck",
+    dieEven: "an even number when rolling a die",
+  },
+  pTrialNames: {
+    die6: "a 6 on a die", coinH: "HEADS on a coin",
+    die56: "a 5 or 6 on a die", heartRep: "a heart, drawing with replacement",
+  },
+  pWaitNames: {
+    die6: "a 6 when rolling a die", coinH: "heads when flipping a coin",
+    die56: "a 5 or 6 when rolling a die", heartRep: "a heart when drawing cards with replacement",
+  },
+  pShortNames: { die6: "a 6", coinH: "heads", die56: "a 5 or 6" },
+  pActions: { die: "Roll a fair die", coin: "Flip a fair coin", card: "Draw a card with replacement" },
+  pAtLeast: {
+    six: "at least one 6", head: "at least one head", heart: "at least one heart",
+    ace: "at least one ace", oneTwo: "at least one 1 or 2",
+  },
+  pMissNames: { six: "a 6", head: "a head", heart: "a heart", ace: "an ace", oneTwo: "a 1 or 2" },
+  pEvNames: {
+    oneDie: "the value shown on one fair die",
+    sumTwo: "the sum of two fair dice",
+    heads4: "the number of heads in 4 flips of a fair coin",
+    sixes12: "the number of 6s in 12 rolls of a fair die",
+    product: "the product of two fair dice",
+    larger: "the larger of two fair dice",
+    smaller: "the smaller of two fair dice",
+  },
+  pFirstNames: { six: "rolls a 6", head: "flips heads", five6: "rolls a 5 or 6" },
+  pCollect: {
+    faces: "all 6 faces of a die",
+    suits: "all 4 suits, drawing cards with replacement",
+    coin: "both faces of a coin",
+  },
+  pPatterns: { HT: "heads then tails", TH: "tails then heads", HH: "two heads in a row", TT: "two tails in a row" },
+  pCards: { suit: "of the same suit", rank: "a pair, meaning the same rank", red: "both red" },
+  pUnit: { band: "|X − Y| < ½", sum: "X + Y < 1", twice: "X > 2Y" },
+
+  /* probability — prompts */
+  pAskChance: (ev) => `Probability of getting ${ev}?`,
+  pAskDiceSum: (s) => `Roll two fair dice. Probability the sum is ${s}?`,
+  pAskAtLeast: (action, n, ev) => `${action} ${n} times. Probability of ${ev}?`,
+  pAskEV: (name) => `Expected value of ${name}?`,
+  pAskStock: (S, pct, n) =>
+    `A stock is at ${S}. Each day it goes up ${pct}% or down ${pct}%, equally likely. Expected price after ${n} days?`,
+  pAskReroll: (k) =>
+    `Roll a die and you are paid its face value. You may re-roll up to ${k === 1 ? "once" : k + " times"}, ` +
+    `discarding the previous roll. Playing optimally, what is the expected payoff?`,
+  pTwoChildStem: "A family has two children, boys and girls equally likely. ",
+  pAskElder: "The older child is a boy. Probability both are boys?",
+  pAskLeastGirl: "At least one is a girl. Probability both are girls?",
+  pAskLeastBoy: "At least one is a boy. Probability both are boys?",
+  pAskCondDice: (s) => `Two fair dice are rolled and the sum is ${s}. Probability at least one die shows a 6?`,
+  pAskUrnTwo: (r, b) => `An urn holds ${r} red and ${b} blue balls. You draw 2 without replacement. Probability both are red?`,
+  pAskThreeCoins: (set, target) =>
+    `Three coins have P(heads) = ${set}. You pick one at random and flip heads. Probability it was the coin with P(heads) = ${target}?`,
+  pAskUrns: (ab, ar, bb, br) =>
+    `Urn A holds ${ab} blue and ${ar} red. Urn B holds ${bb} blue and ${br} red. ` +
+    `You pick an urn at random and draw a red ball. Probability it was urn B?`,
+  pAskBox: (n) =>
+    `A box holds 3 coins: one fair, one two-headed, one two-tailed. You pick one at random and flip it ` +
+    `${n === 1 ? "once: heads" : n + " times: all heads"}. Probability it is the fair coin?`,
+  pAskWaitFirst: (ev) => `Expected number of trials until you first get ${ev}?`,
+  pAskWaitK: (ev, k, action) =>
+    `Expected number of trials until ${ev} has come up ${k === 2 ? "twice" : k + " times"}, not necessarily in a row, when ${action}?`,
+  pAskPattern: (pat) => `Flip a fair coin repeatedly. Expected number of flips until you first see ${pat}?`,
+  pAskCollect: (what) => `Expected number of trials to see ${what} at least once each?`,
+  pAskOrderMax: (n, ord) => `${n} independent Uniform[0,1] values are drawn in order. Probability the ${ord} one is the largest?`,
+  pAskOrderMono: (n, dir) => `${n} independent draws from a continuous distribution. Probability they come out ${dir} in the order drawn?`,
+  pAskPickRepeat: (k, N) => `Pick ${k} numbers from 1–${N}, each pick independent so repeats are possible, in order. Probability they are strictly increasing?`,
+  pAskPickDistinct: (k, N) => `Pick ${k} distinct numbers from 1–${N}, revealed in random order. Probability they come out strictly increasing?`,
+  pAskMonty: (sw) =>
+    `Three doors hide one car and two goats. You pick a door. The host, who knows where the car is, ` +
+    `opens a different door revealing a goat. Probability you win the car if you ` +
+    `${sw ? "switch to the remaining door" : "stay with your first door"}?`,
+  pAskRuin: (i, j) =>
+    `A holds ${i} coins and B holds ${j}. They play a fair game; each round the loser hands the winner one coin, ` +
+    `until someone has none. Probability A ends up with everything?`,
+  pAskFirst: (ev) => `A and B take turns and whoever ${ev} first wins. A goes first. Probability A wins?`,
+  pAskDerange: (n, none) =>
+    `${n} letters are placed at random into ${n} addressed envelopes. Probability that ` +
+    `${none ? "no letter" : "at least one letter"} reaches the right envelope?`,
+  pAskWalk: (steps) =>
+    `A walker on the integers takes each step +1 or −1 with probability ½. ` +
+    `Probability of standing back at the start after ${steps} steps?`,
+  pAskCards: (what) => `Draw 2 cards from a standard 52-card deck without replacement. Probability they are ${what}?`,
+  pAskUnit: (cond) => `X and Y are independent Uniform[0,1]. Probability that ${cond}?`,
+  pGerunds: { die: "rolling a die", coin: "flipping a coin" },
+  pBoxOneHead: "one head",
+  pBoxManyHeads: (n) => `${n} heads in a row`,
+  pStrictUp: "strictly increasing", pStrictDown: "strictly decreasing",
+  pOrdinals: ["1st", "2nd", "3rd", "4th", "5th"],
+
+  /* probability — worked solutions */
+  pSolChance: {
+    die6: "A die has 6 equally likely faces and 1 of them is a 6, so 1 out of 6.",
+    coinH: "Two faces, both equally likely, one of them is heads: 1 out of 2.",
+    dieOver4: "Two faces beat 4, namely 5 and 6, so 2 out of 6, which is 1/3.",
+    heart: "A deck has 13 hearts among 52 cards: 13 out of 52, which is 1/4.",
+    dieEven: "The even faces are 2, 4 and 6: 3 out of 6, which is 1/2.",
+  },
+  pSolDiceSum: (s, pairs, ways, reduced) =>
+    `Two dice give 6 × 6 = 36 equally likely results, counting the dice as different. ` +
+    `The ones that add to ${s} are ${pairs} — that is ${ways} of them. So ${ways}/36` +
+    (reduced ? `, which is ${reduced}.` : "."),
+  pSolAtLeast: (n, missOne, missAll, ans) =>
+    `Go the other way round and work out the chance of missing every time. ` +
+    `One try misses with chance ${missOne}, so ${n} tries all miss with chance (${missOne})^${n} = ${missAll}. ` +
+    `Everything else is "at least one", so 1 − ${missAll} = ${ans}.`,
+  pSolEV: {
+    oneDie: "Add the faces and share them out evenly: (1+2+3+4+5+6)/6 = 21/6 = 3.5. No face shows 3.5, and that is fine — an average does not have to be a possible result.",
+    sumTwo: "Each die averages 3.5 on its own, and averages simply add: 3.5 + 3.5 = 7.",
+    heads4: "Each flip contributes half a head on average, and averages add up: 4 × ½ = 2.",
+    sixes12: "Each roll contributes 1/6 of a six on average, and averages add up: 12 × 1/6 = 2.",
+    product: "The dice do not affect each other, so you may multiply the two averages: 3.5 × 3.5 = 12.25.",
+    larger: "Go through each possible top face k and count how often it wins: k is the larger in 2k−1 of the 36 results. Adding those up gives 161/36, about 4.47.",
+    smaller: "The larger and the smaller always add to the total, so their averages do too: 7 − 161/36 = 91/36, about 2.53.",
+  },
+  pSolStock: (up, down, n, S) =>
+    `Each day multiplies the price by ${up} or by ${down}, equally often, so on average it multiplies by (${up} + ${down})/2 = 1. ` +
+    `Multiplying by 1 changes nothing, and ${n} days of that still changes nothing: the answer stays ${S}.`,
+  pSolReroll1: "If you re-roll, you get an ordinary die, worth 3.5 on average. So keep anything above 3.5, which means 4, 5 or 6, and re-roll 1, 2 and 3. That gives (4 + 5 + 6)/6 for the halves you keep, plus 3/6 × 3.5 for the halves you re-roll: 2.5 + 1.75 = 4.25.",
+  pSolReroll2: "Work backwards. With one re-roll left the game is worth 4.25, from the case above. So on the first roll keep anything above 4.25, meaning 5 or 6, and re-roll the rest: (5 + 6)/6 + 4/6 × 4.25 = 11/6 + 17/6 = 14/3, about 4.67.",
+  pSolElder: "List the families oldest first: BB, BG, GB, GG. Being told the older one is a boy rules out GB and GG and leaves BB and BG. One of those two is two boys, so 1/2.",
+  pSolLeastGirl: "List the families oldest first: BB, BG, GB, GG. 'At least one girl' rules out BB and leaves BG, GB and GG. One of those three is two girls, so 1/3.",
+  pSolLeastBoy: "List the families oldest first: BB, BG, GB, GG. 'At least one boy' rules out GG and leaves BB, BG and GB. One of those three is two boys, so 1/3.",
+  pSolCondDice: (pairs, total, ans) =>
+    `Knowing the sum throws away every result except these: ${pairs} — ${total} of them. ` +
+    `A 6 appears in exactly 2, once on each die. So 2/${total} = ${ans}.`,
+  pSolUrnTwo: (r, N, ans) =>
+    `The first draw is red with chance ${r}/${N}. If it was, the urn now holds ${r - 1} red among ${N - 1} balls, ` +
+    `so the second is red with chance ${r - 1}/${N - 1}. Multiply: ${r}/${N} × ${r - 1}/${N - 1} = ${ans}.`,
+  pSolThreeCoins: (list, target, sum, total, ans) =>
+    `Ask how eagerly each coin produces the heads you saw: ${list}. ` +
+    `All three were equally likely to be picked, so that part affects each of them the same way and drops out. ` +
+    `What is left is this coin's share of the total: ${target} ÷ (${sum}) = ${target} ÷ ${total} = ${ans}.`,
+  pSolUrns: (ar, aTot, br, bTot, rA, rB, ans) =>
+    `Ask how readily each urn gives up a red ball: A does it ${ar}/${aTot} of the time, B does it ${br}/${bTot} of the time. ` +
+    `Both urns were equally likely to be chosen, so that drops out and B's answer is its share of the two: ` +
+    `${rB} ÷ (${rA} + ${rB}) = ${ans}.`,
+  pSolBox: (flips, fair, ans) =>
+    `Ask how readily each coin gives ${flips}. The fair coin: ${fair}. The two-headed coin: 1, every time. ` +
+    `The two-tailed coin: 0, never, so it is out. Take the fair coin's share of what is left: ${fair} ÷ (${fair} + 1) = ${ans}.`,
+  pSolWaitFirst: (p, ans) => `It happens ${p} of the time, so on average you wait for it once every ${ans} tries. Turn the chance upside down: 1 ÷ ${p} = ${ans}.`,
+  pSolWaitK: (one, k, ans) =>
+    `Waiting for the first one costs ${one} tries on average. After it lands, nothing has changed and the wait for the next one costs ${one} again. ` +
+    `Waits like this simply add: ${k} × ${one} = ${ans}.`,
+  pSolPattern: {
+    HT: "Wait 2 flips on average for the first head. Then wait 2 more for a tail. Any extra heads in between cost nothing, because the head you need is already banked. So 2 + 2 = 4.",
+    TH: "Wait 2 flips on average for the first tail. Then wait 2 more for a head. Any extra tails in between cost nothing, because the tail you need is already banked. So 2 + 2 = 4.",
+    HH: "Wait 2 flips for the first head. Then half the time the next flip is a head and you are done, and half the time it is a tail and you are back to the very beginning. Writing that as E = 2 + 1 + ½·E and solving gives E = 6.",
+    TT: "Wait 2 flips for the first tail. Then half the time the next flip is a tail and you are done, and half the time it is a head and you are back to the very beginning. Writing that as E = 2 + 1 + ½·E and solving gives E = 6.",
+  },
+  pSolCollect: (n, terms, ans) =>
+    `The first one is free, it arrives immediately. Once you hold j of them, a new one turns up ${n}−j times out of ${n}, ` +
+    `so you wait ${n}/(${n}−j) tries for it. Adding those waits up gives ${n} × (${terms}) = ${ans}. ` +
+    `The last one is the slow part: it alone costs ${n} tries.`,
+  pSolOrderMax: (n) =>
+    `The draws know nothing about each other, so no position is special. ` +
+    `Exactly one of the ${n} has to be the biggest, and each is as likely as the next, so each gets 1/${n}.`,
+  pSolOrderMono: (n, fact, dir) =>
+    `Whatever ${n} numbers you end up with, they could have arrived in any order, and every order is as likely as any other. ` +
+    `There are ${n}! = ${fact} orders and exactly one of them is ${dir}, so 1/${fact}.`,
+  pSolPickRepeat: (N, k, total, c, ans) =>
+    `There are ${N}^${k} = ${total} equally likely sequences in total. An increasing one needs ${k} different values, and each set of ${k} different values ` +
+    `can be written in increasing order in exactly one way. The number of such sets is C(${N},${k}) = ${c}, meaning the ways to choose ${k} things from ${N}. ` +
+    `So ${c}/${total} = ${ans}.`,
+  pSolPickDistinct: (k, fact, N) =>
+    `Whichever ${k} numbers you get, they can appear in ${k}! = ${fact} orders, all equally likely, and one of those is increasing. ` +
+    `So 1/${fact}. Notice the pool size ${N} never enters the answer.`,
+  pSolMontySwitch: "Your first pick is right 1 time in 3. The other 2 times in 3 the car sits behind one of the two doors you did not pick, and the host has just shown you which of those two it is not. So switching hands you the car exactly when your first pick was wrong: 2/3.",
+  pSolMontyStay: "Staying wins exactly when your first pick was right. That was 1 in 3 before the host opened anything, and the host was always going to be able to show you a goat, so it is still 1 in 3 afterwards.",
+  pSolRuin: (i, N, ans) =>
+    `Neither player has an edge in a single round, so nobody gains or loses on average, and your chance of taking the lot is simply your share of the coins on the table: ` +
+    `${i} out of ${N}, which is ${ans}. Coins are the only advantage in this game.`,
+  pSolFirst: (p, both, ans) =>
+    `Call A's chance P. Two things can happen. A succeeds straight away, chance ${p}. Or A misses and B misses, chance ${both}, ` +
+    `and then it is A's turn again with nothing changed, so A's chance is P once more. That gives P = ${p} + ${both}·P, ` +
+    `and solving it gives P = ${ans}. Going first is worth a little over half.`,
+  pSolDerange: (n, fact, D, none, asksNone, other) =>
+    `There are ${n}! = ${fact} ways to fill the envelopes, all equally likely. Of those, ${D} have every letter in the wrong envelope. ` +
+    `So the chance of no letter being right is ${none}` +
+    (asksNone ? "." : `, and at least one is 1 − ${none} = ${other}.`),
+  pSolWalk: (steps, n, c, total, ans) =>
+    `Getting home after ${steps} steps means exactly ${n} steps forward and ${n} steps back, in any order. ` +
+    `The number of orders is C(${steps},${n}) = ${c}, meaning the ways to choose which ${n} of the ${steps} steps go forward. ` +
+    `Every one of the 2^${steps} = ${total} possible walks is equally likely, so ${c}/${total} = ${ans}.`,
+  pSolCards: {
+    suit: "The first card can be anything at all, so ignore it. Of the 51 cards left, 12 share its suit. So 12/51, which is 4/17.",
+    rank: "The first card can be anything at all, so ignore it. Of the 51 cards left, 3 share its rank. So 3/51, which is 1/17.",
+    red: "The first card is red 26 times in 52, which is 1/2. Then 25 reds remain among 51 cards. Multiply: 1/2 × 25/51 = 25/102, about 0.245.",
+  },
+  pSolUnit: {
+    band: "Draw a 1 by 1 square with X across and Y up. The points where the two differ by less than ½ form a band down the middle. What it leaves out is two corner triangles, each with legs ½ and area 1/8. So 1 − 2 × 1/8 = 3/4.",
+    sum: "Draw a 1 by 1 square. The line X + Y = 1 runs corner to corner, and the region below it is a triangle covering exactly half the square. So 1/2.",
+    twice: "Draw a 1 by 1 square. The line Y = X/2 passes through the corner and the midpoint of the right edge, and the region below it is a triangle with base 1 and height ½, so area 1/4.",
+  },
+
+  /* probability — trap explanations */
+  ptChance: {
+    die6: ["There are six faces, not three.", "A die is not a coin."],
+    coinH: ["That is two heads in a row."],
+    dieOver4: ["Two faces qualify, 5 and 6, not one.", "Greater than 4 is not the same as greater than 3."],
+    heart: ["That is one particular rank, not one suit.", "That is one specific card."],
+    dieEven: ["Three faces out of six are even."],
+  },
+  ptSumEleven: "There are 11 possible sums but they are not equally likely: 7 happens far more often than 2. Count the 36 pairs instead.",
+  ptSumUnordered: "Each pair was counted once, but (2,5) and (5,2) really are two different results, so there are 36 of them, not 21.",
+  ptSumOnePair: "That is one single pair. Several different pairs give this sum.",
+  ptMissAll: (ev) => `That is the chance of never getting ${ev}. You are one subtraction away: take it from 1.`,
+  ptAddedChances: "Chances cannot just be added up like that. Adding counts the times it happens twice over and over, and with enough tries it would pass 1, which is impossible.",
+  ptOneTrialOnly: "That is one single try. The question asks across all of them.",
+  ptEV: {
+    oneDie: ["The middle of 1 to 6 sits between 3 and 4, so the average is 3.5. There is no middle face.", "That is the biggest face, not the average one."],
+    sumTwo: ["That is one die. The other die is still there, so add its average too.", "The face that comes up most often is not the same as the average total."],
+    heads4: ["That is how many flips you make, not how many come up heads.", "That is one flip's share. There are four flips."],
+    sixes12: ["That is how many rolls you make, not how many are sixes.", "That is a number on the die, not a count of anything."],
+    product: ["That is the average total, not the average product.", "That is 3.5 × 6. The second die averages 3.5 as well, not 6.", "Very close: 3.5 × 3.5 is 12.25 exactly."],
+    larger: ["That is one die by itself. Always taking the bigger of two pulls the average up.", "That is the biggest it can ever be, not what it is on average."],
+    smaller: ["That is one die by itself. Always taking the smaller of two pulls the average down.", "That is the smallest it can ever be, not what it is on average."],
+  },
+  ptStockPath: (n) => `Up then down really does land below where you started, but that is only one of the ways the ${n} days can go. Up then up lands above. Averaged over all of them, they cancel exactly.`,
+  ptStockBest: "That is the luckiest case, up every single day.",
+  ptStockWorst: "That is the unluckiest case, down every single day.",
+  ptRerollPlain: "That is a plain die with no re-roll. Being allowed to re-roll can only help, so the answer has to be above 3.5.",
+  ptRerollOther: "That is the answer for a different number of re-rolls. Check how many this question gives you.",
+  ptRerollFive: "You do not keep only 5 and 6 here. Re-roll whenever your roll is below what a fresh roll is worth, and keep it otherwise.",
+  ptElderThird: "That is the answer to the other version, 'at least one is a boy'. Naming the older child is stronger information: it pins down a particular child, which leaves only two families instead of three.",
+  ptTwoChildHalf: "BG and GB are two different families: older boy with younger girl is not the same as older girl with younger boy. Counting them separately leaves three cases, not two.",
+  ptTwoChildQuarter: "That is the chance of two boys before anyone told you anything. The information you were given rules GG out, so the answer has to be bigger.",
+  ptCondUnconditional: "That is one die on its own, ignoring what you were told. The sum rules out most results and changes the answer.",
+  ptCondPlain: "That is the chance of a 6 in two rolls when you know nothing about the total.",
+  ptCondOnePair: (total) => `Two of the ${total} results contain a 6, not one, because the 6 can sit on either die.`,
+  ptUrnReplace: "That would be right if you put the first ball back. You do not, so the second draw sees one fewer red ball and one fewer ball in total.",
+  ptUrnFirstOnly: "That is only the first draw. The second one still has to be red as well.",
+  ptUrnSecondOnly: "That is the second draw, assuming the first was red. You still have to multiply by the chance the first one was.",
+  ptCoinAlone: "That is how often this coin alone shows heads. You still have to compare it against what the other two would have done.",
+  ptCoinPrior: "That is the chance before you flipped. Seeing heads is evidence, and evidence has to move the answer.",
+  ptCoinDividedThrice: "The 1/3 chance of picking each coin appears on the top and the bottom of the fraction, so it cancels. Do not divide by 3 as well.",
+  ptUrnsBOnly: "That is how often urn B gives a red ball on its own. The question is which urn you are holding, so urn A's rate has to come into it too.",
+  ptUrnsPrior: "That is the chance before you drew anything. A red ball is evidence, and it points at whichever urn is redder.",
+  ptUrnsCounts: (a, aTot, b, bTot) => `Red balls were counted straight up, but the urns hold different numbers of balls, so compare the rates ${a}/${aTot} and ${b}/${bTot} instead of the counts.`,
+  ptBoxPrior: "That is the chance before you flipped. A run of heads is evidence, and it counts against the fair coin.",
+  ptBoxHalf: "Two coins can show heads, but not equally readily: the two-headed one does it every single time, the fair one only sometimes.",
+  ptBoxAlone: (flips) => `That is how often the fair coin gives ${flips} on its own. You still have to compare it against the two-headed coin.`,
+  ptWaitFlip: "That is the probability of it happening, not how long you wait. Flip the fraction over.",
+  ptWaitCountsToo: "The try that finally works counts as a try too.",
+  ptWaitFirstOnly: "That is the wait for the first one only. Each of the others costs the same again.",
+  ptWaitMultiplied: "Waits add, they do not multiply. Multiplying is for working out the chance of several things all happening.",
+  ptWaitSuccesses: "That is how many successes you want, not how many tries it takes to get them.",
+  ptPatternContrast: {
+    HT: "After a head, another head does not hurt you: you are still waiting for the tail, and the head you already have is still good.",
+    TH: "After a tail, another tail does not hurt you: you are still waiting for the head, and the tail you already have is still good.",
+    HH: "A tail lands after your first head half the time, and it wipes the run out so you start again. That restarting is why this costs 6 while heads-then-tails costs only 4.",
+    TT: "A head lands after your first tail half the time, and it wipes the run out so you start again. That restarting is why this costs 6 while tails-then-heads costs only 4.",
+  },
+  ptPatternOneFace: "That is the wait for one particular face. This question wants a two-flip pattern.",
+  ptCollectMin: "That is the fastest it could possibly go, with no repeats at all. Repeats are common, so the real wait is longer.",
+  ptCollectSquare: "Too long. Waiting gets slower as you go, but not that much slower: the total is a bit under twice the number of trials you would guess.",
+  ptOrderPosition: "The position number does not matter. Coming out later does not make a number bigger.",
+  ptOrderTwo: "That would be the answer with only two draws.",
+  ptOrderFull: (n) => `That is the chance of one exact ordering of all ${n}. Here you only care which one is on top.`,
+  ptMonoMax: "That is the chance of one particular number being the biggest. Here the whole order has to be right, which is much harder.",
+  ptMonoBoth: "Increasing and decreasing are two separate orders. The question asks for one of them, not either.",
+  ptMonoFlips: "Ordering is not a run of coin flips. Count the orders instead: there are n! of them.",
+  ptPickDistinctAnswer: "That is the answer when the picks have to be different. Here repeats are allowed, and a repeat can never be increasing, so the answer must be smaller.",
+  ptPickPerItem: (total) => `Not a per-pick chance. Count the increasing sequences against all ${total} of them.`,
+  ptPickPoolSize: (k) => `Once the ${k} numbers are different, the size of the pool stops mattering. Only the number of orders counts.`,
+  ptPickPoolCancels: (k, fact) => `The pool size cancels out. Any ${k} different values have ${fact} equally likely orders and one is increasing.`,
+  ptMontyHalf: "Two doors are left, but they are not equally likely. The host is not choosing at random: he knows where the car is and never opens it, and that is information about the door he left shut.",
+  ptMontyOther: "That is the chance for the other strategy. Read carefully which one the question asks about.",
+  ptRuinHalf: "Each round is fair, but the whole game is not. Whoever starts with fewer coins runs out first far more often.",
+  ptRuinOther: "That is B's chance of winning, not A's. The two have to add up to 1.",
+  ptRuinOneCoin: "The chance follows the whole starting pile, not a single coin.",
+  ptFirstHalf: "Going first is a genuine advantage: A gets a chance to win before B ever throws.",
+  ptFirstTurnOne: "That is only A's very first turn. A can also win later, after both players miss.",
+  ptFirstAverage: "Set it up as one equation instead: A wins now, or both miss and the game is back where it started.",
+  ptDerangeOpposite: "That is the opposite of what was asked. Check whether the question says no letter or at least one.",
+  ptDerangeOne: "That is about one named letter. The question is about the whole arrangement at once.",
+  ptDerangePerfect: "That is the chance of the single perfect arrangement where every letter lands correctly.",
+  ptWalkHalf: "Coming home is one particular outcome among many, not a coin flip between home and not home.",
+  ptWalkCount: (c, total) => `Count the walks: ${c} of the ${total} possible ones end where they started.`,
+  ptCards: {
+    suit: ["That would be right if the second card had to be a named suit. It only has to match the first, and one card of that suit has already left the deck.", "That is about ranks like queens, not about suits."],
+    rank: ["Three cards of that rank remain out of 51, not four out of 52: the first card is already in your hand.", "That is one specific card."],
+    red: ["Very close, but the deck changes: after a red leaves, 25 reds remain among 51 cards, not 26 among 52.", "That is only the first card. The second one has to be red as well."],
+  },
+  ptUnit: {
+    band: ["The band is wider than half the square. Draw it: the two corners it misses are triangles of area 1/8 each, so only 1/4 is left out.", "That is the part left out, not the part asked for."],
+    sum: ["The line runs corner to corner and cuts the square cleanly in half, so the triangle below it is 1/2, not 1/4."],
+    twice: ["That would be the line Y = X. The line Y = X/2 is shallower and cuts off only a quarter."],
+  },
+
   ordinal: (n) => n + (["th", "st", "nd", "rd"][(n % 100 - 20) % 10] || ["th", "st", "nd", "rd"][n % 100] || "th"),
   fallbackOdd: "arithmetic",
 };
@@ -415,6 +712,303 @@ const vi = {
   ttAddedNotSubtracted: () => "Cộng mất rồi, đề là trừ.",
   ttAOnly: () => "Đó mới là A. Còn phải trừ B đi.",
   ttLargestNote: () => "So cơ số không thôi thì không được: cơ số nhỏ với số mũ lớn thường thắng, như 4^7 lớn hơn cả 3^7 lẫn 6^5. Phải tính từng cái ra.",
+
+  /* probability — event names, reused across prompts */
+  pEvents: {
+    die6: "mặt 6 khi tung một xúc xắc công bằng",
+    coinH: "mặt ngửa khi tung một đồng xu công bằng",
+    dieOver4: "số lớn hơn 4 khi tung xúc xắc",
+    heart: "quân Cơ khi rút một lá từ bộ bài đầy đủ",
+    dieEven: "số chẵn khi tung xúc xắc",
+  },
+  pTrialNames: {
+    die6: "mặt 6 trên xúc xắc", coinH: "mặt NGỬA trên đồng xu",
+    die56: "mặt 5 hoặc 6 trên xúc xắc", heartRep: "quân Cơ, rút có hoàn lại",
+  },
+  pWaitNames: {
+    die6: "mặt 6 khi tung xúc xắc", coinH: "mặt ngửa khi tung xu",
+    die56: "mặt 5 hoặc 6 khi tung xúc xắc", heartRep: "quân Cơ khi rút bài có hoàn lại",
+  },
+  pShortNames: { die6: "mặt 6", coinH: "mặt ngửa", die56: "mặt 5 hoặc 6" },
+  pActions: { die: "Tung một xúc xắc công bằng", coin: "Tung một đồng xu công bằng", card: "Rút một lá bài có hoàn lại" },
+  pAtLeast: {
+    six: "ít nhất một mặt 6", head: "ít nhất một mặt ngửa", heart: "ít nhất một quân Cơ",
+    ace: "ít nhất một quân Át", oneTwo: "ít nhất một mặt 1 hoặc 2",
+  },
+  pMissNames: { six: "mặt 6", head: "mặt ngửa", heart: "quân Cơ", ace: "quân Át", oneTwo: "mặt 1 hoặc 2" },
+  pEvNames: {
+    oneDie: "số trên một xúc xắc công bằng",
+    sumTwo: "tổng hai xúc xắc công bằng",
+    heads4: "số lần ngửa trong 4 lần tung một đồng xu công bằng",
+    sixes12: "số lần ra mặt 6 trong 12 lần tung một xúc xắc công bằng",
+    product: "tích hai xúc xắc công bằng",
+    larger: "số lớn hơn trong hai xúc xắc công bằng",
+    smaller: "số nhỏ hơn trong hai xúc xắc công bằng",
+  },
+  pFirstNames: { six: "ra mặt 6", head: "ra mặt ngửa", five6: "ra mặt 5 hoặc 6" },
+  pCollect: {
+    faces: "đủ cả 6 mặt của xúc xắc",
+    suits: "đủ cả 4 chất, khi rút bài có hoàn lại",
+    coin: "cả hai mặt của đồng xu",
+  },
+  pPatterns: { HT: "ngửa rồi sấp", TH: "sấp rồi ngửa", HH: "hai mặt ngửa liên tiếp", TT: "hai mặt sấp liên tiếp" },
+  pCards: { suit: "cùng chất", rank: "một đôi, tức cùng số", red: "cả hai đều đỏ" },
+  pUnit: { band: "|X − Y| < ½", sum: "X + Y < 1", twice: "X > 2Y" },
+
+  /* probability — prompts */
+  pAskChance: (ev) => `Xác suất ra ${ev} là bao nhiêu?`,
+  pAskDiceSum: (s) => `Tung hai xúc xắc công bằng. Xác suất tổng bằng ${s}?`,
+  pAskAtLeast: (action, n, ev) => `${action} ${n} lần. Xác suất được ${ev}?`,
+  pAskEV: (name) => `Kỳ vọng của ${name} là bao nhiêu?`,
+  pAskStock: (S, pct, n) =>
+    `Một cổ phiếu đang ở giá ${S}. Mỗi ngày nó tăng ${pct}% hoặc giảm ${pct}% với khả năng như nhau. Kỳ vọng giá sau ${n} ngày?`,
+  pAskReroll: (k) =>
+    `Tung một xúc xắc và bạn được trả tiền đúng bằng mặt hiện ra. Bạn được tung lại tối đa ${k === 1 ? "một lần" : k + " lần"}, ` +
+    `bỏ kết quả cũ đi. Chơi tối ưu thì kỳ vọng nhận được là bao nhiêu?`,
+  pTwoChildStem: "Một gia đình có hai con, khả năng trai và gái như nhau. ",
+  pAskElder: "Con lớn là con trai. Xác suất cả hai đều là con trai?",
+  pAskLeastGirl: "Có ít nhất một con gái. Xác suất cả hai đều là con gái?",
+  pAskLeastBoy: "Có ít nhất một con trai. Xác suất cả hai đều là con trai?",
+  pAskCondDice: (s) => `Tung hai xúc xắc công bằng và biết tổng bằng ${s}. Xác suất có ít nhất một con ra mặt 6?`,
+  pAskUrnTwo: (r, b) => `Một rổ có ${r} bóng đỏ và ${b} bóng xanh. Bạn rút 2 bóng không hoàn lại. Xác suất cả hai đều đỏ?`,
+  pAskThreeCoins: (set, target) =>
+    `Ba đồng xu có P(ngửa) lần lượt là ${set}. Bạn chọn ngẫu nhiên một đồng và tung ra mặt ngửa. Xác suất đó là đồng có P(ngửa) = ${target}?`,
+  pAskUrns: (ab, ar, bb, br) =>
+    `Rổ A có ${ab} bóng xanh và ${ar} bóng đỏ. Rổ B có ${bb} bóng xanh và ${br} bóng đỏ. ` +
+    `Bạn chọn ngẫu nhiên một rổ và rút ra một bóng đỏ. Xác suất đó là rổ B?`,
+  pAskBox: (n) =>
+    `Một hộp có 3 đồng xu: một đồng công bằng, một đồng hai mặt ngửa, một đồng hai mặt sấp. Bạn chọn ngẫu nhiên một đồng và tung ` +
+    `${n === 1 ? "một lần: ra ngửa" : n + " lần: đều ra ngửa"}. Xác suất đó là đồng công bằng?`,
+  pAskWaitFirst: (ev) => `Trung bình cần bao nhiêu lần thử để lần đầu ra ${ev}?`,
+  pAskWaitK: (ev, k, action) =>
+    `Trung bình cần bao nhiêu lần thử để ${ev} xuất hiện ${k === 2 ? "hai lần" : k + " lần"}, không cần liên tiếp, khi ${action}?`,
+  pAskPattern: (pat) => `Tung một đồng xu công bằng liên tục. Trung bình cần bao nhiêu lần tung để lần đầu thấy ${pat}?`,
+  pAskCollect: (what) => `Trung bình cần bao nhiêu lần thử để thấy ${what} ít nhất một lần?`,
+  pAskOrderMax: (n, ord) => `${n} giá trị độc lập phân phối đều trên [0;1] được lấy ra lần lượt. Xác suất giá trị ${ord} là lớn nhất?`,
+  pAskOrderMono: (n, dir) => `${n} lần lấy độc lập từ một phân phối liên tục. Xác suất chúng ra theo thứ tự ${dir} đúng như thứ tự lấy?`,
+  pAskPickRepeat: (k, N) => `Chọn ${k} số từ 1–${N}, mỗi lần chọn độc lập nên có thể trùng, theo thứ tự. Xác suất chúng tăng ngặt?`,
+  pAskPickDistinct: (k, N) => `Chọn ${k} số khác nhau từ 1–${N}, rồi lật ra theo thứ tự ngẫu nhiên. Xác suất chúng ra theo thứ tự tăng ngặt?`,
+  pAskMonty: (sw) =>
+    `Ba cánh cửa giấu một chiếc xe và hai con dê. Bạn chọn một cửa. Người dẫn, vốn biết xe ở đâu, ` +
+    `mở một cửa khác lộ ra con dê. Xác suất bạn thắng chiếc xe nếu bạn ` +
+    `${sw ? "đổi sang cửa còn lại" : "giữ cửa đã chọn ban đầu"}?`,
+  pAskRuin: (i, j) =>
+    `A cầm ${i} đồng và B cầm ${j} đồng. Họ chơi một trò công bằng; mỗi ván người thua đưa người thắng một đồng, ` +
+    `cho tới khi một người hết sạch. Xác suất A ăn hết tất cả?`,
+  pAskFirst: (ev) => `A và B thay phiên nhau, ai ${ev} trước thì thắng. A đi trước. Xác suất A thắng?`,
+  pAskDerange: (n, none) =>
+    `${n} lá thư được bỏ ngẫu nhiên vào ${n} phong bì đã ghi sẵn tên. Xác suất ` +
+    `${none ? "không lá nào" : "có ít nhất một lá"} vào đúng phong bì?`,
+  pAskWalk: (steps) =>
+    `Một người đi trên trục số, mỗi bước tiến 1 hoặc lùi 1 với xác suất ½. ` +
+    `Xác suất anh ta đứng đúng điểm xuất phát sau ${steps} bước?`,
+  pAskCards: (what) => `Rút 2 lá từ bộ bài 52 lá, không hoàn lại. Xác suất hai lá ${what}?`,
+  pAskUnit: (cond) => `X và Y độc lập, phân phối đều trên [0;1]. Xác suất ${cond}?`,
+  pGerunds: { die: "tung xúc xắc", coin: "tung xu" },
+  pBoxOneHead: "một mặt ngửa",
+  pBoxManyHeads: (n) => `${n} mặt ngửa liên tiếp`,
+  pStrictUp: "tăng ngặt", pStrictDown: "giảm ngặt",
+  pOrdinals: ["thứ 1", "thứ 2", "thứ 3", "thứ 4", "thứ 5"],
+
+  /* probability — worked solutions */
+  pSolChance: {
+    die6: "Xúc xắc có 6 mặt đồng khả năng, trong đó 1 mặt là số 6, nên 1 trên 6.",
+    coinH: "Hai mặt, khả năng như nhau, một mặt là ngửa: 1 trên 2.",
+    dieOver4: "Có hai mặt lớn hơn 4, là 5 và 6, nên 2 trên 6, tức 1/3.",
+    heart: "Bộ bài có 13 quân Cơ trong 52 lá: 13 trên 52, tức 1/4.",
+    dieEven: "Các mặt chẵn là 2, 4 và 6: 3 trên 6, tức 1/2.",
+  },
+  pSolDiceSum: (s, pairs, ways, reduced) =>
+    `Hai xúc xắc cho 6 × 6 = 36 kết quả đồng khả năng, coi hai con là khác nhau. ` +
+    `Những kết quả có tổng bằng ${s} là ${pairs} — được ${ways} cái. Vậy ${ways}/36` +
+    (reduced ? `, tức ${reduced}.` : "."),
+  pSolAtLeast: (n, missOne, missAll, ans) =>
+    `Hãy đi đường vòng và tính xác suất trượt hết mọi lần. ` +
+    `Một lần trượt với xác suất ${missOne}, nên ${n} lần trượt hết có xác suất (${missOne})^${n} = ${missAll}. ` +
+    `Mọi trường hợp còn lại đều là "ít nhất một", nên 1 − ${missAll} = ${ans}.`,
+  pSolEV: {
+    oneDie: "Cộng các mặt lại rồi chia đều: (1+2+3+4+5+6)/6 = 21/6 = 3,5. Không mặt nào là 3,5, và điều đó bình thường — trung bình không nhất thiết phải là một kết quả có thể xảy ra.",
+    sumTwo: "Mỗi xúc xắc tự nó trung bình 3,5, và các trung bình cộng thẳng vào nhau: 3,5 + 3,5 = 7.",
+    heads4: "Mỗi lần tung góp trung bình nửa mặt ngửa, và các trung bình cộng lại: 4 × ½ = 2.",
+    sixes12: "Mỗi lần tung góp trung bình 1/6 mặt sáu, và các trung bình cộng lại: 12 × 1/6 = 2.",
+    product: "Hai xúc xắc không ảnh hưởng nhau, nên được phép nhân hai trung bình: 3,5 × 3,5 = 12,25.",
+    larger: "Xét từng mặt k có thể là mặt lớn hơn và đếm xem nó thắng bao nhiêu lần: k là số lớn hơn trong 2k−1 trên 36 kết quả. Cộng hết lại được 161/36, khoảng 4,47.",
+    smaller: "Số lớn hơn và số nhỏ hơn luôn cộng lại bằng tổng, nên trung bình của chúng cũng vậy: 7 − 161/36 = 91/36, khoảng 2,53.",
+  },
+  pSolStock: (up, down, n, S) =>
+    `Mỗi ngày nhân giá với ${up} hoặc ${down}, hai khả năng như nhau, nên trung bình nó nhân với (${up} + ${down})/2 = 1. ` +
+    `Nhân với 1 thì không đổi gì, và ${n} ngày như vậy cũng vẫn không đổi: đáp án vẫn là ${S}.`,
+  pSolReroll1: "Nếu tung lại, bạn nhận một xúc xắc bình thường, trung bình đáng 3,5. Vậy giữ lại mọi mặt trên 3,5, tức 4, 5 và 6, còn 1, 2, 3 thì tung lại. Được (4 + 5 + 6)/6 cho phần giữ, cộng 3/6 × 3,5 cho phần tung lại: 2,5 + 1,75 = 4,25.",
+  pSolReroll2: "Làm ngược từ cuối. Còn một lần tung lại thì ván đáng 4,25, đúng như trường hợp trên. Vậy ở lần tung đầu, giữ mọi mặt trên 4,25, tức 5 và 6, còn lại tung lại: (5 + 6)/6 + 4/6 × 4,25 = 11/6 + 17/6 = 14/3, khoảng 4,67.",
+  pSolElder: "Liệt kê các gia đình, con lớn trước: BB, BG, GB, GG. Biết con lớn là trai thì loại GB và GG, còn lại BB và BG. Một trong hai cái đó là hai con trai, nên 1/2.",
+  pSolLeastGirl: "Liệt kê các gia đình, con lớn trước: BB, BG, GB, GG. 'Có ít nhất một gái' loại BB, còn lại BG, GB và GG. Một trong ba cái đó là hai con gái, nên 1/3.",
+  pSolLeastBoy: "Liệt kê các gia đình, con lớn trước: BB, BG, GB, GG. 'Có ít nhất một trai' loại GG, còn lại BB, BG và GB. Một trong ba cái đó là hai con trai, nên 1/3.",
+  pSolCondDice: (pairs, total, ans) =>
+    `Biết tổng thì mọi kết quả khác đều bị loại, chỉ còn: ${pairs} — được ${total} cái. ` +
+    `Mặt 6 xuất hiện đúng trong 2 cái, mỗi con một lần. Vậy 2/${total} = ${ans}.`,
+  pSolUrnTwo: (r, N, ans) =>
+    `Lần rút đầu ra đỏ với xác suất ${r}/${N}. Nếu đúng vậy thì rổ giờ còn ${r - 1} bóng đỏ trong ${N - 1} bóng, ` +
+    `nên lần thứ hai ra đỏ với xác suất ${r - 1}/${N - 1}. Nhân lại: ${r}/${N} × ${r - 1}/${N - 1} = ${ans}.`,
+  pSolThreeCoins: (list, target, sum, total, ans) =>
+    `Hỏi xem mỗi đồng xu tạo ra mặt ngửa bạn vừa thấy dễ dàng tới đâu: ${list}. ` +
+    `Cả ba đều có cơ hội được chọn như nhau, nên phần đó tác động lên cả ba giống hệt và triệt tiêu. ` +
+    `Còn lại là phần của đồng này trên tổng: ${target} ÷ (${sum}) = ${target} ÷ ${total} = ${ans}.`,
+  pSolUrns: (ar, aTot, br, bTot, rA, rB, ans) =>
+    `Hỏi xem mỗi rổ nhả ra bóng đỏ dễ dàng tới đâu: rổ A nhả ${ar}/${aTot} số lần, rổ B nhả ${br}/${bTot} số lần. ` +
+    `Hai rổ đều có cơ hội được chọn như nhau nên phần đó triệt tiêu, và đáp án cho rổ B là phần của nó trên hai cái: ` +
+    `${rB} ÷ (${rA} + ${rB}) = ${ans}.`,
+  pSolBox: (flips, fair, ans) =>
+    `Hỏi xem mỗi đồng xu cho ra ${flips} dễ dàng tới đâu. Đồng công bằng: ${fair}. Đồng hai mặt ngửa: 1, lần nào cũng được. ` +
+    `Đồng hai mặt sấp: 0, không bao giờ, nên loại. Lấy phần của đồng công bằng trên phần còn lại: ${fair} ÷ (${fair} + 1) = ${ans}.`,
+  pSolWaitFirst: (p, ans) => `Nó xảy ra ${p} số lần, nên trung bình cứ ${ans} lần thử mới gặp một lần. Lật ngược xác suất lại: 1 ÷ ${p} = ${ans}.`,
+  pSolWaitK: (one, k, ans) =>
+    `Chờ cái đầu tiên tốn trung bình ${one} lần thử. Sau khi nó xuất hiện thì mọi thứ y như cũ, nên chờ cái tiếp theo lại tốn ${one} lần nữa. ` +
+    `Những khoảng chờ kiểu này cộng thẳng vào nhau: ${k} × ${one} = ${ans}.`,
+  pSolPattern: {
+    HT: "Chờ trung bình 2 lần tung để có mặt ngửa đầu tiên. Rồi chờ thêm 2 lần nữa để có mặt sấp. Những mặt ngửa thừa ở giữa không tốn gì, vì mặt ngửa bạn cần đã nằm sẵn trong túi. Vậy 2 + 2 = 4.",
+    TH: "Chờ trung bình 2 lần tung để có mặt sấp đầu tiên. Rồi chờ thêm 2 lần nữa để có mặt ngửa. Những mặt sấp thừa ở giữa không tốn gì, vì mặt sấp bạn cần đã nằm sẵn trong túi. Vậy 2 + 2 = 4.",
+    HH: "Chờ 2 lần tung để có mặt ngửa đầu tiên. Rồi một nửa số lần, cú tung kế là ngửa và bạn xong; nửa còn lại nó là sấp và bạn quay về vạch xuất phát. Viết thành E = 2 + 1 + ½·E rồi giải ra E = 6.",
+    TT: "Chờ 2 lần tung để có mặt sấp đầu tiên. Rồi một nửa số lần, cú tung kế là sấp và bạn xong; nửa còn lại nó là ngửa và bạn quay về vạch xuất phát. Viết thành E = 2 + 1 + ½·E rồi giải ra E = 6.",
+  },
+  pSolCollect: (n, terms, ans) =>
+    `Cái đầu tiên là miễn phí, nó tới ngay lập tức. Khi bạn đã có j cái, một cái mới xuất hiện ${n}−j lần trên ${n}, ` +
+    `nên bạn chờ ${n}/(${n}−j) lần thử cho nó. Cộng hết các khoảng chờ lại được ${n} × (${terms}) = ${ans}. ` +
+    `Cái cuối cùng mới là chỗ chậm: riêng nó đã tốn ${n} lần thử.`,
+  pSolOrderMax: (n) =>
+    `Các lần lấy không biết gì về nhau, nên không vị trí nào đặc biệt. ` +
+    `Đúng một trong ${n} giá trị phải là lớn nhất, và cái nào cũng như cái nào, nên mỗi cái được 1/${n}.`,
+  pSolOrderMono: (n, fact, dir) =>
+    `Dù bạn nhận được ${n} số nào đi nữa, chúng có thể tới theo bất kỳ thứ tự nào, và mọi thứ tự đều dễ xảy ra như nhau. ` +
+    `Có ${n}! = ${fact} thứ tự và đúng một cái là ${dir}, nên 1/${fact}.`,
+  pSolPickRepeat: (N, k, total, c, ans) =>
+    `Tổng cộng có ${N}^${k} = ${total} dãy đồng khả năng. Một dãy tăng cần ${k} giá trị khác nhau, và mỗi bộ ${k} giá trị khác nhau ` +
+    `chỉ viết được theo thứ tự tăng đúng một cách. Số bộ như vậy là C(${N};${k}) = ${c}, tức số cách chọn ${k} thứ từ ${N} thứ. ` +
+    `Vậy ${c}/${total} = ${ans}.`,
+  pSolPickDistinct: (k, fact, N) =>
+    `Dù bạn nhận ${k} số nào, chúng có thể hiện ra theo ${k}! = ${fact} thứ tự, tất cả đồng khả năng, và một trong số đó là tăng dần. ` +
+    `Vậy 1/${fact}. Để ý là cỡ của kho số, ${N}, không hề đi vào đáp án.`,
+  pSolMontySwitch: "Cửa bạn chọn đầu tiên đúng 1 lần trong 3. Còn 2 lần trong 3, chiếc xe nằm sau một trong hai cửa bạn không chọn, và người dẫn vừa chỉ cho bạn biết trong hai cửa đó cái nào không phải. Nên đổi cửa đưa xe cho bạn đúng vào những lần cửa đầu tiên bạn chọn sai: 2/3.",
+  pSolMontyStay: "Giữ nguyên thì thắng đúng vào những lần cửa đầu tiên bạn chọn đúng. Con số đó là 1 trên 3 trước khi người dẫn mở gì cả, và anh ta thì kiểu gì cũng chỉ được cho bạn một con dê, nên sau đó nó vẫn là 1 trên 3.",
+  pSolRuin: (i, N, ans) =>
+    `Không ai có lợi thế trong một ván, nên tính trung bình không ai được hay mất, và cơ hội ăn hết của bạn đúng bằng phần tiền bạn đang cầm trên bàn: ` +
+    `${i} trên ${N}, tức ${ans}. Tiền là lợi thế duy nhất trong trò này.`,
+  pSolFirst: (p, both, ans) =>
+    `Gọi cơ hội thắng của A là P. Có hai chuyện có thể xảy ra. A thành công ngay, xác suất ${p}. Hoặc A trượt và B cũng trượt, xác suất ${both}, ` +
+    `rồi tới lượt A với mọi thứ y như cũ, nên cơ hội của A lại là P. Từ đó P = ${p} + ${both}·P, ` +
+    `giải ra được P = ${ans}. Đi trước đáng giá hơn một nửa một chút.`,
+  pSolDerange: (n, fact, D, none, asksNone, other) =>
+    `Có ${n}! = ${fact} cách bỏ thư vào phong bì, tất cả đồng khả năng. Trong số đó, ${D} cách có mọi lá thư đều sai phong bì. ` +
+    `Vậy xác suất không lá nào đúng là ${none}` +
+    (asksNone ? "." : `, và xác suất có ít nhất một lá đúng là 1 − ${none} = ${other}.`),
+  pSolWalk: (steps, n, c, total, ans) =>
+    `Về được chỗ cũ sau ${steps} bước nghĩa là đúng ${n} bước tiến và ${n} bước lùi, theo thứ tự bất kỳ. ` +
+    `Số thứ tự như vậy là C(${steps};${n}) = ${c}, tức số cách chọn ${n} bước nào trong ${steps} bước sẽ đi tới. ` +
+    `Mỗi trong số 2^${steps} = ${total} đường đi đều đồng khả năng, nên ${c}/${total} = ${ans}.`,
+  pSolCards: {
+    suit: "Lá đầu tiên là lá gì cũng được, nên bỏ qua nó. Trong 51 lá còn lại, có 12 lá cùng chất với nó. Vậy 12/51, tức 4/17.",
+    rank: "Lá đầu tiên là lá gì cũng được, nên bỏ qua nó. Trong 51 lá còn lại, có 3 lá cùng số với nó. Vậy 3/51, tức 1/17.",
+    red: "Lá đầu tiên là đỏ 26 lần trên 52, tức 1/2. Rồi còn 25 lá đỏ trong 51 lá. Nhân lại: 1/2 × 25/51 = 25/102, khoảng 0,245.",
+  },
+  pSolUnit: {
+    band: "Vẽ một hình vuông cạnh 1, X nằm ngang và Y thẳng đứng. Những điểm mà hai số lệch nhau dưới ½ tạo thành một dải chạy dọc giữa. Phần bị loại ra là hai tam giác ở góc, mỗi cái có hai cạnh góc vuông bằng ½ và diện tích 1/8. Vậy 1 − 2 × 1/8 = 3/4.",
+    sum: "Vẽ một hình vuông cạnh 1. Đường X + Y = 1 chạy từ góc này sang góc kia, và phần nằm dưới nó là một tam giác chiếm đúng nửa hình vuông. Vậy 1/2.",
+    twice: "Vẽ một hình vuông cạnh 1. Đường Y = X/2 đi qua góc và điểm giữa cạnh phải, và phần nằm dưới nó là tam giác đáy 1 cao ½, tức diện tích 1/4.",
+  },
+
+  /* probability — trap explanations */
+  ptChance: {
+    die6: ["Xúc xắc có sáu mặt chứ không phải ba.", "Xúc xắc không phải đồng xu."],
+    coinH: ["Đó là hai mặt ngửa liên tiếp."],
+    dieOver4: ["Có hai mặt thoả mãn là 5 và 6, không phải một.", "Lớn hơn 4 không giống lớn hơn 3."],
+    heart: ["Đó là một quân số cụ thể, không phải một chất.", "Đó là một lá bài cụ thể."],
+    dieEven: ["Ba mặt trong sáu mặt là số chẵn."],
+  },
+  ptSumEleven: "Có 11 tổng khả dĩ nhưng chúng không đồng khả năng: tổng 7 ra nhiều hơn tổng 2 rất nhiều. Hãy đếm 36 cặp thay vì đếm tổng.",
+  ptSumUnordered: "Mỗi cặp chỉ được đếm một lần, nhưng (2;5) và (5;2) thật sự là hai kết quả khác nhau, nên có 36 cái chứ không phải 21.",
+  ptSumOnePair: "Đó là một cặp duy nhất. Có nhiều cặp khác nhau cùng cho tổng này.",
+  ptMissAll: (ev) => `Đó là xác suất không bao giờ ra ${ev}. Bạn chỉ còn cách đáp án một phép trừ: lấy 1 trừ đi nó.`,
+  ptAddedChances: "Không cộng thẳng các xác suất lại như vậy được. Cộng như thế là đếm lặp những lần nó xảy ra hai lần, và nếu thử đủ nhiều thì tổng sẽ vượt quá 1, điều không thể xảy ra.",
+  ptOneTrialOnly: "Đó là một lần thử duy nhất. Đề hỏi trên toàn bộ các lần.",
+  ptEV: {
+    oneDie: ["Chính giữa của 1 tới 6 nằm giữa 3 và 4, nên trung bình là 3,5. Không có mặt nào ở chính giữa.", "Đó là mặt lớn nhất, không phải mặt trung bình."],
+    sumTwo: ["Đó mới là một xúc xắc. Con kia vẫn còn đó, nên phải cộng cả trung bình của nó.", "Mặt hay ra nhất không giống với tổng trung bình."],
+    heads4: ["Đó là số lần bạn tung, không phải số lần ra ngửa.", "Đó là phần của một lần tung. Có tới bốn lần tung."],
+    sixes12: ["Đó là số lần bạn tung, không phải số lần ra mặt 6.", "Đó là một con số trên xúc xắc, không phải số đếm gì cả."],
+    product: ["Đó là tổng trung bình, không phải tích trung bình.", "Đó là 3,5 × 6. Con thứ hai cũng trung bình 3,5 chứ không phải 6.", "Rất sát: 3,5 × 3,5 đúng bằng 12,25."],
+    larger: ["Đó mới là một xúc xắc đứng riêng. Luôn lấy con lớn hơn trong hai con thì trung bình bị kéo lên.", "Đó là giá trị lớn nhất có thể, không phải giá trị trung bình."],
+    smaller: ["Đó mới là một xúc xắc đứng riêng. Luôn lấy con nhỏ hơn trong hai con thì trung bình bị kéo xuống.", "Đó là giá trị nhỏ nhất có thể, không phải giá trị trung bình."],
+  },
+  ptStockPath: (n) => `Lên rồi xuống đúng là kết thúc dưới chỗ ban đầu, nhưng đó chỉ là một trong các cách ${n} ngày có thể diễn ra. Lên rồi lên nữa thì kết thúc ở trên. Lấy trung bình hết thì chúng triệt tiêu nhau chính xác.`,
+  ptStockBest: "Đó là trường hợp may nhất, ngày nào cũng lên.",
+  ptStockWorst: "Đó là trường hợp xui nhất, ngày nào cũng xuống.",
+  ptRerollPlain: "Đó là xúc xắc thường không được tung lại. Được phép tung lại thì chỉ có lợi, nên đáp án bắt buộc phải trên 3,5.",
+  ptRerollOther: "Đó là đáp án cho số lần tung lại khác. Kiểm lại đề cho bạn mấy lần.",
+  ptRerollFive: "Ở đây không phải chỉ giữ 5 và 6. Hãy tung lại mỗi khi mặt hiện ra thấp hơn giá trị của một lần tung mới, còn không thì giữ.",
+  ptElderThird: "Đó là đáp án của phiên bản kia, 'có ít nhất một con trai'. Chỉ đích danh con lớn là thông tin mạnh hơn: nó ghim chặt một đứa cụ thể, khiến chỉ còn hai gia đình thay vì ba.",
+  ptTwoChildHalf: "BG và GB là hai gia đình khác nhau: anh trai với em gái không giống chị gái với em trai. Đếm riêng ra thì còn ba trường hợp chứ không phải hai.",
+  ptTwoChildQuarter: "Đó là xác suất hai con trai khi chưa ai nói gì với bạn. Thông tin bạn được cho đã loại GG, nên đáp án bắt buộc phải lớn hơn.",
+  ptCondUnconditional: "Đó mới là một xúc xắc đứng riêng, bỏ qua điều bạn được cho biết. Cái tổng đã loại phần lớn kết quả và làm đổi đáp án.",
+  ptCondPlain: "Đó là xác suất có mặt 6 trong hai lần tung khi bạn chưa biết gì về tổng.",
+  ptCondOnePair: (total) => `Hai trong ${total} kết quả có chứa mặt 6 chứ không phải một, vì mặt 6 có thể nằm ở con nào cũng được.`,
+  ptUrnReplace: "Điều đó đúng nếu bạn bỏ bóng đầu tiên trở lại rổ. Bạn không làm vậy, nên lần rút thứ hai thấy ít hơn một bóng đỏ và ít hơn một bóng tổng cộng.",
+  ptUrnFirstOnly: "Đó mới là lần rút đầu tiên. Lần thứ hai cũng phải ra đỏ nữa.",
+  ptUrnSecondOnly: "Đó là lần rút thứ hai với giả thiết lần đầu đã ra đỏ. Bạn còn phải nhân với xác suất lần đầu ra đỏ.",
+  ptCoinAlone: "Đó là mức độ ra ngửa của riêng đồng xu này. Bạn còn phải so nó với những gì hai đồng kia có thể đã làm.",
+  ptCoinPrior: "Đó là xác suất trước khi bạn tung. Thấy mặt ngửa là bằng chứng, và bằng chứng thì phải làm đáp án dịch chuyển.",
+  ptCoinDividedThrice: "Xác suất 1/3 chọn mỗi đồng xu xuất hiện ở cả tử lẫn mẫu, nên nó triệt tiêu. Đừng chia thêm cho 3 nữa.",
+  ptUrnsBOnly: "Đó là mức độ nhả bóng đỏ của riêng rổ B. Câu hỏi là bạn đang cầm rổ nào, nên tỉ lệ của rổ A cũng phải tham gia vào.",
+  ptUrnsPrior: "Đó là xác suất trước khi bạn rút. Một bóng đỏ là bằng chứng, và nó chỉ về phía rổ nào nhiều đỏ hơn.",
+  ptUrnsCounts: (a, aTot, b, bTot) => `Số bóng đỏ được đem so thẳng, nhưng hai rổ chứa số bóng khác nhau, nên phải so tỉ lệ ${a}/${aTot} với ${b}/${bTot} chứ không so số lượng.`,
+  ptBoxPrior: "Đó là xác suất trước khi bạn tung. Một chuỗi toàn ngửa là bằng chứng, và nó bất lợi cho đồng công bằng.",
+  ptBoxHalf: "Hai đồng xu đều có thể ra ngửa, nhưng không dễ như nhau: đồng hai mặt ngửa thì lần nào cũng ra, đồng công bằng chỉ thỉnh thoảng.",
+  ptBoxAlone: (flips) => `Đó là mức độ đồng công bằng cho ra ${flips} khi đứng riêng. Bạn còn phải so nó với đồng hai mặt ngửa.`,
+  ptWaitFlip: "Đó là xác suất nó xảy ra, không phải thời gian bạn phải chờ. Hãy lật ngược phân số lại.",
+  ptWaitCountsToo: "Lần thử cuối cùng thành công cũng là một lần thử.",
+  ptWaitFirstOnly: "Đó mới là khoảng chờ cho cái đầu tiên. Mỗi cái còn lại tốn đúng chừng đó nữa.",
+  ptWaitMultiplied: "Các khoảng chờ cộng lại chứ không nhân. Nhân là để tính xác suất nhiều việc cùng xảy ra.",
+  ptWaitSuccesses: "Đó là số lần thành công bạn muốn, không phải số lần thử để đạt được chúng.",
+  ptPatternContrast: {
+    HT: "Sau một mặt ngửa, thêm một mặt ngửa nữa không hại gì: bạn vẫn đang chờ mặt sấp, và mặt ngửa đang có vẫn còn giá trị.",
+    TH: "Sau một mặt sấp, thêm một mặt sấp nữa không hại gì: bạn vẫn đang chờ mặt ngửa, và mặt sấp đang có vẫn còn giá trị.",
+    HH: "Một nửa số lần, sau mặt ngửa đầu tiên là mặt sấp, và nó xoá sạch chuỗi khiến bạn phải làm lại. Chính việc phải làm lại là lý do cái này tốn 6 trong khi ngửa-rồi-sấp chỉ tốn 4.",
+    TT: "Một nửa số lần, sau mặt sấp đầu tiên là mặt ngửa, và nó xoá sạch chuỗi khiến bạn phải làm lại. Chính việc phải làm lại là lý do cái này tốn 6 trong khi sấp-rồi-ngửa chỉ tốn 4.",
+  },
+  ptPatternOneFace: "Đó là khoảng chờ cho một mặt cụ thể. Câu này hỏi một mẫu gồm hai lần tung.",
+  ptCollectMin: "Đó là trường hợp nhanh nhất có thể, không trùng lần nào. Trùng là chuyện thường xuyên, nên khoảng chờ thật dài hơn.",
+  ptCollectSquare: "Dài quá. Càng về sau càng chờ lâu hơn, nhưng không lâu tới mức đó: tổng cộng chỉ hơi dưới gấp đôi con số bạn đoán ban đầu.",
+  ptOrderPosition: "Số thứ tự của vị trí không quan trọng. Ra sau không làm cho một số lớn hơn.",
+  ptOrderTwo: "Đó là đáp án nếu chỉ có hai lần lấy.",
+  ptOrderFull: (n) => `Đó là xác suất của đúng một thứ tự cụ thể cho cả ${n} số. Ở đây bạn chỉ quan tâm cái nào đứng trên cùng.`,
+  ptMonoMax: "Đó là xác suất một số cụ thể là lớn nhất. Ở đây cả thứ tự phải đúng, khó hơn nhiều.",
+  ptMonoBoth: "Tăng dần và giảm dần là hai thứ tự riêng biệt. Đề hỏi một trong hai, không phải cái nào cũng được.",
+  ptMonoFlips: "Sắp thứ tự không phải một chuỗi tung xu. Hãy đếm số thứ tự: có n! cái.",
+  ptPickDistinctAnswer: "Đó là đáp án khi các lần chọn bắt buộc khác nhau. Ở đây được phép trùng, và trùng thì không bao giờ tăng ngặt, nên đáp án phải nhỏ hơn.",
+  ptPickPerItem: (total) => `Đây không phải xác suất cho từng lần chọn. Hãy đếm số dãy tăng trên tổng ${total} dãy.`,
+  ptPickPoolSize: (k) => `Một khi ${k} số đã khác nhau thì cỡ của kho số hết quan trọng. Chỉ số thứ tự mới đáng kể.`,
+  ptPickPoolCancels: (k, fact) => `Cỡ kho số triệt tiêu mất. ${k} giá trị khác nhau bất kỳ đều có ${fact} thứ tự đồng khả năng và một cái là tăng dần.`,
+  ptMontyHalf: "Còn lại hai cửa, nhưng chúng không đồng khả năng. Người dẫn không chọn ngẫu nhiên: anh ta biết xe ở đâu và không bao giờ mở nó, và đó chính là thông tin về cánh cửa anh ta để nguyên.",
+  ptMontyOther: "Đó là xác suất của chiến thuật kia. Đọc kỹ xem đề hỏi chiến thuật nào.",
+  ptRuinHalf: "Từng ván thì công bằng, nhưng cả cuộc chơi thì không. Ai bắt đầu với ít tiền hơn sẽ cháy túi trước, và thường xuyên hơn hẳn.",
+  ptRuinOther: "Đó là xác suất B thắng, không phải A. Hai cái phải cộng lại bằng 1.",
+  ptRuinOneCoin: "Xác suất đi theo cả đống tiền ban đầu, không phải theo một đồng lẻ.",
+  ptFirstHalf: "Đi trước là lợi thế thật: A có cơ hội thắng trước cả khi B kịp tung lần nào.",
+  ptFirstTurnOne: "Đó mới là lượt đầu tiên của A. A còn có thể thắng ở các lượt sau, sau khi cả hai cùng trượt.",
+  ptFirstAverage: "Hãy dựng thành một phương trình: A thắng ngay, hoặc cả hai trượt và ván cờ quay về đúng chỗ ban đầu.",
+  ptDerangeOpposite: "Đó là điều ngược với câu hỏi. Kiểm lại xem đề hỏi không lá nào hay ít nhất một lá.",
+  ptDerangeOne: "Đó là chuyện của một lá thư cụ thể. Đề hỏi về cả cách sắp xếp cùng lúc.",
+  ptDerangePerfect: "Đó là xác suất của cách sắp xếp hoàn hảo duy nhất, khi mọi lá thư đều vào đúng chỗ.",
+  ptWalkHalf: "Về được chỗ cũ là một kết quả cụ thể trong nhiều kết quả, không phải một cú tung xu giữa về và không về.",
+  ptWalkCount: (c, total) => `Hãy đếm số đường đi: ${c} trong ${total} đường khả dĩ kết thúc đúng chỗ xuất phát.`,
+  ptCards: {
+    suit: ["Điều đó đúng nếu lá thứ hai phải thuộc một chất được nêu tên. Nó chỉ cần trùng chất với lá đầu, mà một lá của chất đó đã rời khỏi bộ bài rồi.", "Đó là chuyện quân số như quân Q, không phải chuyện chất."],
+    rank: ["Còn ba lá cùng số trong 51 lá, chứ không phải bốn trong 52: lá đầu tiên đã nằm trên tay bạn.", "Đó là một lá bài cụ thể."],
+    red: ["Rất sát, nhưng bộ bài có thay đổi: sau khi một lá đỏ rời đi thì còn 25 lá đỏ trong 51 lá, không phải 26 trong 52.", "Đó mới là lá đầu tiên. Lá thứ hai cũng phải đỏ nữa."],
+  },
+  ptUnit: {
+    band: ["Cái dải đó rộng hơn nửa hình vuông. Vẽ ra mà xem: hai góc nó bỏ sót là hai tam giác diện tích 1/8 mỗi cái, nên chỉ 1/4 bị loại ra.", "Đó là phần bị loại ra, không phải phần đề hỏi."],
+    sum: ["Đường đó chạy từ góc này sang góc kia và cắt hình vuông làm đôi gọn ghẽ, nên tam giác bên dưới là 1/2 chứ không phải 1/4."],
+    twice: ["Đó là đường Y = X. Đường Y = X/2 thoải hơn và chỉ cắt ra một phần tư."],
+  },
 
   ordinal: (n) => `thứ ${n}`,
   fallbackOdd: "cấp số cộng",

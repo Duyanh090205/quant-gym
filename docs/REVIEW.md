@@ -10,7 +10,7 @@ plus every generator's questions, solutions and traps.
 
 ## What a machine verifies
 
-`npm test` runs 37 tests. Three of them do the load-bearing work, and they are
+`npm test` runs 46 tests. Three of them do the load-bearing work, and they are
 deliberately independent of one another, because a formula and the generator that
 produced it can be wrong in the same way.
 
@@ -19,6 +19,7 @@ produced it can be wrong in the same way.
 | `engine.test.js` | every generated answer, re-derived from a formula written separately from the generator | ~1,000 questions per run |
 | `simulate.test.js` | the same answers, by playing the game instead of computing it | 265 distinct question shapes, 120,000 trials each |
 | `tip-arithmetic.test.js` | the hand-written tip cards, parsing and evaluating both sides of every equation printed on them | 140 equations across 24 cards in two languages |
+| `bilingual.test.js` | the two languages against each other: answers, traps, numbers, and what is left untranslated | every skill at every level |
 
 Simulation is the one worth explaining. It ignores the formulas entirely and
 rolls the dice, draws the balls, shuffles the envelopes, walks the walks and plays
@@ -55,8 +56,9 @@ format is right. The exact difficulty of the arithmetic section is a judgement
 call, and the person who sat it reported the real thing was harder than this
 trainer was at the time.
 
-**Vietnamese fluency.** The translations are checked for numbers and for jargon,
-not for how they read. A Vietnamese teacher should skim them once.
+**Vietnamese fluency.** The translations are checked for numbers, for jargon, and
+for agreeing with the English on every answer and trap. What no test can check is
+whether they read naturally. A Vietnamese teacher should skim them once.
 
 ## What this read-through changed
 
@@ -143,11 +145,40 @@ tested: the ranking order, the mix, reproducibility from a seed, that blanks do
 not count as evidence, that `accumulate` does not edit the record it is given, and
 that a record full of unknown keys does not break anything.
 
+## Translating the engine, and what it exposed
+
+Prompts and solutions were English only until 10 September. That is the wrong way
+round for this cohort: a tip card is read once, calmly, but a solution is read at
+the moment a student is stuck, and that is when a second language costs the most.
+
+The translation is not a layer on top. Generators take a resolved phrasebook as
+their third argument, each entry a function of the question's own numbers, so
+Vietnamese reorders them rather than following English word order.
+
+Doing it exposed four real faults that English alone would never have shown:
+
+1. **`Uniform[0,1]` and `C(10,2)` read as decimals in Vietnamese**, exactly like
+   the dice pairs found earlier. All now use a semicolon.
+2. **Marking rejected `0,272`.** The parser stripped a comma followed by three
+   digits as a thousands separator, right for English 1,234 and wrong for
+   Vietnamese 0,272. A comma between digits is genuinely ambiguous across the two
+   languages, so marking now tries both readings and accepts either.
+3. **The answer was shown with an English decimal point** on a Vietnamese question
+   whose own working used a comma. Two different numbers on one screen, to a
+   student already unsure.
+4. **A loop variable named `t` shadowed the phrasebook** in three generators,
+   which would have thrown the moment anyone touched those branches.
+
+`bilingual.test.js` now holds the pair to account: same seed, both languages, same
+answers, same traps, same numbers in the prompt, no English left in the Vietnamese,
+no comma-separated pairs, and the shown answer in the question's own convention.
+
 ## Open questions for whoever picks this up
 
-1. **Question prompts and worked solutions are English only.** Tip cards are
-   bilingual. Translating the solutions matters most, because that is the text a
-   student reads at the moment they are stuck.
+1. **Vietnamese fluency, not correctness.** Everything is now translated, and the
+   tests check that the two languages carry the same numbers, traps and answers.
+   What they cannot check is whether the Vietnamese reads well. A Vietnamese
+   teacher should skim it once.
 2. **The pass marks in `curriculum.js` are guesses.** They were set to feel right,
    not measured. After a cohort has used it, set them from real data.
 3. **Level 1 of a narrow skill can run out of distinct questions.** `generateSet`

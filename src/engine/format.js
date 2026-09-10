@@ -63,32 +63,54 @@ export function frac(x, maxDen = 130) {
  * Returns a number, a string, or null for empty input.
  */
 export function parseAnswer(raw) {
-  if (raw == null) return null;
+  const all = parseCandidates(raw);
+  return all.length ? all[0] : (raw == null || String(raw).trim() === "" ? null : String(raw).trim().toUpperCase());
+}
+
+/**
+ * Every value the typed text could reasonably mean.
+ *
+ * A comma between digits is genuinely ambiguous across the two languages:
+ * English `1,234` is one thousand two hundred and thirty-four, Vietnamese
+ * `1,234` is one point two three four, and `0,272` can only be the second. So
+ * both readings are returned and marking accepts either. A student should not
+ * lose a mark because the parser guessed the wrong convention.
+ *
+ * Returns numbers, or a single upper-cased string for letter answers.
+ */
+export function parseCandidates(raw) {
+  if (raw == null) return [];
   let s = String(raw).trim();
-  if (!s) return null;
+  if (!s) return [];
 
   s = s.replace(/\s+/g, "");
   const isPercent = s.endsWith("%");
   if (isPercent) s = s.slice(0, -1);
 
-  // 1,234 is a thousands separator; 0,5 is a decimal comma. Strip the first,
-  // convert the second.
-  s = s.replace(/,(\d{3})(?!\d)/g, "$1").replace(",", ".");
-
-  if (!/^[-+]?[\d.]*\/?[-+]?[\d.]+$/.test(s)) {
-    return String(raw).trim().toUpperCase();
-  }
-
-  let v;
-  if (s.includes("/")) {
-    const [n, d] = s.split("/");
-    v = parseFloat(n) / parseFloat(d);
+  const readings = new Set();
+  if (s.includes(".")) {
+    // A dot is already doing the decimal work, so any comma groups thousands.
+    readings.add(s.replace(/,/g, ""));
+  } else if (s.includes(",")) {
+    readings.add(s.replace(/,/g, ""));      // English: a thousands separator
+    readings.add(s.replace(/,/g, "."));     // Vietnamese: a decimal mark
   } else {
-    v = parseFloat(s);
+    readings.add(s);
   }
 
-  if (!isFinite(v)) return String(raw).trim().toUpperCase();
-  return isPercent ? v / 100 : v;
+  const out = [];
+  for (const text of readings) {
+    if (!/^[-+]?[\d.]*\/?[-+]?[\d.]+$/.test(text)) continue;
+    let v;
+    if (text.includes("/")) {
+      const [n, d] = text.split("/");
+      v = parseFloat(n) / parseFloat(d);
+    } else {
+      v = parseFloat(text);
+    }
+    if (isFinite(v)) out.push(isPercent ? v / 100 : v);
+  }
+  return out.length ? out : [String(raw).trim().toUpperCase()];
 }
 
 /** Compare with both a relative and an absolute tolerance. */

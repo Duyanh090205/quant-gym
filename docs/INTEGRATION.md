@@ -138,18 +138,36 @@ advance because they do not exist until the code is used.
 
 ## Language
 
-Everything a student reads comes from one of three places:
+Everything a student reads is bilingual: prompts, worked solutions, trap
+explanations and tip cards. Pass `lang` and the same code produces either.
 
-- **Question prompts** are generated in English. They are mostly symbols and short
-  sentences; translating them means adding a `vi` branch in the generator files.
-- **Tip cards** are already bilingual. `getTip(id, "vi")` returns Vietnamese.
-- **Solutions and trap explanations** are English only today. They are ordinary
-  strings inside the generator files and are the next thing to translate, because
-  they are the part a struggling student most needs in their own language.
+```js
+generateSet({ skill: "prob.bayes", level: 2, count: 8, seed, lang: "vi" });
+generateExam("maven-round-1", seed, "vi");
+generateReview({ stats, count: 12, seed, lang: "vi" });
+getTip("bayes-likelihood-share", "vi");
+```
 
-All of it is written to a house style: no term a fifteen-year-old has not met,
-unless the sentence defines it on the spot. `npm test` enforces this against a
-list of banned words, so a translation that reintroduces jargon fails the build.
+Every sentence lives in `src/engine/text.js` as a function of the question's own
+numbers, so a translation reorders them freely instead of being trapped in
+English word order. Generators receive the resolved half and never see the other.
+
+Three details that matter more than they look:
+
+- **Numbers follow the reader.** Vietnamese gets 0,545; English gets 0.545.
+  Thousands separators are dropped in both, because English 5,832 and Vietnamese
+  5.832 are each ambiguous with the other's decimal mark.
+- **Coordinate pairs and intervals use a semicolon in Vietnamese.** `(1,4)` and
+  `[0,1]` read as one-point-four and zero-point-one to a Vietnamese student.
+- **Marking accepts either convention.** A comma between digits is genuinely
+  ambiguous, so `1,234` is tried as both one thousand two hundred and thirty-four
+  and one point two three four, and either is accepted.
+
+The house style holds in both languages: no term a fifteen-year-old has not met,
+unless the sentence defines it on the spot. `npm test` enforces it against a list
+of banned words, and `bilingual.test.js` checks that the two languages ask the
+same questions, print the same numbers, carry the same traps and reach the same
+answers.
 
 Interface labels belong to your application, not to the engine.
 
