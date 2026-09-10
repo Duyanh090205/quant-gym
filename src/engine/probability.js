@@ -40,6 +40,12 @@ const CHANCE = [
   { k: "dieOver4", p: 1 / 3, traps: [1 / 6, 1 / 2] },
   { k: "heart", p: 1 / 4, traps: [1 / 13, 1 / 52] },
   { k: "dieEven", p: 1 / 2, traps: [1 / 3] },
+  { k: "dieUnder3", p: 1 / 3, traps: [1 / 6, 1 / 2] },
+  { k: "dieNot6", p: 5 / 6, traps: [1 / 6] },
+  { k: "redCard", p: 1 / 2, traps: [1 / 4, 1 / 13] },
+  { k: "aceCard", p: 1 / 13, traps: [1 / 4, 1 / 52] },
+  { k: "faceCard", p: 3 / 13, traps: [1 / 13, 3 / 52] },
+  { k: "twoHeads", p: 1 / 4, traps: [1 / 2, 1 / 3] },
 ];
 
 const AT_LEAST = [
@@ -104,6 +110,12 @@ const EV1 = [
   { k: "sumTwo", a: 7, traps: [3.5, 6] },
   { k: "heads4", a: 2, traps: [4, 0.5] },
   { k: "sixes12", a: 2, traps: [12, 6] },
+  { k: "heads10", a: 5, traps: [10, 0.5] },
+  { k: "sixes6", a: 1, traps: [6, 3.5] },
+  { k: "sumThree", a: 10.5, traps: [7, 3.5] },
+  { k: "cardRank", a: 7, traps: [6.5, 13] },
+  { k: "evens4", a: 2, traps: [4, 3] },
+  { k: "coinPay", a: 5, traps: [10, 2.5] },
 ];
 
 const EV2 = [
@@ -302,6 +314,12 @@ const WAIT1 = [
   { k: "coinH", a: 2, p: "1/2" },
   { k: "die56", a: 3, p: "1/3" },
   { k: "heartRep", a: 4, p: "1/4" },
+  { k: "ace13", a: 13, p: "1/13" },
+  { k: "redRep", a: 2, p: "1/2" },
+  { k: "dieUnder3", a: 3, p: "1/3" },
+  { k: "sumSeven", a: 6, p: "1/6" },
+  { k: "sumTen", a: 12, p: "1/12" },
+  { k: "doubleSix", a: 36, p: "1/36" },
 ];
 const WAIT_K = [
   { k: "die6", one: 6, g: "die" },
@@ -309,7 +327,10 @@ const WAIT_K = [
   { k: "die56", one: 3, g: "die" },
 ];
 const PATTERNS = [{ k: "HT", a: 4 }, { k: "TH", a: 4 }, { k: "HH", a: 6 }, { k: "TT", a: 6 }];
-const COLLECT = [{ k: "faces", n: 6 }, { k: "suits", n: 4 }, { k: "coin", n: 2 }];
+const COLLECT = [
+  { k: "faces", n: 6 }, { k: "suits", n: 4 }, { k: "coin", n: 2 },
+  { k: "ranks", n: 13 }, { k: "weekdays", n: 7 }, { k: "vowels", n: 5 },
+];
 
 export function waitingTime(rng, level, t) {
   if (level === 1) {
@@ -451,6 +472,11 @@ const UNIT = [
   { k: "sum", a: 1 / 2, traps: [1 / 4] },
   { k: "twice", a: 1 / 4, traps: [1 / 2] },
 ];
+// Monty Hall is one puzzle, so drilling it eight times asks the same question
+// eight times. Opening it up to N doors turns it into a family, and the hundred
+// door version is the one that makes the answer obvious rather than surprising:
+// nobody believes the host left the car behind the one door he happened to skip.
+const DOORS = [3, 3, 3, 4, 5, 6, 8, 10, 100];
 const FIRST_TO = [
   { k: "six", p: 1 / 6 },
   { k: "head", p: 1 / 2 },
@@ -459,14 +485,15 @@ const FIRST_TO = [
 
 export function classics(rng, level, t) {
   if (level === 1) {
+    const n = rng.pick(DOORS);
     const sw = rng.chance(0.66);
     return q({
-      prompt: t.pAskMonty(sw),
-      answer: sw ? 2 / 3 : 1 / 3,
-      solution: sw ? t.pSolMontySwitch : t.pSolMontyStay,
+      prompt: t.pAskMonty(sw, n),
+      answer: sw ? (n - 1) / n : 1 / n,
+      solution: sw ? t.pSolMontySwitch(n) : t.pSolMontyStay(n),
       traps: [
         { value: 1 / 2, why: t.ptMontyHalf },
-        { value: sw ? 1 / 3 : 2 / 3, why: t.ptMontyOther },
+        { value: sw ? 1 / n : (n - 1) / n, why: t.ptMontyOther },
       ],
       tip: "host-knows-something",
     });

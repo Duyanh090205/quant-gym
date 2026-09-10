@@ -609,6 +609,12 @@ const en = {
     dieOver4: "a number greater than 4 when rolling a die",
     heart: "a heart when drawing one card from a full deck",
     dieEven: "an even number when rolling a die",
+    dieUnder3: "a number less than 3 when rolling a die",
+    dieNot6: "anything except a 6 when rolling a die",
+    redCard: "a red card when drawing one card from a full deck",
+    aceCard: "an ace when drawing one card from a full deck",
+    faceCard: "a face card (jack, queen or king) when drawing one card from a full deck",
+    twoHeads: "two heads when flipping two fair coins",
   },
   pTrialNames: {
     die6: "a 6 on a die", coinH: "HEADS on a coin",
@@ -617,6 +623,12 @@ const en = {
   pWaitNames: {
     die6: "a 6 when rolling a die", coinH: "heads when flipping a coin",
     die56: "a 5 or 6 when rolling a die", heartRep: "a heart when drawing cards with replacement",
+    ace13: "an ace when drawing cards with replacement",
+    redRep: "a red card when drawing cards with replacement",
+    dieUnder3: "a number below 3 when rolling a die",
+    sumSeven: "a sum of 7 when rolling two dice",
+    sumTen: "a sum of 10 when rolling two dice",
+    doubleSix: "a double 6 when rolling two dice",
   },
   pShortNames: { die6: "a 6", coinH: "heads", die56: "a 5 or 6" },
   pActions: { die: "Roll a fair die", coin: "Flip a fair coin", card: "Draw a card with replacement" },
@@ -630,6 +642,12 @@ const en = {
     sumTwo: "the sum of two fair dice",
     heads4: "the number of heads in 4 flips of a fair coin",
     sixes12: "the number of 6s in 12 rolls of a fair die",
+    heads10: "the number of heads in 10 flips of a fair coin",
+    sixes6: "the number of 6s in 6 rolls of a fair die",
+    sumThree: "the sum of three fair dice",
+    cardRank: "the rank of one card drawn from a full deck, counting ace as 1 and king as 13",
+    evens4: "the number of even results in 4 rolls of a fair die",
+    coinPay: "a game that pays 10 if a fair coin lands heads and nothing if it lands tails",
     product: "the product of two fair dice",
     larger: "the larger of two fair dice",
     smaller: "the smaller of two fair dice",
@@ -639,6 +657,9 @@ const en = {
     faces: "all 6 faces of a die",
     suits: "all 4 suits, drawing cards with replacement",
     coin: "both faces of a coin",
+    ranks: "all 13 ranks of a deck, drawing with replacement",
+    weekdays: "all 7 days of the week, picking one at random each time",
+    vowels: "all 5 vowels, picking one at random each time",
   },
   pPatterns: { HT: "heads then tails", TH: "tails then heads", HH: "two heads in a row", TT: "two tails in a row" },
   pCards: { suit: "of the same suit", rank: "a pair, meaning the same rank", red: "both red" },
@@ -677,10 +698,11 @@ const en = {
   pAskOrderMono: (n, dir) => `${n} independent draws from a continuous distribution. Probability they come out ${dir} in the order drawn?`,
   pAskPickRepeat: (k, N) => `Pick ${k} numbers from 1–${N}, each pick independent so repeats are possible, in order. Probability they are strictly increasing?`,
   pAskPickDistinct: (k, N) => `Pick ${k} distinct numbers from 1–${N}, revealed in random order. Probability they come out strictly increasing?`,
-  pAskMonty: (sw) =>
-    `Three doors hide one car and two goats. You pick a door. The host, who knows where the car is, ` +
-    `opens a different door revealing a goat. Probability you win the car if you ` +
-    `${sw ? "switch to the remaining door" : "stay with your first door"}?`,
+  pAskMonty: (sw, n) =>
+    `${n} doors hide one car and ${n - 1} goats. You pick a door. The host, who knows where the car is, ` +
+    (n === 3 ? `opens a different door revealing a goat. ` : `opens ${n - 2} of the other doors, every one revealing a goat. `) +
+    `Probability you win the car if you ` +
+    `${sw ? "switch to the one door still shut" : "stay with your first door"}?`,
   pAskRuin: (i, j) =>
     `A holds ${i} coins and B holds ${j}. They play a fair game; each round the loser hands the winner one coin, ` +
     `until someone has none. Probability A ends up with everything?`,
@@ -706,6 +728,12 @@ const en = {
     dieOver4: "Two faces beat 4, namely 5 and 6, so 2 out of 6, which is 1/3.",
     heart: "A deck has 13 hearts among 52 cards: 13 out of 52, which is 1/4.",
     dieEven: "The even faces are 2, 4 and 6: 3 out of 6, which is 1/2.",
+    dieUnder3: "The faces below 3 are 1 and 2: 2 out of 6, which is 1/3.",
+    dieNot6: "Five of the six faces are not a 6, so 5 out of 6. Counting what you do not want and taking it from 1 gets there too.",
+    redCard: "Half the deck is red, 13 hearts and 13 diamonds: 26 out of 52, which is 1/2.",
+    aceCard: "There are 4 aces among 52 cards, one in each suit: 4 out of 52, which is 1/13.",
+    faceCard: "Each suit holds a jack, a queen and a king, so 4 × 3 = 12 face cards among 52: 12/52, which is 3/13.",
+    twoHeads: "Two coins give 4 equally likely results: HH, HT, TH, TT. One of them is two heads, so 1 out of 4.",
   },
   pSolDiceSum: (s, pairs, ways, reduced) =>
     `Two dice give 6 × 6 = 36 equally likely results, counting the dice as different. ` +
@@ -720,6 +748,12 @@ const en = {
     sumTwo: "Each die averages 3.5 on its own, and averages simply add: 3.5 + 3.5 = 7.",
     heads4: "Each flip contributes half a head on average, and averages add up: 4 × ½ = 2.",
     sixes12: "Each roll contributes 1/6 of a six on average, and averages add up: 12 × 1/6 = 2.",
+    heads10: "Each flip contributes half a head on average, and averages add up: 10 × ½ = 5.",
+    sixes6: "Each roll contributes 1/6 of a six on average, and averages add up: 6 × 1/6 = 1. Six rolls buy you one six on average, which is why a 6 still feels rare.",
+    sumThree: "Each die averages 3.5 on its own, and averages simply add: 3.5 + 3.5 + 3.5 = 10.5.",
+    cardRank: "All 13 ranks are equally likely, because every rank appears once in each suit. So it is the middle of 1 to 13: (1 + 13)/2 = 7.",
+    evens4: "Half the faces are even, so each roll contributes half an even result on average: 4 × ½ = 2.",
+    coinPay: "Weigh each outcome by how often it happens. Half the time you collect 10, which is worth 10/2 = 5 on average, and half the time you collect nothing, worth 0. Adding those gives 5 + 0 = 5. Note that 5 is never actually paid out: an average is not a result.",
     product: "The dice do not affect each other, so you may multiply the two averages: 3.5 × 3.5 = 12.25.",
     larger: "Go through each possible top face k and count how often it wins: k is the larger in 2k−1 of the 36 results. Adding those up gives 161/36, about 4.47.",
     smaller: "The larger and the smaller always add to the total, so their averages do too: 7 − 161/36 = 91/36, about 2.53.",
@@ -776,8 +810,14 @@ const en = {
   pSolPickDistinct: (k, fact, N) =>
     `Whichever ${k} numbers you get, they can appear in ${k}! = ${fact} orders, all equally likely, and one of those is increasing. ` +
     `So 1/${fact}. Notice the pool size ${N} never enters the answer.`,
-  pSolMontySwitch: "Your first pick is right 1 time in 3. The other 2 times in 3 the car sits behind one of the two doors you did not pick, and the host has just shown you which of those two it is not. So switching hands you the car exactly when your first pick was wrong: 2/3.",
-  pSolMontyStay: "Staying wins exactly when your first pick was right. That was 1 in 3 before the host opened anything, and the host was always going to be able to show you a goat, so it is still 1 in 3 afterwards.",
+  pSolMontySwitch: (n) =>
+    `Your first pick is right 1 time in ${n}. The other ${n - 1} times in ${n} the car sits behind one of the ${n - 1} ` +
+    `doors you did not pick, and the host has just opened all of those but one. So switching hands you the car exactly ` +
+    `when your first pick was wrong, which is ${n - 1}/${n}.`,
+  pSolMontyStay: (n) =>
+    `Staying wins exactly when your first pick was right. That was 1 in ${n} before the host opened anything, and the ` +
+    `host was always going to be able to show you goats whichever door you had picked, so his opening them tells you ` +
+    `nothing about your own door: it is still 1 in ${n}.`,
   pSolRuin: (i, N, ans) =>
     `Neither player has an edge in a single round, so nobody gains or loses on average, and your chance of taking the lot is simply your share of the coins on the table: ` +
     `${i} out of ${N}, which is ${ans}. Coins are the only advantage in this game.`,
@@ -811,6 +851,12 @@ const en = {
     dieOver4: ["Two faces qualify, 5 and 6, not one.", "Greater than 4 is not the same as greater than 3."],
     heart: ["That is one particular rank, not one suit.", "That is one specific card."],
     dieEven: ["Three faces out of six are even."],
+    dieUnder3: ["Two faces are below 3, namely 1 and 2, not one.", "Less than 3 is two faces out of six, not half of them."],
+    dieNot6: ["That is the chance of rolling a 6, which is the one result the question rules out. Take it from 1."],
+    redCard: ["That is one suit. Red is two of them, hearts and diamonds.", "That is one rank, not one colour."],
+    aceCard: ["That is one whole suit. The aces are one rank, and there are only 4 of them.", "That is one particular card. Any of the 4 aces counts."],
+    faceCard: ["That is one rank. Jack, queen and king are three ranks between them.", "That is three particular cards. Every suit has its own jack, queen and king."],
+    twoHeads: ["That is one coin. The second one has to land heads as well.", "HT and TH are two different results, not one, so there are 4 and not 3."],
   },
   ptSumEleven: "There are 11 possible sums but they are not equally likely: 7 happens far more often than 2. Count the 36 pairs instead.",
   ptSumUnordered: "Each pair was counted once, but (2,5) and (5,2) really are two different results, so there are 36 of them, not 21.",
@@ -823,6 +869,12 @@ const en = {
     sumTwo: ["That is one die. The other die is still there, so add its average too.", "The face that comes up most often is not the same as the average total."],
     heads4: ["That is how many flips you make, not how many come up heads.", "That is one flip's share. There are four flips."],
     sixes12: ["That is how many rolls you make, not how many are sixes.", "That is a number on the die, not a count of anything."],
+    heads10: ["That is how many flips you make, not how many land heads.", "That is one flip's share. There are ten flips, so ten shares."],
+    sixes6: ["That is how many rolls you make, not how many are sixes.", "That is the average face value, which is a different question."],
+    sumThree: ["That is the average for two dice. A third die is still there, so add another 3.5.", "That is one die on its own. All three of them count."],
+    cardRank: ["The middle of 1 to 13 is 7. With an odd number of ranks the middle is a real rank, not a half.", "That is the highest rank, not the average one."],
+    evens4: ["That is how many rolls you make, not how many come up even.", "Half of four is two."],
+    coinPay: ["That is what you collect when you win, and you only win half the time.", "That is a quarter of the prize. Heads comes up half the time, not a quarter."],
     product: ["That is the average total, not the average product.", "That is 3.5 × 6. The second die averages 3.5 as well, not 6.", "Very close: 3.5 × 3.5 is 12.25 exactly."],
     larger: ["That is one die by itself. Always taking the bigger of two pulls the average up.", "That is the biggest it can ever be, not what it is on average."],
     smaller: ["That is one die by itself. Always taking the smaller of two pulls the average down.", "That is the smallest it can ever be, not what it is on average."],
@@ -1107,6 +1159,12 @@ const vi = {
     dieOver4: "số lớn hơn 4 khi tung xúc xắc",
     heart: "quân Cơ khi rút một lá từ bộ bài đầy đủ",
     dieEven: "số chẵn khi tung xúc xắc",
+    dieUnder3: "số nhỏ hơn 3 khi tung xúc xắc",
+    dieNot6: "một mặt khác 6 khi tung xúc xắc",
+    redCard: "một lá bài đỏ khi rút một lá từ bộ bài đầy đủ",
+    aceCard: "quân Át khi rút một lá từ bộ bài đầy đủ",
+    faceCard: "quân hình (J, Q hoặc K) khi rút một lá từ bộ bài đầy đủ",
+    twoHeads: "hai mặt ngửa khi tung hai đồng xu công bằng",
   },
   pTrialNames: {
     die6: "mặt 6 trên xúc xắc", coinH: "mặt NGỬA trên đồng xu",
@@ -1115,6 +1173,12 @@ const vi = {
   pWaitNames: {
     die6: "mặt 6 khi tung xúc xắc", coinH: "mặt ngửa khi tung xu",
     die56: "mặt 5 hoặc 6 khi tung xúc xắc", heartRep: "quân Cơ khi rút bài có hoàn lại",
+    ace13: "quân Át khi rút bài có hoàn lại",
+    redRep: "một lá bài đỏ khi rút bài có hoàn lại",
+    dieUnder3: "số nhỏ hơn 3 khi tung xúc xắc",
+    sumSeven: "tổng bằng 7 khi tung hai xúc xắc",
+    sumTen: "tổng bằng 10 khi tung hai xúc xắc",
+    doubleSix: "hai mặt 6 cùng lúc khi tung hai xúc xắc",
   },
   pShortNames: { die6: "mặt 6", coinH: "mặt ngửa", die56: "mặt 5 hoặc 6" },
   pActions: { die: "Tung một xúc xắc công bằng", coin: "Tung một đồng xu công bằng", card: "Rút một lá bài có hoàn lại" },
@@ -1128,6 +1192,12 @@ const vi = {
     sumTwo: "tổng hai xúc xắc công bằng",
     heads4: "số lần ngửa trong 4 lần tung một đồng xu công bằng",
     sixes12: "số lần ra mặt 6 trong 12 lần tung một xúc xắc công bằng",
+    heads10: "số lần ngửa trong 10 lần tung một đồng xu công bằng",
+    sixes6: "số lần ra mặt 6 trong 6 lần tung một xúc xắc công bằng",
+    sumThree: "tổng của ba xúc xắc công bằng",
+    cardRank: "quân số của một lá rút từ bộ bài đầy đủ, tính Át là 1 và K là 13",
+    evens4: "số kết quả chẵn trong 4 lần tung một xúc xắc công bằng",
+    coinPay: "một trò trả 10 nếu đồng xu công bằng ra ngửa và không trả gì nếu ra sấp",
     product: "tích hai xúc xắc công bằng",
     larger: "số lớn hơn trong hai xúc xắc công bằng",
     smaller: "số nhỏ hơn trong hai xúc xắc công bằng",
@@ -1137,6 +1207,9 @@ const vi = {
     faces: "đủ cả 6 mặt của xúc xắc",
     suits: "đủ cả 4 chất, khi rút bài có hoàn lại",
     coin: "cả hai mặt của đồng xu",
+    ranks: "đủ cả 13 quân số của bộ bài, khi rút có hoàn lại",
+    weekdays: "đủ cả 7 ngày trong tuần, mỗi lần chọn ngẫu nhiên một ngày",
+    vowels: "đủ cả 5 nguyên âm, mỗi lần chọn ngẫu nhiên một nguyên âm",
   },
   pPatterns: { HT: "ngửa rồi sấp", TH: "sấp rồi ngửa", HH: "hai mặt ngửa liên tiếp", TT: "hai mặt sấp liên tiếp" },
   pCards: { suit: "cùng chất", rank: "một đôi, tức cùng số", red: "cả hai đều đỏ" },
@@ -1175,9 +1248,10 @@ const vi = {
   pAskOrderMono: (n, dir) => `${n} lần lấy độc lập từ một phân phối liên tục. Xác suất chúng ra theo thứ tự ${dir} đúng như thứ tự lấy?`,
   pAskPickRepeat: (k, N) => `Chọn ${k} số từ 1–${N}, mỗi lần chọn độc lập nên có thể trùng, theo thứ tự. Xác suất chúng tăng ngặt?`,
   pAskPickDistinct: (k, N) => `Chọn ${k} số khác nhau từ 1–${N}, rồi lật ra theo thứ tự ngẫu nhiên. Xác suất chúng ra theo thứ tự tăng ngặt?`,
-  pAskMonty: (sw) =>
-    `Ba cánh cửa giấu một chiếc xe và hai con dê. Bạn chọn một cửa. Người dẫn, vốn biết xe ở đâu, ` +
-    `mở một cửa khác lộ ra con dê. Xác suất bạn thắng chiếc xe nếu bạn ` +
+  pAskMonty: (sw, n) =>
+    `${n} cánh cửa giấu một chiếc xe và ${n - 1} con dê. Bạn chọn một cửa. Người dẫn, vốn biết xe ở đâu, ` +
+    (n === 3 ? `mở một cửa khác lộ ra con dê. ` : `mở ${n - 2} cửa trong số các cửa còn lại, cửa nào cũng lộ ra một con dê. `) +
+    `Xác suất bạn thắng chiếc xe nếu bạn ` +
     `${sw ? "đổi sang cửa còn lại" : "giữ cửa đã chọn ban đầu"}?`,
   pAskRuin: (i, j) =>
     `A cầm ${i} đồng và B cầm ${j} đồng. Họ chơi một trò công bằng; mỗi ván người thua đưa người thắng một đồng, ` +
@@ -1204,6 +1278,12 @@ const vi = {
     dieOver4: "Có hai mặt lớn hơn 4, là 5 và 6, nên 2 trên 6, tức 1/3.",
     heart: "Bộ bài có 13 quân Cơ trong 52 lá: 13 trên 52, tức 1/4.",
     dieEven: "Các mặt chẵn là 2, 4 và 6: 3 trên 6, tức 1/2.",
+    dieUnder3: "Các mặt nhỏ hơn 3 là 1 và 2: 2 trên 6, tức 1/3.",
+    dieNot6: "Năm trong sáu mặt không phải là 6, nên 5 trên 6. Đếm phần mình không muốn rồi lấy 1 trừ đi cũng ra như vậy.",
+    redCard: "Một nửa bộ bài màu đỏ, 13 quân Cơ và 13 quân Rô: 26 trên 52, tức 1/2.",
+    aceCard: "Có 4 quân Át trong 52 lá, mỗi chất một quân: 4 trên 52, tức 1/13.",
+    faceCard: "Mỗi chất có một quân J, một quân Q và một quân K, nên 4 × 3 = 12 quân hình trong 52 lá: 12/52, tức 3/13.",
+    twoHeads: "Hai đồng xu cho 4 kết quả đồng khả năng: NN, NS, SN, SS. Chỉ một kết quả là hai mặt ngửa, nên 1 trên 4.",
   },
   pSolDiceSum: (s, pairs, ways, reduced) =>
     `Hai xúc xắc cho 6 × 6 = 36 kết quả đồng khả năng, coi hai con là khác nhau. ` +
@@ -1218,6 +1298,12 @@ const vi = {
     sumTwo: "Mỗi xúc xắc tự nó trung bình 3,5, và các trung bình cộng thẳng vào nhau: 3,5 + 3,5 = 7.",
     heads4: "Mỗi lần tung góp trung bình nửa mặt ngửa, và các trung bình cộng lại: 4 × ½ = 2.",
     sixes12: "Mỗi lần tung góp trung bình 1/6 mặt sáu, và các trung bình cộng lại: 12 × 1/6 = 2.",
+    heads10: "Mỗi lần tung góp trung bình nửa mặt ngửa, và các trung bình cộng lại: 10 × ½ = 5.",
+    sixes6: "Mỗi lần tung góp trung bình 1/6 mặt sáu, và các trung bình cộng lại: 6 × 1/6 = 1. Sáu lần tung mới đổi được trung bình một mặt 6, nên mặt 6 vẫn thấy hiếm.",
+    sumThree: "Mỗi xúc xắc tự nó trung bình 3,5, và các trung bình chỉ việc cộng lại: 3,5 + 3,5 + 3,5 = 10,5.",
+    cardRank: "Cả 13 quân số đều đồng khả năng, vì mỗi quân số xuất hiện một lần trong mỗi chất. Vậy đây là điểm giữa của 1 đến 13: (1 + 13)/2 = 7.",
+    evens4: "Một nửa số mặt là chẵn, nên mỗi lần tung góp trung bình nửa kết quả chẵn: 4 × ½ = 2.",
+    coinPay: "Cân mỗi kết quả theo mức độ thường xuyên của nó. Một nửa số lần bạn nhận 10, phần này trung bình đáng 10/2 = 5, và một nửa số lần bạn không nhận gì, đáng 0. Cộng lại được 5 + 0 = 5. Để ý là 5 không bao giờ thật sự được trả: trung bình không phải một kết quả.",
     product: "Hai xúc xắc không ảnh hưởng nhau, nên được phép nhân hai trung bình: 3,5 × 3,5 = 12,25.",
     larger: "Xét từng mặt k có thể là mặt lớn hơn và đếm xem nó thắng bao nhiêu lần: k là số lớn hơn trong 2k−1 trên 36 kết quả. Cộng hết lại được 161/36, khoảng 4,47.",
     smaller: "Số lớn hơn và số nhỏ hơn luôn cộng lại bằng tổng, nên trung bình của chúng cũng vậy: 7 − 161/36 = 91/36, khoảng 2,53.",
@@ -1274,8 +1360,14 @@ const vi = {
   pSolPickDistinct: (k, fact, N) =>
     `Dù bạn nhận ${k} số nào, chúng có thể hiện ra theo ${k}! = ${fact} thứ tự, tất cả đồng khả năng, và một trong số đó là tăng dần. ` +
     `Vậy 1/${fact}. Để ý là cỡ của kho số, ${N}, không hề đi vào đáp án.`,
-  pSolMontySwitch: "Cửa bạn chọn đầu tiên đúng 1 lần trong 3. Còn 2 lần trong 3, chiếc xe nằm sau một trong hai cửa bạn không chọn, và người dẫn vừa chỉ cho bạn biết trong hai cửa đó cái nào không phải. Nên đổi cửa đưa xe cho bạn đúng vào những lần cửa đầu tiên bạn chọn sai: 2/3.",
-  pSolMontyStay: "Giữ nguyên thì thắng đúng vào những lần cửa đầu tiên bạn chọn đúng. Con số đó là 1 trên 3 trước khi người dẫn mở gì cả, và anh ta thì kiểu gì cũng chỉ được cho bạn một con dê, nên sau đó nó vẫn là 1 trên 3.",
+  pSolMontySwitch: (n) =>
+    `Cửa bạn chọn đầu tiên đúng 1 lần trong ${n}. Còn ${n - 1} lần trong ${n}, chiếc xe nằm sau một trong ${n - 1} ` +
+    `cửa bạn không chọn, và người dẫn vừa mở hết những cửa đó chỉ chừa lại một. Nên đổi cửa đưa xe cho bạn đúng vào ` +
+    `những lần cửa đầu tiên bạn chọn sai, tức ${n - 1}/${n}.`,
+  pSolMontyStay: (n) =>
+    `Giữ nguyên thì thắng đúng vào những lần cửa đầu tiên bạn chọn đúng. Con số đó là 1 trên ${n} trước khi người dẫn ` +
+    `mở gì cả, và anh ta thì kiểu gì cũng chỉ được cho bạn toàn dê dù bạn đã chọn cửa nào, nên việc anh ta mở cửa ` +
+    `không nói lên điều gì về cửa của bạn: nó vẫn là 1 trên ${n}.`,
   pSolRuin: (i, N, ans) =>
     `Không ai có lợi thế trong một ván, nên tính trung bình không ai được hay mất, và cơ hội ăn hết của bạn đúng bằng phần tiền bạn đang cầm trên bàn: ` +
     `${i} trên ${N}, tức ${ans}. Tiền là lợi thế duy nhất trong trò này.`,
@@ -1309,6 +1401,12 @@ const vi = {
     dieOver4: ["Có hai mặt thoả mãn là 5 và 6, không phải một.", "Lớn hơn 4 không giống lớn hơn 3."],
     heart: ["Đó là một quân số cụ thể, không phải một chất.", "Đó là một lá bài cụ thể."],
     dieEven: ["Ba mặt trong sáu mặt là số chẵn."],
+    dieUnder3: ["Có hai mặt nhỏ hơn 3 là 1 và 2, không phải một.", "Nhỏ hơn 3 là hai mặt trong sáu mặt, không phải một nửa."],
+    dieNot6: ["Đó là xác suất ra mặt 6, đúng cái mà câu hỏi loại ra. Hãy lấy 1 trừ đi."],
+    redCard: ["Đó là một chất. Màu đỏ gồm hai chất, Cơ và Rô.", "Đó là một quân số, không phải một màu."],
+    aceCard: ["Đó là nguyên một chất. Quân Át là một quân số, và chỉ có 4 quân.", "Đó là một lá cụ thể. Bất kỳ quân nào trong 4 quân Át đều tính."],
+    faceCard: ["Đó là một quân số. J, Q và K cộng lại là ba quân số.", "Đó là ba lá cụ thể. Mỗi chất đều có J, Q và K riêng."],
+    twoHeads: ["Đó là một đồng xu. Đồng thứ hai cũng phải ra ngửa.", "NS và SN là hai kết quả khác nhau chứ không phải một, nên có 4 chứ không phải 3."],
   },
   ptSumEleven: "Có 11 tổng khả dĩ nhưng chúng không đồng khả năng: tổng 7 ra nhiều hơn tổng 2 rất nhiều. Hãy đếm 36 cặp thay vì đếm tổng.",
   ptSumUnordered: "Mỗi cặp chỉ được đếm một lần, nhưng (2;5) và (5;2) thật sự là hai kết quả khác nhau, nên có 36 cái chứ không phải 21.",
@@ -1321,6 +1419,12 @@ const vi = {
     sumTwo: ["Đó mới là một xúc xắc. Con kia vẫn còn đó, nên phải cộng cả trung bình của nó.", "Mặt hay ra nhất không giống với tổng trung bình."],
     heads4: ["Đó là số lần bạn tung, không phải số lần ra ngửa.", "Đó là phần của một lần tung. Có tới bốn lần tung."],
     sixes12: ["Đó là số lần bạn tung, không phải số lần ra mặt 6.", "Đó là một con số trên xúc xắc, không phải số đếm gì cả."],
+    heads10: ["Đó là số lần bạn tung, không phải số lần ra ngửa.", "Đó là phần của một lần tung. Có mười lần tung, nên mười phần."],
+    sixes6: ["Đó là số lần bạn tung, không phải số lần ra mặt 6.", "Đó là giá trị trung bình của mặt xúc xắc, một câu hỏi khác."],
+    sumThree: ["Đó là trung bình của hai xúc xắc. Vẫn còn con thứ ba, nên cộng thêm 3,5 nữa.", "Đó mới là một xúc xắc đứng riêng. Cả ba con đều tính."],
+    cardRank: ["Điểm giữa của 1 tới 13 là 7. Với số quân số lẻ thì điểm giữa là một quân số thật, không phải số lẻ nửa.", "Đó là quân số lớn nhất, không phải quân số trung bình."],
+    evens4: ["Đó là số lần bạn tung, không phải số lần ra chẵn.", "Một nửa của bốn là hai."],
+    coinPay: ["Đó là số tiền bạn nhận khi thắng, mà bạn chỉ thắng một nửa số lần.", "Đó là một phần tư giải thưởng. Mặt ngửa ra một nửa số lần, không phải một phần tư."],
     product: ["Đó là tổng trung bình, không phải tích trung bình.", "Đó là 3,5 × 6. Con thứ hai cũng trung bình 3,5 chứ không phải 6.", "Rất sát: 3,5 × 3,5 đúng bằng 12,25."],
     larger: ["Đó mới là một xúc xắc đứng riêng. Luôn lấy con lớn hơn trong hai con thì trung bình bị kéo lên.", "Đó là giá trị lớn nhất có thể, không phải giá trị trung bình."],
     smaller: ["Đó mới là một xúc xắc đứng riêng. Luôn lấy con nhỏ hơn trong hai con thì trung bình bị kéo xuống.", "Đó là giá trị nhỏ nhất có thể, không phải giá trị trung bình."],
@@ -3505,6 +3609,12 @@ const CHANCE = [
   { k: "dieOver4", p: 1 / 3, traps: [1 / 6, 1 / 2] },
   { k: "heart", p: 1 / 4, traps: [1 / 13, 1 / 52] },
   { k: "dieEven", p: 1 / 2, traps: [1 / 3] },
+  { k: "dieUnder3", p: 1 / 3, traps: [1 / 6, 1 / 2] },
+  { k: "dieNot6", p: 5 / 6, traps: [1 / 6] },
+  { k: "redCard", p: 1 / 2, traps: [1 / 4, 1 / 13] },
+  { k: "aceCard", p: 1 / 13, traps: [1 / 4, 1 / 52] },
+  { k: "faceCard", p: 3 / 13, traps: [1 / 13, 3 / 52] },
+  { k: "twoHeads", p: 1 / 4, traps: [1 / 2, 1 / 3] },
 ];
 
 const AT_LEAST = [
@@ -3569,6 +3679,12 @@ const EV1 = [
   { k: "sumTwo", a: 7, traps: [3.5, 6] },
   { k: "heads4", a: 2, traps: [4, 0.5] },
   { k: "sixes12", a: 2, traps: [12, 6] },
+  { k: "heads10", a: 5, traps: [10, 0.5] },
+  { k: "sixes6", a: 1, traps: [6, 3.5] },
+  { k: "sumThree", a: 10.5, traps: [7, 3.5] },
+  { k: "cardRank", a: 7, traps: [6.5, 13] },
+  { k: "evens4", a: 2, traps: [4, 3] },
+  { k: "coinPay", a: 5, traps: [10, 2.5] },
 ];
 
 const EV2 = [
@@ -3767,6 +3883,12 @@ const WAIT1 = [
   { k: "coinH", a: 2, p: "1/2" },
   { k: "die56", a: 3, p: "1/3" },
   { k: "heartRep", a: 4, p: "1/4" },
+  { k: "ace13", a: 13, p: "1/13" },
+  { k: "redRep", a: 2, p: "1/2" },
+  { k: "dieUnder3", a: 3, p: "1/3" },
+  { k: "sumSeven", a: 6, p: "1/6" },
+  { k: "sumTen", a: 12, p: "1/12" },
+  { k: "doubleSix", a: 36, p: "1/36" },
 ];
 const WAIT_K = [
   { k: "die6", one: 6, g: "die" },
@@ -3774,7 +3896,10 @@ const WAIT_K = [
   { k: "die56", one: 3, g: "die" },
 ];
 const PATTERNS = [{ k: "HT", a: 4 }, { k: "TH", a: 4 }, { k: "HH", a: 6 }, { k: "TT", a: 6 }];
-const COLLECT = [{ k: "faces", n: 6 }, { k: "suits", n: 4 }, { k: "coin", n: 2 }];
+const COLLECT = [
+  { k: "faces", n: 6 }, { k: "suits", n: 4 }, { k: "coin", n: 2 },
+  { k: "ranks", n: 13 }, { k: "weekdays", n: 7 }, { k: "vowels", n: 5 },
+];
 
 function waitingTime(rng, level, t) {
   if (level === 1) {
@@ -3916,6 +4041,11 @@ const UNIT = [
   { k: "sum", a: 1 / 2, traps: [1 / 4] },
   { k: "twice", a: 1 / 4, traps: [1 / 2] },
 ];
+// Monty Hall is one puzzle, so drilling it eight times asks the same question
+// eight times. Opening it up to N doors turns it into a family, and the hundred
+// door version is the one that makes the answer obvious rather than surprising:
+// nobody believes the host left the car behind the one door he happened to skip.
+const DOORS = [3, 3, 3, 4, 5, 6, 8, 10, 100];
 const FIRST_TO = [
   { k: "six", p: 1 / 6 },
   { k: "head", p: 1 / 2 },
@@ -3924,14 +4054,15 @@ const FIRST_TO = [
 
 function classics(rng, level, t) {
   if (level === 1) {
+    const n = rng.pick(DOORS);
     const sw = rng.chance(0.66);
     return q({
-      prompt: t.pAskMonty(sw),
-      answer: sw ? 2 / 3 : 1 / 3,
-      solution: sw ? t.pSolMontySwitch : t.pSolMontyStay,
+      prompt: t.pAskMonty(sw, n),
+      answer: sw ? (n - 1) / n : 1 / n,
+      solution: sw ? t.pSolMontySwitch(n) : t.pSolMontyStay(n),
       traps: [
         { value: 1 / 2, why: t.ptMontyHalf },
-        { value: sw ? 1 / 3 : 2 / 3, why: t.ptMontyOther },
+        { value: sw ? 1 / n : (n - 1) / n, why: t.ptMontyOther },
       ],
       tip: "host-knows-something",
     });

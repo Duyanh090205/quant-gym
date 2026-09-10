@@ -78,6 +78,16 @@ function simulate(q) {
   if (/Probability of getting a heart when drawing one card from a full deck/.test(p)) return mean(() => (rng.int(1, 52) <= 13 ? 1 : 0));
   if (/Probability of getting a number greater than 4/.test(p)) return mean(() => (die() > 4 ? 1 : 0));
   if (/Probability of getting an even number when rolling a die/.test(p)) return mean(() => (die() % 2 === 0 ? 1 : 0));
+  if (/Probability of getting a number less than 3 when rolling a die/.test(p)) return mean(() => (die() < 3 ? 1 : 0));
+  if (/Probability of getting anything except a 6 when rolling a die/.test(p)) return mean(() => (die() !== 6 ? 1 : 0));
+  if (/Probability of getting a red card when drawing one card/.test(p)) return mean(() => (rng.int(1, 52) <= 26 ? 1 : 0));
+  if (/Probability of getting an ace when drawing one card/.test(p)) return mean(() => (rng.int(1, 13) === 1 ? 1 : 0));
+  if (/Probability of getting a face card \(jack, queen or king\) when drawing one card/.test(p)) {
+    return mean(() => (rng.int(1, 13) <= 3 ? 1 : 0));
+  }
+  if (/Probability of getting two heads when flipping two fair coins/.test(p)) {
+    return mean(() => (coin() && coin() ? 1 : 0));
+  }
 
   /* ── expected value ── */
   if (/Expected value of the sum of two fair dice/.test(p)) return mean(() => die() + die());
@@ -88,6 +98,18 @@ function simulate(q) {
   if (/Expected value of the number of heads in 4 flips/.test(p)) {
     return mean(() => { let c = 0; for (let i = 0; i < 4; i++) if (coin()) c++; return c; });
   }
+  if (/Expected value of the number of heads in 10 flips/.test(p)) {
+    return mean(() => { let c = 0; for (let i = 0; i < 10; i++) if (coin()) c++; return c; });
+  }
+  if (/Expected value of the number of 6s in 6 rolls/.test(p)) {
+    return mean(() => { let c = 0; for (let i = 0; i < 6; i++) if (die() === 6) c++; return c; });
+  }
+  if (/Expected value of the number of even results in 4 rolls/.test(p)) {
+    return mean(() => { let c = 0; for (let i = 0; i < 4; i++) if (die() % 2 === 0) c++; return c; });
+  }
+  if (/Expected value of the sum of three fair dice/.test(p)) return mean(() => die() + die() + die());
+  if (/Expected value of the rank of one card drawn from a full deck/.test(p)) return mean(() => rng.int(1, 13));
+  if (/Expected value of a game that pays 10 if a fair coin lands heads/.test(p)) return mean(() => (coin() ? 10 : 0));
   if (/Expected value of the number of 6s in 12 rolls/.test(p)) {
     return mean(() => { let c = 0; for (let i = 0; i < 12; i++) if (die() === 6) c++; return c; });
   }
@@ -174,9 +196,12 @@ function simulate(q) {
   }
 
   /* ── waiting times ── */
-  if ((m = p.match(/Expected number of trials until you first get (a 6|heads|a 5 or 6|a heart)/))) {
+  if ((m = p.match(/Expected number of trials until you first get (a 6|heads|a 5 or 6|a heart|an ace|a red card|a number below 3|a sum of 10|a sum of 7|a double 6)/))) {
     const hit = { "a 6": () => die() === 6, heads: () => coin(), "a 5 or 6": () => die() >= 5,
-                  "a heart": () => rng.int(1, 4) === 1 }[m[1]];
+                  "a heart": () => rng.int(1, 4) === 1, "an ace": () => rng.int(1, 13) === 1,
+                  "a red card": () => rng.int(1, 2) === 1, "a number below 3": () => die() < 3,
+                  "a sum of 7": () => die() + die() === 7, "a sum of 10": () => die() + die() === 10,
+                  "a double 6": () => die() === 6 && die() === 6 }[m[1]];
     return mean(() => { let n = 1; while (!hit()) n++; return n; }, 60000);
   }
   if ((m = p.match(/Expected number of trials until (a 6|heads|a 5 or 6) has come up (?:(twice)|(\d+) times)/))) {
@@ -200,8 +225,11 @@ function simulate(q) {
       }
     }, 60000);
   }
-  if ((m = p.match(/Expected number of trials to see (all 6 faces of a die|all 4 suits, drawing cards with replacement|both faces of a coin)/))) {
-    const k = { "all 6 faces of a die": 6, "all 4 suits, drawing cards with replacement": 4, "both faces of a coin": 2 }[m[1]];
+  if ((m = p.match(/Expected number of trials to see (all 6 faces of a die|all 4 suits, drawing cards with replacement|both faces of a coin|all 13 ranks of a deck, drawing with replacement|all 7 days of the week, picking one at random each time|all 5 vowels, picking one at random each time)/))) {
+    const k = { "all 6 faces of a die": 6, "all 4 suits, drawing cards with replacement": 4, "both faces of a coin": 2,
+                "all 13 ranks of a deck, drawing with replacement": 13,
+                "all 7 days of the week, picking one at random each time": 7,
+                "all 5 vowels, picking one at random each time": 5 }[m[1]];
     return mean(() => {
       const seen = new Set();
       let n = 0;
@@ -244,14 +272,14 @@ function simulate(q) {
   }
 
   /* ── classics ── */
-  if ((m = p.match(/Probability you win the car if you (switch to the remaining door|stay with your first door)/))) {
-    const switching = m[1].startsWith("switch");
+  if ((m = p.match(/^(\d+) doors hide one car[\s\S]*Probability you win the car if you (switch to the one door still shut|stay with your first door)/))) {
+    const n = +m[1];
+    const switching = m[2].startsWith("switch");
     return mean(() => {
-      const car = rng.int(0, 2), pick = rng.int(0, 2);
-      if (!switching) return car === pick ? 1 : 0;
-      // The host opens a goat door that is not your pick; switching wins exactly
-      // when the first pick was wrong.
-      return car === pick ? 0 : 1;
+      const car = rng.int(0, n - 1), pick = rng.int(0, n - 1);
+      // The host only ever opens goat doors that are not your pick, so one shut
+      // door is left and switching wins exactly when the first pick was wrong.
+      return car === pick ? (switching ? 0 : 1) : (switching ? 1 : 0);
     });
   }
   if ((m = p.match(/A holds (\d+) coins and B holds (\d+)[\s\S]*Probability A ends up with everything/))) {
