@@ -12,6 +12,7 @@ import assert from "node:assert/strict";
 
 import {
   generate, generateSet, generateExam, GENERATOR_IDS,
+  generateReview, weakSpots, accumulate,
   grade, gradeSet, displayAnswer,
   CURRICULUM, EXAMS, ALL_SKILLS, TIPS, getTip, tipsForSkill,
   frac, makeCode, makeRng,
@@ -406,6 +407,84 @@ test("every exam listed can actually be generated", () => {
     assert.equal(built.parts.length, e.parts.length);
     built.parts.forEach((p, i) => assert.equal(p.questions.length, e.parts[i].count));
   }
+});
+
+/* ── practice aimed at weak spots ────────────────────────────────────────── */
+
+test("weak spots are ranked by need, not by raw accuracy", () => {
+  const stats = {
+    "arith.times-tables|1": { seen: 40, correct: 39 },   // strong, lots of evidence
+    "arith.multiply|3":     { seen: 31, correct: 15 },   // weak, lots of evidence
+    "arith.divide|3":       { seen: 23, correct: 9 },    // weakest
+    "arith.squares|2":      { seen: 2,  correct: 0 },    // terrible, but only twice
+  };
+  const weak = weakSpots(stats);
+  assert.equal(weak[0].skill, "arith.divide", "the weakest well-evidenced skill should lead");
+  assert.equal(weak[1].skill, "arith.multiply");
+  assert.ok(!weak.some((w) => w.skill === "arith.squares"),
+    "two attempts is not enough evidence to call something a weakness");
+  assert.ok(weak.every((w, i) => i === 0 || weak[i - 1].need >= w.need), "not sorted by need");
+});
+
+test("a review paper is drawn from the weak skills and mixes them", () => {
+  const stats = {
+    "arith.multiply|3": { seen: 31, correct: 15 },
+    "arith.divide|3":   { seen: 23, correct: 9 },
+    "arith.percent|2":  { seen: 20, correct: 18 },
+  };
+  const paper = generateReview({ stats, count: 12, seed: "review" });
+  assert.equal(paper.ready, true);
+  assert.equal(paper.questions.length, 12);
+  assert.equal(new Set(paper.questions.map((q) => q.prompt)).size, 12, "duplicate question");
+
+  const counts = {};
+  for (const q of paper.questions) counts[q.skill] = (counts[q.skill] || 0) + 1;
+  const weakShare = (counts["arith.multiply"] || 0) + (counts["arith.divide"] || 0);
+  assert.ok(weakShare >= 8, `only ${weakShare} of 12 came from the weak skills`);
+  assert.ok(Object.keys(counts).length >= 2, "a review paper should not be a single grind");
+  assert.ok(Math.max(...Object.values(counts)) <= 6, "no skill may take more than half the paper");
+});
+
+test("a review is reproducible from its seed, like every other paper", () => {
+  const stats = { "arith.multiply|3": { seen: 30, correct: 12 }, "arith.divide|2": { seen: 30, correct: 14 } };
+  const a = generateReview({ stats, count: 10, seed: "QG-CLASS-2" });
+  const b = generateReview({ stats, count: 10, seed: "QG-CLASS-2" });
+  assert.deepEqual(a.questions.map((q) => q.prompt), b.questions.map((q) => q.prompt));
+});
+
+test("with no history a review still gives you something to do", () => {
+  const paper = generateReview({ stats: {}, count: 8, seed: "empty" });
+  assert.equal(paper.ready, false, "it should say it is not really targeted yet");
+  assert.equal(paper.questions.length, 8);
+});
+
+test("stats accumulate from a marked paper, and blanks are left out", () => {
+  const { questions } = generateSet({ skill: "arith.squares", level: 2, count: 4, seed: "acc" });
+  const results = [
+    { answered: true, correct: true }, { answered: true, correct: false },
+    { answered: false, correct: false }, { answered: true, correct: true },
+  ];
+  const stats = accumulate({}, questions, results);
+  const key = "arith.squares|2";
+  assert.equal(stats[key].seen, 3, "the blank must not count as a question the student saw through");
+  assert.equal(stats[key].correct, 2);
+  // and it builds on what was already there, without mutating it
+  const before = { [key]: { seen: 10, correct: 5 } };
+  const after = accumulate(before, questions, results);
+  assert.equal(after[key].seen, 13);
+  assert.equal(before[key].seen, 10, "accumulate must not edit the record it was given");
+});
+
+test("a stats record full of junk keys does not break a review", () => {
+  const stats = {
+    "arith.multiply|3": { seen: 20, correct: 8 },
+    "not.a.skill|2": { seen: 50, correct: 0 },
+    "arith.multiply|9": { seen: 50, correct: 0 },
+    "malformed": { seen: 50, correct: 0 },
+  };
+  const weak = weakSpots(stats);
+  assert.deepEqual(weak.map((w) => w.skill), ["arith.multiply"]);
+  assert.equal(generateReview({ stats, count: 6, seed: "junk" }).questions.length, 6);
 });
 
 /* ── curriculum and tips ─────────────────────────────────────────────────── */

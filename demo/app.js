@@ -14,6 +14,7 @@
 import {
   CURRICULUM, generateSet, generateExam, EXAMS, grade, gradeSet,
   displayAnswer, getTip, getSkill, skillName, nextSkill, TIPS,
+  generateReview, weakSpots, accumulate,
 } from "../src/engine/index.js";
 
 /* ── translations for the shell itself ───────────────────────────────────── */
@@ -30,6 +31,11 @@ const T = {
     done: "Level cleared", needed: "needed to clear", tipTitle: "The trick",
     howItsDone: "How it's done", seeIt: "How to see it", useWhen: "Use it when",
     worked: "Worked example",
+    weakTitle: "Practise your weak spots",
+    weakBlurb: (list) => `Twelve questions drawn from what you are getting wrong: ${list}.`,
+    weakLocked: "Run a timed section or two and this fills itself in.",
+    weakStart: "Start",
+    reviewDone: "Weak-spot practice",
     whichOne: "Which idea does a question want?",
     whyItWorks: "Why it works", blankWarn: (n) => `${n} still blank. A blank is a guaranteed zero, so guess.`,
     autoSubmit: "Runs out on its own. Nothing is deducted for a wrong answer.",
@@ -47,6 +53,11 @@ const T = {
     done: "Đã qua cấp này", needed: "cần đúng để qua", tipTitle: "Mẹo",
     howItsDone: "Cách làm", seeIt: "Cách nhận ra", useWhen: "Dùng khi",
     worked: "Ví dụ có lời giải",
+    weakTitle: "Luyện đúng chỗ yếu",
+    weakBlurb: (list) => `Mười hai câu rút từ những chỗ bạn đang sai: ${list}.`,
+    weakLocked: "Chạy vài phần có đồng hồ là mục này tự đầy lên.",
+    weakStart: "Bắt đầu",
+    reviewDone: "Luyện chỗ yếu",
     whichOne: "Câu hỏi đang cần ý nào?",
     whyItWorks: "Vì sao dùng được", blankWarn: (n) => `Còn ${n} ô trống. Bỏ trống chắc chắn 0 điểm, nên cứ đoán.`,
     autoSubmit: "Hết giờ tự nộp. Sai không bị trừ điểm.",
@@ -56,13 +67,18 @@ const T = {
 
 /* ── state ───────────────────────────────────────────────────────────────── */
 const KEY = "quant-gym-demo-v1";
-const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } };
-const save = (p) => { try { localStorage.setItem(KEY, JSON.stringify(p)); } catch { /* private mode */ } };
+const STATS_KEY = "quant-gym-demo-stats-v1";
+const read = (k) => { try { return JSON.parse(localStorage.getItem(k)) || {}; } catch { return {}; } };
+const write = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* private mode */ } };
 
 let S = {
   screen: "ladder",
   lang: (navigator.language || "en").startsWith("vi") ? "vi" : "en",
-  progress: load(),
+  progress: read(KEY),
+  // Per skill and level: how many questions were answered and how many were
+  // right. This is the whole input to weak-spot practice, and it is exactly the
+  // shape a host would keep on its own server.
+  stats: read(STATS_KEY),
 };
 const t = () => T[S.lang];
 const tr = (obj) => (obj ? obj[S.lang] || obj.en : "");
@@ -100,7 +116,11 @@ function topbar() {
   const bar = el("div", "topbar");
   const brand = el("div", "brand");
   brand.appendChild(el("span", "eyebrow", "Quant Gym"));
-  brand.appendChild(el("h1", "", S.screen === "ladder" ? "Quant Gym" : skillName(S.skill, S.lang)));
+  const heading = S.screen === "ladder" ? "Quant Gym"
+    : S.review ? t().weakTitle
+    : S.exam ? tr(S.exam.name)
+    : skillName(S.skill, S.lang);
+  brand.appendChild(el("h1", "", heading));
   if (S.screen === "ladder") brand.appendChild(el("p", "muted small", t().tagline));
   bar.appendChild(brand);
 
@@ -172,6 +192,25 @@ function ladder(app) {
     box.appendChild(grid);
     app.appendChild(box);
   }
+
+  // Weak-spot practice sits above the exams: it is the thing to do next once
+  // there is any history, and the ladder alone will not point you at it.
+  const weak = weakSpots(S.stats, { limit: 4 });
+  const wbox = el("div", "topic");
+  const wcard = el("div", "skill");
+  wcard.style.borderColor = weak.length ? "var(--accent)" : "var(--line)";
+  wcard.appendChild(el("h3", "", t().weakTitle));
+  if (weak.length) {
+    const list = weak.map((w) => `${skillName(w.skill, S.lang)} ${Math.round(w.rate * 100)}%`).join(", ");
+    wcard.appendChild(el("p", "muted small", t().weakBlurb(list)));
+    wcard.appendChild(btn(t().weakStart, "primary", startReview));
+  } else {
+    wcard.appendChild(el("p", "muted small", t().weakLocked));
+  }
+  const wgrid = el("div", "skills");
+  wgrid.appendChild(wcard);
+  wbox.appendChild(wgrid);
+  app.appendChild(wbox);
 
   const exams = el("div", "topic");
   exams.appendChild(el("h2", "", t().exams));
@@ -323,6 +362,19 @@ function startClock() {
   S.parts = [{ paper: S.paper, answers: new Array(cfg.count).fill("") }];
   S.partIndex = 0;
   S.exam = null;
+  S.review = false;
+  S.screen = "clock";
+  render();
+}
+
+function startReview() {
+  const paper = generateReview({ stats: S.stats, count: 12, seconds: 420, seed: Date.now() });
+  S.paper = paper;
+  S.parts = [{ paper, answers: new Array(paper.questions.length).fill("") }];
+  S.partIndex = 0;
+  S.exam = null;
+  S.review = true;
+  S.skill = null;
   S.screen = "clock";
   render();
 }
@@ -333,6 +385,7 @@ function startExam(examId) {
   S.skill = exam.parts[0].skill;
   S.parts = exam.parts.map((p) => ({ paper: p, answers: new Array(p.questions.length).fill("") }));
   S.partIndex = 0;
+  S.review = false;
   S.screen = "clock";
   render();
 }
@@ -347,6 +400,8 @@ function clockScreen(app) {
   head.style.justifyContent = "space-between";
   const label = S.exam
     ? `${t().part} ${S.partIndex + 1} ${t().of} ${S.parts.length} · ${questions.length} ${t().questions}`
+    : S.review
+    ? `${t().weakTitle} · ${questions.length} ${t().questions}`
     : `${skillName(S.skill, S.lang)} · ${t().level} ${S.level} · ${questions.length} ${t().questions}`;
   head.appendChild(el("span", "muted small", label));
   const clockEl = el("span", "clock", clock(seconds));
@@ -421,12 +476,20 @@ function clockScreen(app) {
 }
 
 function recordProgress() {
-  if (S.exam) return; // exams do not unlock ladder levels
+  // Every answered question feeds the stats, whatever mode produced it. This is
+  // what makes weak-spot practice possible, and it is the one call a host would
+  // replace with a POST to its own API.
+  for (const part of S.parts) {
+    S.stats = accumulate(S.stats, part.paper.questions, part.marked.results);
+  }
+  write(STATS_KEY, S.stats);
+
+  if (S.exam || S.review) return; // neither unlocks a ladder level
   const cfg = getSkill(S.skill).levels[S.level - 1];
   const { score } = S.parts[0].marked;
   if (score >= cfg.pass) {
     S.progress[`${S.skill}|${S.level}`] = { score, at: Date.now() };
-    save(S.progress);
+    write(KEY, S.progress);
   }
   // In a real integration this is where the host is told, and the host decides
   // what to persist: onEvent({ type:"level-complete", skill, level, score, ... })
@@ -451,7 +514,7 @@ function results(app) {
   tiles.appendChild(tile(String(totals.trapped), t().trapped));
   stack.appendChild(tiles);
 
-  if (!S.exam) {
+  if (!S.exam && !S.review) {
     const cfg = getSkill(S.skill).levels[S.level - 1];
     const passed = totals.score >= cfg.pass;
     const note = el("div", "verdict " + (passed ? "ok" : "no"));
@@ -479,7 +542,8 @@ function results(app) {
   }
 
   const row = el("div", "row");
-  row.appendChild(btn(t().again, "primary", () => (S.exam ? startExam(S.exam.id) : startClock())));
+  row.appendChild(btn(t().again, "primary",
+    () => (S.exam ? startExam(S.exam.id) : S.review ? startReview() : startClock())));
   row.appendChild(btn(t().back, "", () => { S.screen = "ladder"; render(); }));
   stack.appendChild(row);
   app.appendChild(stack);

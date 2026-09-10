@@ -98,6 +98,51 @@ Earlier passes, recorded here so the history is in one place:
   difficulty is recognising which idea a question wants. Probability and sequence
   cards now read *How to see it*.
 
+## Changes driven by evidence rather than judgement
+
+Two sources of real data were read before this pass, and both changed the product.
+
+**`maven-drill-misses.csv`** records every question one student got wrong while
+preparing for the Maven paper. The engine's traps did not match it.
+
+| Skill | What the engine offered | What actually happened |
+|---|---|---|
+| 2×2 multiplication | "you forgot a partial product" | all six errors were the two partial products added wrong, by +10, +30, +40 or +100 |
+| Division | off by one | all three errors were off by four or five: an opening estimate pitched low and never corrected |
+
+Traps for both now match the recorded failures, and each says what to do about it
+rather than naming an omission the student did not make.
+
+**`BANG-GHI-NHO.md`**, the memory table the same student built while practising,
+contained three strong tricks the app did not teach at all. Each is now a card,
+and the generators produce the cases they are for:
+
+- The difference of two squares, for factors either side of a round number:
+  62 × 58 becomes 60² − 2². A quarter of level-3 multiplications are now built to
+  straddle a round number, because a trick the drill never presents is a trick
+  nobody learns.
+- Squaring a number ending in 5: for 35², take 3 × 4 and write 25 after it.
+- The seventeen square-root anchors, for estimation. Estimation was that student's
+  worst category, four errors out of seven in one session, and it was the only
+  skill with no card of its own.
+
+## Practice aimed at weak spots
+
+The same drill logs showed the deeper problem, which no amount of better content
+fixes: session after session spent on skills already at 95%, while 2×2
+multiplication sat at 50% and division kept running out of time. A ladder gives
+every skill the same attention whether or not you have it.
+
+`generateReview` builds a paper from whichever skills the student is getting
+wrong, ranked by need rather than by raw accuracy, so that two unlucky misses do
+not outrank a genuine gap. It mixes up to four skills and never takes more than
+half from one. `accumulate` folds any marked paper into the record that feeds it.
+
+Neither is checked by simulation, because neither is a maths claim. What is
+tested: the ranking order, the mix, reproducibility from a seed, that blanks do
+not count as evidence, that `accumulate` does not edit the record it is given, and
+that a record full of unknown keys does not break anything.
+
 ## Open questions for whoever picks this up
 
 1. **Question prompts and worked solutions are English only.** Tip cards are

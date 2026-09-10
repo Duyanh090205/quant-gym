@@ -98,7 +98,7 @@ export const TIPS = [
     skill: "arith.multiply",
     en: {
       title: "Turn an awkward multiplier into a 10 or a 100, then adjust",
-      when: "The moment you spot a 5, 9, 11, 25, 50 or 99 in the question.",
+      when: "You spot a 5, 9, 11, 12, 15, 25, 50 or 99, or a factor sitting just under a round number like 97 or 49.",
       steps: [
         "Every awkward multiplier here is a round number with a small adjustment: 5 = 10 ÷ 2, 50 = 100 ÷ 2, 25 = 100 ÷ 4.",
         "9 = 10 − 1 and 99 = 100 − 1, so multiply by the round number and take one copy off. 11 = 10 + 1, so add one copy on.",
@@ -113,12 +113,14 @@ export const TIPS = [
           work: "7 (7+8) 8 = 7 (15) 8. The 15 does not fit, so carry the 1 into the 7: 858" },
         { ask: "What is 34 × 9?",
           work: "9 is one short of 10. So 34 × 10 = 340, then take one copy of 34 off: 340 − 34 = 306" },
+        { ask: "What is 97 × 43?",
+          work: "97 is three short of 100. So 43 × 100 = 4300, then take three copies of 43 off: 4300 − 129 = 4171" },
       ],
       why: "Both turn a multiplication into an addition or a halving, which are far faster under a clock.",
     },
     vi: {
       title: "Biến số nhân khó chịu thành 10 hoặc 100, rồi chỉnh lại",
-      when: "Ngay khi thấy 5, 9, 11, 25, 50 hay 99 trong đề.",
+      when: "Thấy 5, 9, 11, 12, 15, 25, 50 hay 99, hoặc một thừa số nằm sát dưới số tròn như 97 hay 49.",
       steps: [
         "Mọi số nhân khó chịu ở đây đều là số tròn kèm một chỉnh nhỏ: 5 = 10 ÷ 2, 50 = 100 ÷ 2, 25 = 100 ÷ 4.",
         "9 = 10 − 1 và 99 = 100 − 1, nên nhân với số tròn rồi bớt đi một lần. 11 = 10 + 1, nên cộng thêm một lần.",
@@ -133,6 +135,8 @@ export const TIPS = [
           work: "7 (7+8) 8 = 7 (15) 8. Số 15 không nhét vừa nên nhớ 1 sang chữ số 7: 858" },
         { ask: "34 × 9 bằng bao nhiêu?",
           work: "9 kém 10 đúng một đơn vị. Nên 34 × 10 = 340, rồi bớt đi một lần 34: 340 − 34 = 306" },
+        { ask: "97 × 43 bằng bao nhiêu?",
+          work: "97 kém 100 đúng ba đơn vị. Nên 43 × 100 = 4300, rồi bớt đi ba lần 43: 4300 − 129 = 4171" },
       ],
       why: "Cả hai biến phép nhân thành phép cộng hoặc chia đôi, nhanh hơn hẳn khi có đồng hồ.",
     },
@@ -171,6 +175,114 @@ export const TIPS = [
           work: "Trượt 2 để được 46 và 50: 46 × 50 = 2300. Rồi trả lại 2² = 4 → 2304" },
       ],
       why: "Nó biến mọi bình phương ngoài bảng đã thuộc thành một phép nhân dễ với bội của mười.",
+    },
+  },
+  {
+    id: "difference-of-squares",
+    skill: "arith.multiply",
+    en: {
+      title: "Two numbers either side of a round one? Square the middle and take off the gap",
+      when: "Both factors sit the same distance from a round number, like 62 and 58 around 60.",
+      steps: [
+        "Find the number halfway between them. If the two are 62 and 58, that is 60.",
+        "Square it. Multiples of ten are easy to square.",
+        "Take off the gap squared. The gap here is 2, so take off 4.",
+      ],
+      examples: [
+        { ask: "What is 62 × 58?",
+          work: "Halfway is 60 and the gap is 2. So 60² − 2² = 3600 − 4 = 3596" },
+        { ask: "What is 47 × 53?",
+          work: "Halfway is 50 and the gap is 3. So 50² − 3² = 2500 − 9 = 2491" },
+      ],
+      why: "One square of a round number replaces a two-digit multiplication, and the correction is never bigger than about 25. Spotting that the two numbers add to something round is the whole skill.",
+    },
+    vi: {
+      title: "Hai số nằm hai bên một số tròn? Bình phương số giữa rồi trừ khoảng cách",
+      when: "Hai thừa số cách đều một số tròn, ví dụ 62 và 58 quanh số 60.",
+      steps: [
+        "Tìm số nằm chính giữa hai số đó. Với 62 và 58 thì đó là 60.",
+        "Bình phương số giữa. Bội của mười thì bình phương rất dễ.",
+        "Trừ đi bình phương khoảng cách. Ở đây khoảng cách là 2 nên trừ 4.",
+      ],
+      examples: [
+        { ask: "62 × 58 bằng bao nhiêu?",
+          work: "Số giữa là 60, khoảng cách là 2. Vậy 60² − 2² = 3600 − 4 = 3596" },
+        { ask: "47 × 53 bằng bao nhiêu?",
+          work: "Số giữa là 50, khoảng cách là 3. Vậy 50² − 3² = 2500 − 9 = 2491" },
+      ],
+      why: "Một phép bình phương số tròn thay cho cả phép nhân hai chữ số, và phần bù không bao giờ quá khoảng 25. Nhận ra hai số cộng lại thành số tròn mới là kỹ năng chính.",
+    },
+  },
+  {
+    id: "ends-in-five",
+    skill: "arith.squares",
+    en: {
+      title: "A number ending in 5: multiply the front by the next number up, then write 25",
+      when: "Squaring anything that ends in a 5.",
+      steps: [
+        "Drop the 5 and look at what is in front. For 35 that is 3.",
+        "Multiply it by the next number up: 3 × 4 = 12.",
+        "Write 25 on the end. The answer is 1225.",
+      ],
+      examples: [
+        { ask: "What is 35²?",
+          work: "Front is 3, so 3 × 4 = 12. Write 25 after it: 1225" },
+        { ask: "What is 85²?",
+          work: "Front is 8, so 8 × 9 = 72. Write 25 after it: 7225" },
+      ],
+      why: "It is exact, it needs one small multiplication, and it is faster than the sliding rule for this one case. Four of these are worth knowing outright: 15² = 225, 25² = 625, 35² = 1225, 45² = 2025.",
+    },
+    vi: {
+      title: "Số tận cùng bằng 5: nhân phần đầu với số liền sau, rồi viết 25",
+      when: "Bình phương bất kỳ số nào tận cùng bằng 5.",
+      steps: [
+        "Bỏ chữ số 5 đi và nhìn phần đứng trước. Với 35 thì đó là 3.",
+        "Nhân nó với số liền sau: 3 × 4 = 12.",
+        "Viết 25 vào cuối. Đáp án là 1225.",
+      ],
+      examples: [
+        { ask: "35² bằng bao nhiêu?",
+          work: "Phần đầu là 3, nên 3 × 4 = 12. Viết 25 vào sau: 1225" },
+        { ask: "85² bằng bao nhiêu?",
+          work: "Phần đầu là 8, nên 8 × 9 = 72. Viết 25 vào sau: 7225" },
+      ],
+      why: "Nó chính xác tuyệt đối, chỉ cần một phép nhân nhỏ, và nhanh hơn luật trượt cho riêng trường hợp này. Bốn số đáng thuộc luôn: 15² = 225, 25² = 625, 35² = 1225, 45² = 2025.",
+    },
+  },
+  {
+    id: "sqrt-anchors",
+    skill: "arith.estimate",
+    en: {
+      title: "For a rough square root, trap it between two anchors you know",
+      when: "A question marked with ≈ asking for a square root, where a close answer counts.",
+      steps: [
+        "Know the squares of the tens and the halves: 20² = 400, 25² = 625, 30² = 900, 35² = 1225, and so on up to 95² = 9025.",
+        "Find the two anchors your number sits between.",
+        "Answer with the nearer one, nudged a little toward the other. Within 5% is correct, so you have room.",
+      ],
+      examples: [
+        { ask: "Roughly, what is the square root of 2371?",
+          work: "45² = 2025 and 50² = 2500. It is much nearer 2500, so answer 48 or 49. The true value is 48.7" },
+        { ask: "Roughly, what is the square root of 6273?",
+          work: "75² = 5625 and 80² = 6400. It is just under 6400, so answer 79. The true value is 79.2" },
+      ],
+      why: "Estimation questions punish exact arithmetic: you spend twenty seconds earning the same point a five-second bracket earns. Seventeen anchors cover every root from 12 to 95.",
+    },
+    vi: {
+      title: "Muốn ước lượng căn bậc hai, hãy kẹp nó giữa hai cái mốc bạn đã thuộc",
+      when: "Câu có dấu ≈ hỏi căn bậc hai, nơi trả lời gần đúng vẫn được tính điểm.",
+      steps: [
+        "Thuộc bình phương của các số tròn chục và số rưỡi: 20² = 400, 25² = 625, 30² = 900, 35² = 1225, cứ thế tới 95² = 9025.",
+        "Tìm hai cái mốc mà số của bạn nằm giữa.",
+        "Trả lời bằng cái mốc gần hơn, nhích một chút về phía mốc kia. Sai số 5% vẫn đúng nên bạn có khoảng rộng.",
+      ],
+      examples: [
+        { ask: "Ước lượng căn bậc hai của 2371?",
+          work: "45² = 2025 và 50² = 2500. Số này gần 2500 hơn nhiều, nên trả lời 48 hoặc 49. Giá trị thật là 48,7" },
+        { ask: "Ước lượng căn bậc hai của 6273?",
+          work: "75² = 5625 và 80² = 6400. Số này sát dưới 6400, nên trả lời 79. Giá trị thật là 79,2" },
+      ],
+      why: "Câu ước lượng trừng phạt người tính chính xác: bạn bỏ hai mươi giây để lấy đúng cái điểm mà một phép kẹp năm giây cũng lấy được. Mười bảy cái mốc phủ hết mọi căn từ 12 tới 95.",
     },
   },
   {

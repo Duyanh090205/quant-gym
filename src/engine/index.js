@@ -155,6 +155,113 @@ export function generateSet({ skill, level = 1, count = 10, seed, seconds = null
   return { seed: String(useSeed), code: makeCode(useSeed), skill, level, seconds, questions, distinct };
 }
 
+/* ══════ practice aimed at weak spots ═══════════════════════════════════════
+ *
+ * `stats` is whatever the host has been storing, keyed the same way the ladder
+ * keys progress: `{ "arith.multiply|3": { seen, correct }, ... }`. Nothing else
+ * is required, and unknown keys are ignored, so a host can hand over the whole
+ * record without filtering it.
+ */
+
+/** Smoothed accuracy. Two imaginary trials stop a single unlucky miss reading as 0%. */
+const rateOf = (v) => ((v.correct || 0) + 1) / ((v.seen || 0) + 2);
+
+/**
+ * Skills that need work, worst first.
+ *
+ * A skill has to have been seen a few times to qualify, or the list is dominated
+ * by whatever the student happened to try once and slip on.
+ */
+export function weakSpots(stats = {}, { limit = 6, minSeen = 4 } = {}) {
+  const rows = [];
+  for (const [key, v] of Object.entries(stats)) {
+    const [skill, levelText] = String(key).split("|");
+    const level = Number(levelText);
+    if (!GENERATORS[skill] || !(level >= 1 && level <= 3)) continue;
+    if ((v.seen || 0) < minSeen) continue;
+    const rate = rateOf(v);
+    rows.push({
+      skill, level,
+      seen: v.seen, correct: v.correct || 0,
+      rate,
+      // How much attention this deserves: how wrong you are, weighted by how
+      // much evidence there is that it is not a fluke.
+      need: (1 - rate) * Math.min(1, (v.seen || 0) / 12),
+    });
+  }
+  rows.sort((a, b) => b.need - a.need);
+  return rows.slice(0, limit);
+}
+
+/**
+ * A paper drawn from the weakest skills.
+ *
+ * Deliberately not a single grind: it spreads across up to four skills, because
+ * a student who has just failed at one thing learns more from mixed practice
+ * than from twelve more of the same. Falls back to a mixed arithmetic paper when
+ * there is not enough history yet to know anything.
+ *
+ * @returns {{ready:boolean, drawnFrom:object[], questions:object[], ...}}
+ */
+export function generateReview({ stats = {}, count = 12, seed = makeCode(), seconds = null } = {}) {
+  const weak = weakSpots(stats, { limit: 4 });
+  if (!weak.length) {
+    return { ...generateSet({ skill: "arith.mixed", level: 2, count, seed, seconds }), ready: false, drawnFrom: [] };
+  }
+
+  // Shares proportional to need, but never fewer than one question from a skill
+  // that made the list, and never more than half the paper from any one of them.
+  const total = weak.reduce((a, w) => a + w.need, 0) || 1;
+  const shares = weak.map((w) => Math.max(1, Math.round((w.need / total) * count)));
+  const cap = Math.max(2, Math.ceil(count / 2));
+  for (let i = 0; i < shares.length; i++) shares[i] = Math.min(shares[i], cap);
+
+  const questions = [];
+  const seen = new Set();
+  weak.forEach((w, i) => {
+    const want = shares[i];
+    const part = generateSet({ skill: w.skill, level: w.level, count: want, seed: `${seed}|${w.skill}|${i}` });
+    for (const qn of part.questions) {
+      if (questions.length >= count || seen.has(qn.prompt)) continue;
+      seen.add(qn.prompt);
+      questions.push(qn);
+    }
+  });
+  // Top up from the weakest skill if rounding left the paper short.
+  for (let guard = 0; questions.length < count && guard < count * 40; guard++) {
+    const w = weak[0];
+    const qn = generate(w.skill, w.level, `${seed}|top|${guard}`);
+    if (seen.has(qn.prompt)) continue;
+    seen.add(qn.prompt);
+    questions.push(qn);
+  }
+
+  const rng = makeRng(seed);
+  rng.shuffle(questions);
+  return {
+    ready: true,
+    seed: String(seed), code: makeCode(seed), skill: "review", level: null, seconds,
+    drawnFrom: weak.map((w) => ({ skill: w.skill, level: w.level, rate: Math.round(w.rate * 100) })),
+    questions, distinct: questions.length,
+  };
+}
+
+/**
+ * Fold a marked paper into a stats record, ready to store or to pass back in.
+ * Pure: it returns a new object rather than editing the one handed to it.
+ */
+export function accumulate(stats, questions, results) {
+  const out = { ...stats };
+  questions.forEach((qn, i) => {
+    const r = results[i];
+    if (!r || !r.answered) return;               // a blank teaches nothing about the skill
+    const key = `${qn.skill}|${qn.level}`;
+    const prev = out[key] || { seen: 0, correct: 0 };
+    out[key] = { seen: prev.seen + 1, correct: prev.correct + (r.correct ? 1 : 0) };
+  });
+  return out;
+}
+
 /** Build an exam from `EXAMS`, one generated part per entry. */
 export function generateExam(examId, seed = makeCode()) {
   const exam = EXAMS.find((e) => e.id === examId);

@@ -93,6 +93,36 @@ most of the teaching value is:
    question wants is the skill, and working shown without its question is an
    answer key nobody can read.
 
+## Practice aimed at what a student gets wrong
+
+A ladder is a curriculum, not a tutor: worked through in order it gives every
+skill the same attention whether or not you have it. Feed the engine what it has
+seen and it will build a paper from the skills that need work.
+
+```js
+import { accumulate, weakSpots, generateReview } from "./engine/index.js";
+
+// After marking anything at all, fold it into a record and store it.
+stats = accumulate(stats, paper.questions, marked.results);
+
+// { "arith.divide|3": { seen: 23, correct: 9 }, "arith.multiply|3": { seen: 31, correct: 15 }, ... }
+
+weakSpots(stats);          // ranked worst first, with rate and need
+generateReview({ stats, count: 12, seed });
+```
+
+`accumulate` returns a new object rather than editing yours, ignores blanks
+(a skipped question says nothing about the skill), and ignores keys it does not
+recognise, so you can hand it a whole user record without filtering.
+
+Ranking is not raw accuracy. A skill seen twice and missed twice is not yet a
+weakness, so need is discounted until there is evidence. A review paper spreads
+across up to four skills and never takes more than half from one, because a
+student who has just failed at something learns more from mixed practice.
+
+With no history `generateReview` still returns a usable paper and sets
+`ready: false`, so a fresh user is never shown an empty screen.
+
 ## Classroom assignments without a backend
 
 Because generation is seeded, a shared code is a shared paper.

@@ -68,6 +68,10 @@ listing all its triggers in one place.
 | Sequences | find the rule · odd one out |
 | Probability and expected value | counting · expected value · conditional · Bayes · waiting times · symmetry · classic puzzles |
 
+Once there is any history, **weak-spot practice** builds a paper from whichever
+skills you are getting wrong, mixing up to four of them so it is not a single
+grind. It is the difference between a worksheet and a trainer.
+
 Each level runs in two modes. **Practice** has no clock and gives feedback after
 every question. **Beat the clock** puts every question of the level on one page
 with a countdown, which is how the real assessments work. Clearing a level

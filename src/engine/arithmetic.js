@@ -153,6 +153,25 @@ export function multiply(rng, level) {
     });
   }
 
+  // A quarter of these are built to straddle a round number, because that is
+  // exactly the shape the difference-of-squares trick is for, and a trick the
+  // drill never presents is a trick nobody learns.
+  if (rng.chance(0.25)) {
+    const centre = rng.int(3, 9) * 10;
+    const d = rng.int(1, 4);
+    const lo = centre - d, hi = centre + d;
+    return q({
+      prompt: `${lo} × ${hi}`,
+      answer: lo * hi,
+      solution: `They sit either side of ${centre}, ${d} away each. So ${centre}² − ${d}² = ${centre * centre} − ${d * d} = ${lo * hi}`,
+      traps: [
+        { value: centre * centre, why: `That is ${centre}², the halfway point. You still have to take off the gap squared, ${d}² = ${d * d}.` },
+        { value: centre * centre + d * d, why: "The correction was added instead of taken off. The product of two numbers either side of a centre is always below the centre squared." },
+      ],
+      tip: "difference-of-squares",
+    });
+  }
+
   const a = rng.int(23, 99);
   const b = rng.int(23, 99);
   const tens = Math.floor(b / 10) * 10;
@@ -163,7 +182,12 @@ export function multiply(rng, level) {
     traps: [
       { value: a * tens, why: `That is only ${a} × ${tens}. The units part, ${a} × ${b % 10} = ${a * (b % 10)}, still has to be added.` },
       { value: a * (b % 10), why: `That is only ${a} × ${b % 10}. The tens part, ${a} × ${tens} = ${a * tens}, is missing.` },
-      { value: a * b - a * 10, why: "A ten went missing between the two halves of the split." },
+      // Recorded misses on this exact question type were 3315 typed as 3355,
+      // 6348 as 6388, 4539 as 4549, 3432 as 3462, 555 as 655, 7722 as 7822:
+      // every one a carry slipping while the two partial products were added.
+      { value: a * b + 10, why: `A ten too many while adding ${a * tens} and ${a * (b % 10)}. This is the single most common way this question is lost.` },
+      { value: a * b - 10, why: `A ten short while adding ${a * tens} and ${a * (b % 10)}.` },
+      { value: a * b + 100, why: `A hundred too many while adding ${a * tens} and ${a * (b % 10)}. Say the running total out loud.` },
     ],
     tip: "split-and-add",
   });
@@ -214,6 +238,10 @@ export function divide(rng, level) {
     traps: [
       { value: ans + 10, why: "A ten too many in the answer; the place value slipped." },
       { value: ans - 10, why: "A ten short in the answer; the place value slipped." },
+      // Recorded misses: 49 typed as 44, 86 as 82, 99 as 94. Every one an
+      // opening estimate pitched low and then never corrected upward.
+      { value: ans - 5, why: `Too low by 5. A first guess at the quotient is usually low; multiply it back by ${b} and you will see how much is left over.` },
+      { value: ans - 4, why: `Too low by 4. Multiply your answer back by ${b}: whatever is left over is still to be divided.` },
     ],
     tip: "reduce-before-dividing",
   });
@@ -228,7 +256,10 @@ export function squares(rng, level) {
   return q({
     prompt: `${n}²`,
     answer: n * n,
-    solution: d === 0
+    solution: n % 10 === 5
+      ? `It ends in 5, so take the front, ${Math.floor(n / 10)}, times the next number up, ${Math.floor(n / 10) + 1}: ` +
+        `${Math.floor(n / 10)} × ${Math.floor(n / 10) + 1} = ${Math.floor(n / 10) * (Math.floor(n / 10) + 1)}. Write 25 after it: ${n * n}`
+      : d === 0
       ? `${n} ends in 0, so square the ${n / 10} and add two zeros: ${n * n}`
       : `Slide ${Math.abs(d)} ${d > 0 ? "down" : "up"} to reach a round number, then pay it back: ` +
         `${n}² = ${Math.min(n - d, n + d)} × ${Math.max(n - d, n + d)} + ${Math.abs(d)}² = ${slid} + ${d * d} = ${n * n}`,
@@ -237,7 +268,7 @@ export function squares(rng, level) {
       { value: n * n - 2 * n + 1, why: `That is ${n - 1}². Off by one before squaring.` },
       { value: n * 2, why: "Doubled instead of squared." },
     ],
-    tip: "squares-rule-of-one",
+    tip: n % 10 === 5 ? "ends-in-five" : "squares-rule-of-one",
   });
 }
 
@@ -442,7 +473,7 @@ export function estimate(rng, level) {
     answer: Math.sqrt(a),
     approx: true,
     solution: `${lo}² = ${lo * lo} and ${lo + 1}² = ${(lo + 1) ** 2}, and ${a} sits between them, so the root is a little ${a - lo * lo < (lo + 1) ** 2 - a ? "above" : "below"} ${a - lo * lo < (lo + 1) ** 2 - a ? lo : lo + 1}: about ${Math.round(Math.sqrt(a) * 10) / 10}`,
-    tip: "squares-rule-of-one",
+    tip: "sqrt-anchors",
   });
 }
 

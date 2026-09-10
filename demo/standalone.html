@@ -423,7 +423,7 @@ const TIPS = [
     skill: "arith.multiply",
     en: {
       title: "Turn an awkward multiplier into a 10 or a 100, then adjust",
-      when: "The moment you spot a 5, 9, 11, 25, 50 or 99 in the question.",
+      when: "You spot a 5, 9, 11, 12, 15, 25, 50 or 99, or a factor sitting just under a round number like 97 or 49.",
       steps: [
         "Every awkward multiplier here is a round number with a small adjustment: 5 = 10 ÷ 2, 50 = 100 ÷ 2, 25 = 100 ÷ 4.",
         "9 = 10 − 1 and 99 = 100 − 1, so multiply by the round number and take one copy off. 11 = 10 + 1, so add one copy on.",
@@ -438,12 +438,14 @@ const TIPS = [
           work: "7 (7+8) 8 = 7 (15) 8. The 15 does not fit, so carry the 1 into the 7: 858" },
         { ask: "What is 34 × 9?",
           work: "9 is one short of 10. So 34 × 10 = 340, then take one copy of 34 off: 340 − 34 = 306" },
+        { ask: "What is 97 × 43?",
+          work: "97 is three short of 100. So 43 × 100 = 4300, then take three copies of 43 off: 4300 − 129 = 4171" },
       ],
       why: "Both turn a multiplication into an addition or a halving, which are far faster under a clock.",
     },
     vi: {
       title: "Biến số nhân khó chịu thành 10 hoặc 100, rồi chỉnh lại",
-      when: "Ngay khi thấy 5, 9, 11, 25, 50 hay 99 trong đề.",
+      when: "Thấy 5, 9, 11, 12, 15, 25, 50 hay 99, hoặc một thừa số nằm sát dưới số tròn như 97 hay 49.",
       steps: [
         "Mọi số nhân khó chịu ở đây đều là số tròn kèm một chỉnh nhỏ: 5 = 10 ÷ 2, 50 = 100 ÷ 2, 25 = 100 ÷ 4.",
         "9 = 10 − 1 và 99 = 100 − 1, nên nhân với số tròn rồi bớt đi một lần. 11 = 10 + 1, nên cộng thêm một lần.",
@@ -458,6 +460,8 @@ const TIPS = [
           work: "7 (7+8) 8 = 7 (15) 8. Số 15 không nhét vừa nên nhớ 1 sang chữ số 7: 858" },
         { ask: "34 × 9 bằng bao nhiêu?",
           work: "9 kém 10 đúng một đơn vị. Nên 34 × 10 = 340, rồi bớt đi một lần 34: 340 − 34 = 306" },
+        { ask: "97 × 43 bằng bao nhiêu?",
+          work: "97 kém 100 đúng ba đơn vị. Nên 43 × 100 = 4300, rồi bớt đi ba lần 43: 4300 − 129 = 4171" },
       ],
       why: "Cả hai biến phép nhân thành phép cộng hoặc chia đôi, nhanh hơn hẳn khi có đồng hồ.",
     },
@@ -496,6 +500,114 @@ const TIPS = [
           work: "Trượt 2 để được 46 và 50: 46 × 50 = 2300. Rồi trả lại 2² = 4 → 2304" },
       ],
       why: "Nó biến mọi bình phương ngoài bảng đã thuộc thành một phép nhân dễ với bội của mười.",
+    },
+  },
+  {
+    id: "difference-of-squares",
+    skill: "arith.multiply",
+    en: {
+      title: "Two numbers either side of a round one? Square the middle and take off the gap",
+      when: "Both factors sit the same distance from a round number, like 62 and 58 around 60.",
+      steps: [
+        "Find the number halfway between them. If the two are 62 and 58, that is 60.",
+        "Square it. Multiples of ten are easy to square.",
+        "Take off the gap squared. The gap here is 2, so take off 4.",
+      ],
+      examples: [
+        { ask: "What is 62 × 58?",
+          work: "Halfway is 60 and the gap is 2. So 60² − 2² = 3600 − 4 = 3596" },
+        { ask: "What is 47 × 53?",
+          work: "Halfway is 50 and the gap is 3. So 50² − 3² = 2500 − 9 = 2491" },
+      ],
+      why: "One square of a round number replaces a two-digit multiplication, and the correction is never bigger than about 25. Spotting that the two numbers add to something round is the whole skill.",
+    },
+    vi: {
+      title: "Hai số nằm hai bên một số tròn? Bình phương số giữa rồi trừ khoảng cách",
+      when: "Hai thừa số cách đều một số tròn, ví dụ 62 và 58 quanh số 60.",
+      steps: [
+        "Tìm số nằm chính giữa hai số đó. Với 62 và 58 thì đó là 60.",
+        "Bình phương số giữa. Bội của mười thì bình phương rất dễ.",
+        "Trừ đi bình phương khoảng cách. Ở đây khoảng cách là 2 nên trừ 4.",
+      ],
+      examples: [
+        { ask: "62 × 58 bằng bao nhiêu?",
+          work: "Số giữa là 60, khoảng cách là 2. Vậy 60² − 2² = 3600 − 4 = 3596" },
+        { ask: "47 × 53 bằng bao nhiêu?",
+          work: "Số giữa là 50, khoảng cách là 3. Vậy 50² − 3² = 2500 − 9 = 2491" },
+      ],
+      why: "Một phép bình phương số tròn thay cho cả phép nhân hai chữ số, và phần bù không bao giờ quá khoảng 25. Nhận ra hai số cộng lại thành số tròn mới là kỹ năng chính.",
+    },
+  },
+  {
+    id: "ends-in-five",
+    skill: "arith.squares",
+    en: {
+      title: "A number ending in 5: multiply the front by the next number up, then write 25",
+      when: "Squaring anything that ends in a 5.",
+      steps: [
+        "Drop the 5 and look at what is in front. For 35 that is 3.",
+        "Multiply it by the next number up: 3 × 4 = 12.",
+        "Write 25 on the end. The answer is 1225.",
+      ],
+      examples: [
+        { ask: "What is 35²?",
+          work: "Front is 3, so 3 × 4 = 12. Write 25 after it: 1225" },
+        { ask: "What is 85²?",
+          work: "Front is 8, so 8 × 9 = 72. Write 25 after it: 7225" },
+      ],
+      why: "It is exact, it needs one small multiplication, and it is faster than the sliding rule for this one case. Four of these are worth knowing outright: 15² = 225, 25² = 625, 35² = 1225, 45² = 2025.",
+    },
+    vi: {
+      title: "Số tận cùng bằng 5: nhân phần đầu với số liền sau, rồi viết 25",
+      when: "Bình phương bất kỳ số nào tận cùng bằng 5.",
+      steps: [
+        "Bỏ chữ số 5 đi và nhìn phần đứng trước. Với 35 thì đó là 3.",
+        "Nhân nó với số liền sau: 3 × 4 = 12.",
+        "Viết 25 vào cuối. Đáp án là 1225.",
+      ],
+      examples: [
+        { ask: "35² bằng bao nhiêu?",
+          work: "Phần đầu là 3, nên 3 × 4 = 12. Viết 25 vào sau: 1225" },
+        { ask: "85² bằng bao nhiêu?",
+          work: "Phần đầu là 8, nên 8 × 9 = 72. Viết 25 vào sau: 7225" },
+      ],
+      why: "Nó chính xác tuyệt đối, chỉ cần một phép nhân nhỏ, và nhanh hơn luật trượt cho riêng trường hợp này. Bốn số đáng thuộc luôn: 15² = 225, 25² = 625, 35² = 1225, 45² = 2025.",
+    },
+  },
+  {
+    id: "sqrt-anchors",
+    skill: "arith.estimate",
+    en: {
+      title: "For a rough square root, trap it between two anchors you know",
+      when: "A question marked with ≈ asking for a square root, where a close answer counts.",
+      steps: [
+        "Know the squares of the tens and the halves: 20² = 400, 25² = 625, 30² = 900, 35² = 1225, and so on up to 95² = 9025.",
+        "Find the two anchors your number sits between.",
+        "Answer with the nearer one, nudged a little toward the other. Within 5% is correct, so you have room.",
+      ],
+      examples: [
+        { ask: "Roughly, what is the square root of 2371?",
+          work: "45² = 2025 and 50² = 2500. It is much nearer 2500, so answer 48 or 49. The true value is 48.7" },
+        { ask: "Roughly, what is the square root of 6273?",
+          work: "75² = 5625 and 80² = 6400. It is just under 6400, so answer 79. The true value is 79.2" },
+      ],
+      why: "Estimation questions punish exact arithmetic: you spend twenty seconds earning the same point a five-second bracket earns. Seventeen anchors cover every root from 12 to 95.",
+    },
+    vi: {
+      title: "Muốn ước lượng căn bậc hai, hãy kẹp nó giữa hai cái mốc bạn đã thuộc",
+      when: "Câu có dấu ≈ hỏi căn bậc hai, nơi trả lời gần đúng vẫn được tính điểm.",
+      steps: [
+        "Thuộc bình phương của các số tròn chục và số rưỡi: 20² = 400, 25² = 625, 30² = 900, 35² = 1225, cứ thế tới 95² = 9025.",
+        "Tìm hai cái mốc mà số của bạn nằm giữa.",
+        "Trả lời bằng cái mốc gần hơn, nhích một chút về phía mốc kia. Sai số 5% vẫn đúng nên bạn có khoảng rộng.",
+      ],
+      examples: [
+        { ask: "Ước lượng căn bậc hai của 2371?",
+          work: "45² = 2025 và 50² = 2500. Số này gần 2500 hơn nhiều, nên trả lời 48 hoặc 49. Giá trị thật là 48,7" },
+        { ask: "Ước lượng căn bậc hai của 6273?",
+          work: "75² = 5625 và 80² = 6400. Số này sát dưới 6400, nên trả lời 79. Giá trị thật là 79,2" },
+      ],
+      why: "Câu ước lượng trừng phạt người tính chính xác: bạn bỏ hai mươi giây để lấy đúng cái điểm mà một phép kẹp năm giây cũng lấy được. Mười bảy cái mốc phủ hết mọi căn từ 12 tới 95.",
     },
   },
   {
@@ -1411,6 +1523,25 @@ function multiply(rng, level) {
     });
   }
 
+  // A quarter of these are built to straddle a round number, because that is
+  // exactly the shape the difference-of-squares trick is for, and a trick the
+  // drill never presents is a trick nobody learns.
+  if (rng.chance(0.25)) {
+    const centre = rng.int(3, 9) * 10;
+    const d = rng.int(1, 4);
+    const lo = centre - d, hi = centre + d;
+    return q({
+      prompt: `${lo} × ${hi}`,
+      answer: lo * hi,
+      solution: `They sit either side of ${centre}, ${d} away each. So ${centre}² − ${d}² = ${centre * centre} − ${d * d} = ${lo * hi}`,
+      traps: [
+        { value: centre * centre, why: `That is ${centre}², the halfway point. You still have to take off the gap squared, ${d}² = ${d * d}.` },
+        { value: centre * centre + d * d, why: "The correction was added instead of taken off. The product of two numbers either side of a centre is always below the centre squared." },
+      ],
+      tip: "difference-of-squares",
+    });
+  }
+
   const a = rng.int(23, 99);
   const b = rng.int(23, 99);
   const tens = Math.floor(b / 10) * 10;
@@ -1421,7 +1552,12 @@ function multiply(rng, level) {
     traps: [
       { value: a * tens, why: `That is only ${a} × ${tens}. The units part, ${a} × ${b % 10} = ${a * (b % 10)}, still has to be added.` },
       { value: a * (b % 10), why: `That is only ${a} × ${b % 10}. The tens part, ${a} × ${tens} = ${a * tens}, is missing.` },
-      { value: a * b - a * 10, why: "A ten went missing between the two halves of the split." },
+      // Recorded misses on this exact question type were 3315 typed as 3355,
+      // 6348 as 6388, 4539 as 4549, 3432 as 3462, 555 as 655, 7722 as 7822:
+      // every one a carry slipping while the two partial products were added.
+      { value: a * b + 10, why: `A ten too many while adding ${a * tens} and ${a * (b % 10)}. This is the single most common way this question is lost.` },
+      { value: a * b - 10, why: `A ten short while adding ${a * tens} and ${a * (b % 10)}.` },
+      { value: a * b + 100, why: `A hundred too many while adding ${a * tens} and ${a * (b % 10)}. Say the running total out loud.` },
     ],
     tip: "split-and-add",
   });
@@ -1472,6 +1608,10 @@ function divide(rng, level) {
     traps: [
       { value: ans + 10, why: "A ten too many in the answer; the place value slipped." },
       { value: ans - 10, why: "A ten short in the answer; the place value slipped." },
+      // Recorded misses: 49 typed as 44, 86 as 82, 99 as 94. Every one an
+      // opening estimate pitched low and then never corrected upward.
+      { value: ans - 5, why: `Too low by 5. A first guess at the quotient is usually low; multiply it back by ${b} and you will see how much is left over.` },
+      { value: ans - 4, why: `Too low by 4. Multiply your answer back by ${b}: whatever is left over is still to be divided.` },
     ],
     tip: "reduce-before-dividing",
   });
@@ -1486,7 +1626,10 @@ function squares(rng, level) {
   return q({
     prompt: `${n}²`,
     answer: n * n,
-    solution: d === 0
+    solution: n % 10 === 5
+      ? `It ends in 5, so take the front, ${Math.floor(n / 10)}, times the next number up, ${Math.floor(n / 10) + 1}: ` +
+        `${Math.floor(n / 10)} × ${Math.floor(n / 10) + 1} = ${Math.floor(n / 10) * (Math.floor(n / 10) + 1)}. Write 25 after it: ${n * n}`
+      : d === 0
       ? `${n} ends in 0, so square the ${n / 10} and add two zeros: ${n * n}`
       : `Slide ${Math.abs(d)} ${d > 0 ? "down" : "up"} to reach a round number, then pay it back: ` +
         `${n}² = ${Math.min(n - d, n + d)} × ${Math.max(n - d, n + d)} + ${Math.abs(d)}² = ${slid} + ${d * d} = ${n * n}`,
@@ -1495,7 +1638,7 @@ function squares(rng, level) {
       { value: n * n - 2 * n + 1, why: `That is ${n - 1}². Off by one before squaring.` },
       { value: n * 2, why: "Doubled instead of squared." },
     ],
-    tip: "squares-rule-of-one",
+    tip: n % 10 === 5 ? "ends-in-five" : "squares-rule-of-one",
   });
 }
 
@@ -1700,7 +1843,7 @@ function estimate(rng, level) {
     answer: Math.sqrt(a),
     approx: true,
     solution: `${lo}² = ${lo * lo} and ${lo + 1}² = ${(lo + 1) ** 2}, and ${a} sits between them, so the root is a little ${a - lo * lo < (lo + 1) ** 2 - a ? "above" : "below"} ${a - lo * lo < (lo + 1) ** 2 - a ? lo : lo + 1}: about ${Math.round(Math.sqrt(a) * 10) / 10}`,
-    tip: "squares-rule-of-one",
+    tip: "sqrt-anchors",
   });
 }
 
@@ -3133,6 +3276,113 @@ function generateSet({ skill, level = 1, count = 10, seed, seconds = null }) {
   return { seed: String(useSeed), code: makeCode(useSeed), skill, level, seconds, questions, distinct };
 }
 
+/* ══════ practice aimed at weak spots ═══════════════════════════════════════
+ *
+ * `stats` is whatever the host has been storing, keyed the same way the ladder
+ * keys progress: `{ "arith.multiply|3": { seen, correct }, ... }`. Nothing else
+ * is required, and unknown keys are ignored, so a host can hand over the whole
+ * record without filtering it.
+ */
+
+/** Smoothed accuracy. Two imaginary trials stop a single unlucky miss reading as 0%. */
+const rateOf = (v) => ((v.correct || 0) + 1) / ((v.seen || 0) + 2);
+
+/**
+ * Skills that need work, worst first.
+ *
+ * A skill has to have been seen a few times to qualify, or the list is dominated
+ * by whatever the student happened to try once and slip on.
+ */
+function weakSpots(stats = {}, { limit = 6, minSeen = 4 } = {}) {
+  const rows = [];
+  for (const [key, v] of Object.entries(stats)) {
+    const [skill, levelText] = String(key).split("|");
+    const level = Number(levelText);
+    if (!GENERATORS[skill] || !(level >= 1 && level <= 3)) continue;
+    if ((v.seen || 0) < minSeen) continue;
+    const rate = rateOf(v);
+    rows.push({
+      skill, level,
+      seen: v.seen, correct: v.correct || 0,
+      rate,
+      // How much attention this deserves: how wrong you are, weighted by how
+      // much evidence there is that it is not a fluke.
+      need: (1 - rate) * Math.min(1, (v.seen || 0) / 12),
+    });
+  }
+  rows.sort((a, b) => b.need - a.need);
+  return rows.slice(0, limit);
+}
+
+/**
+ * A paper drawn from the weakest skills.
+ *
+ * Deliberately not a single grind: it spreads across up to four skills, because
+ * a student who has just failed at one thing learns more from mixed practice
+ * than from twelve more of the same. Falls back to a mixed arithmetic paper when
+ * there is not enough history yet to know anything.
+ *
+ * @returns {{ready:boolean, drawnFrom:object[], questions:object[], ...}}
+ */
+function generateReview({ stats = {}, count = 12, seed = makeCode(), seconds = null } = {}) {
+  const weak = weakSpots(stats, { limit: 4 });
+  if (!weak.length) {
+    return { ...generateSet({ skill: "arith.mixed", level: 2, count, seed, seconds }), ready: false, drawnFrom: [] };
+  }
+
+  // Shares proportional to need, but never fewer than one question from a skill
+  // that made the list, and never more than half the paper from any one of them.
+  const total = weak.reduce((a, w) => a + w.need, 0) || 1;
+  const shares = weak.map((w) => Math.max(1, Math.round((w.need / total) * count)));
+  const cap = Math.max(2, Math.ceil(count / 2));
+  for (let i = 0; i < shares.length; i++) shares[i] = Math.min(shares[i], cap);
+
+  const questions = [];
+  const seen = new Set();
+  weak.forEach((w, i) => {
+    const want = shares[i];
+    const part = generateSet({ skill: w.skill, level: w.level, count: want, seed: `${seed}|${w.skill}|${i}` });
+    for (const qn of part.questions) {
+      if (questions.length >= count || seen.has(qn.prompt)) continue;
+      seen.add(qn.prompt);
+      questions.push(qn);
+    }
+  });
+  // Top up from the weakest skill if rounding left the paper short.
+  for (let guard = 0; questions.length < count && guard < count * 40; guard++) {
+    const w = weak[0];
+    const qn = generate(w.skill, w.level, `${seed}|top|${guard}`);
+    if (seen.has(qn.prompt)) continue;
+    seen.add(qn.prompt);
+    questions.push(qn);
+  }
+
+  const rng = makeRng(seed);
+  rng.shuffle(questions);
+  return {
+    ready: true,
+    seed: String(seed), code: makeCode(seed), skill: "review", level: null, seconds,
+    drawnFrom: weak.map((w) => ({ skill: w.skill, level: w.level, rate: Math.round(w.rate * 100) })),
+    questions, distinct: questions.length,
+  };
+}
+
+/**
+ * Fold a marked paper into a stats record, ready to store or to pass back in.
+ * Pure: it returns a new object rather than editing the one handed to it.
+ */
+function accumulate(stats, questions, results) {
+  const out = { ...stats };
+  questions.forEach((qn, i) => {
+    const r = results[i];
+    if (!r || !r.answered) return;               // a blank teaches nothing about the skill
+    const key = `${qn.skill}|${qn.level}`;
+    const prev = out[key] || { seen: 0, correct: 0 };
+    out[key] = { seen: prev.seen + 1, correct: prev.correct + (r.correct ? 1 : 0) };
+  });
+  return out;
+}
+
 /** Build an exam from `EXAMS`, one generated part per entry. */
 function generateExam(examId, seed = makeCode()) {
   const exam = EXAMS.find((e) => e.id === examId);
@@ -3151,7 +3401,7 @@ function generateExam(examId, seed = makeCode()) {
 
 
 
-Object.assign(__shared, { generate, generateSet, generateExam, GENERATOR_IDS, CURRICULUM, EXAMS, ALL_SKILLS, SKILL_ORDER, getSkill, nextSkill, skillName, TIPS, getTip, tipsForSkill, grade, gradeSet, displayAnswer, makeRng, makeCode, hashSeed, frac, fmt, parseAnswer });
+Object.assign(__shared, { generate, generateSet, weakSpots, generateReview, accumulate, generateExam, GENERATOR_IDS, CURRICULUM, EXAMS, ALL_SKILLS, SKILL_ORDER, getSkill, nextSkill, skillName, TIPS, getTip, tipsForSkill, grade, gradeSet, displayAnswer, makeRng, makeCode, hashSeed, frac, fmt, parseAnswer });
 })();
 
 /* ── demo/app.js ─────────────────────────────────── */
@@ -3171,6 +3421,7 @@ Object.assign(__shared, { generate, generateSet, generateExam, GENERATOR_IDS, CU
 const {
   CURRICULUM, generateSet, generateExam, EXAMS, grade, gradeSet,
   displayAnswer, getTip, getSkill, skillName, nextSkill, TIPS,
+  generateReview, weakSpots, accumulate,
 } = __shared;
 
 /* ── translations for the shell itself ───────────────────────────────────── */
@@ -3187,6 +3438,11 @@ const T = {
     done: "Level cleared", needed: "needed to clear", tipTitle: "The trick",
     howItsDone: "How it's done", seeIt: "How to see it", useWhen: "Use it when",
     worked: "Worked example",
+    weakTitle: "Practise your weak spots",
+    weakBlurb: (list) => `Twelve questions drawn from what you are getting wrong: ${list}.`,
+    weakLocked: "Run a timed section or two and this fills itself in.",
+    weakStart: "Start",
+    reviewDone: "Weak-spot practice",
     whichOne: "Which idea does a question want?",
     whyItWorks: "Why it works", blankWarn: (n) => `${n} still blank. A blank is a guaranteed zero, so guess.`,
     autoSubmit: "Runs out on its own. Nothing is deducted for a wrong answer.",
@@ -3204,6 +3460,11 @@ const T = {
     done: "Đã qua cấp này", needed: "cần đúng để qua", tipTitle: "Mẹo",
     howItsDone: "Cách làm", seeIt: "Cách nhận ra", useWhen: "Dùng khi",
     worked: "Ví dụ có lời giải",
+    weakTitle: "Luyện đúng chỗ yếu",
+    weakBlurb: (list) => `Mười hai câu rút từ những chỗ bạn đang sai: ${list}.`,
+    weakLocked: "Chạy vài phần có đồng hồ là mục này tự đầy lên.",
+    weakStart: "Bắt đầu",
+    reviewDone: "Luyện chỗ yếu",
     whichOne: "Câu hỏi đang cần ý nào?",
     whyItWorks: "Vì sao dùng được", blankWarn: (n) => `Còn ${n} ô trống. Bỏ trống chắc chắn 0 điểm, nên cứ đoán.`,
     autoSubmit: "Hết giờ tự nộp. Sai không bị trừ điểm.",
@@ -3213,13 +3474,18 @@ const T = {
 
 /* ── state ───────────────────────────────────────────────────────────────── */
 const KEY = "quant-gym-demo-v1";
-const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } };
-const save = (p) => { try { localStorage.setItem(KEY, JSON.stringify(p)); } catch { /* private mode */ } };
+const STATS_KEY = "quant-gym-demo-stats-v1";
+const read = (k) => { try { return JSON.parse(localStorage.getItem(k)) || {}; } catch { return {}; } };
+const write = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* private mode */ } };
 
 let S = {
   screen: "ladder",
   lang: (navigator.language || "en").startsWith("vi") ? "vi" : "en",
-  progress: load(),
+  progress: read(KEY),
+  // Per skill and level: how many questions were answered and how many were
+  // right. This is the whole input to weak-spot practice, and it is exactly the
+  // shape a host would keep on its own server.
+  stats: read(STATS_KEY),
 };
 const t = () => T[S.lang];
 const tr = (obj) => (obj ? obj[S.lang] || obj.en : "");
@@ -3257,7 +3523,11 @@ function topbar() {
   const bar = el("div", "topbar");
   const brand = el("div", "brand");
   brand.appendChild(el("span", "eyebrow", "Quant Gym"));
-  brand.appendChild(el("h1", "", S.screen === "ladder" ? "Quant Gym" : skillName(S.skill, S.lang)));
+  const heading = S.screen === "ladder" ? "Quant Gym"
+    : S.review ? t().weakTitle
+    : S.exam ? tr(S.exam.name)
+    : skillName(S.skill, S.lang);
+  brand.appendChild(el("h1", "", heading));
   if (S.screen === "ladder") brand.appendChild(el("p", "muted small", t().tagline));
   bar.appendChild(brand);
 
@@ -3329,6 +3599,25 @@ function ladder(app) {
     box.appendChild(grid);
     app.appendChild(box);
   }
+
+  // Weak-spot practice sits above the exams: it is the thing to do next once
+  // there is any history, and the ladder alone will not point you at it.
+  const weak = weakSpots(S.stats, { limit: 4 });
+  const wbox = el("div", "topic");
+  const wcard = el("div", "skill");
+  wcard.style.borderColor = weak.length ? "var(--accent)" : "var(--line)";
+  wcard.appendChild(el("h3", "", t().weakTitle));
+  if (weak.length) {
+    const list = weak.map((w) => `${skillName(w.skill, S.lang)} ${Math.round(w.rate * 100)}%`).join(", ");
+    wcard.appendChild(el("p", "muted small", t().weakBlurb(list)));
+    wcard.appendChild(btn(t().weakStart, "primary", startReview));
+  } else {
+    wcard.appendChild(el("p", "muted small", t().weakLocked));
+  }
+  const wgrid = el("div", "skills");
+  wgrid.appendChild(wcard);
+  wbox.appendChild(wgrid);
+  app.appendChild(wbox);
 
   const exams = el("div", "topic");
   exams.appendChild(el("h2", "", t().exams));
@@ -3480,6 +3769,19 @@ function startClock() {
   S.parts = [{ paper: S.paper, answers: new Array(cfg.count).fill("") }];
   S.partIndex = 0;
   S.exam = null;
+  S.review = false;
+  S.screen = "clock";
+  render();
+}
+
+function startReview() {
+  const paper = generateReview({ stats: S.stats, count: 12, seconds: 420, seed: Date.now() });
+  S.paper = paper;
+  S.parts = [{ paper, answers: new Array(paper.questions.length).fill("") }];
+  S.partIndex = 0;
+  S.exam = null;
+  S.review = true;
+  S.skill = null;
   S.screen = "clock";
   render();
 }
@@ -3490,6 +3792,7 @@ function startExam(examId) {
   S.skill = exam.parts[0].skill;
   S.parts = exam.parts.map((p) => ({ paper: p, answers: new Array(p.questions.length).fill("") }));
   S.partIndex = 0;
+  S.review = false;
   S.screen = "clock";
   render();
 }
@@ -3504,6 +3807,8 @@ function clockScreen(app) {
   head.style.justifyContent = "space-between";
   const label = S.exam
     ? `${t().part} ${S.partIndex + 1} ${t().of} ${S.parts.length} · ${questions.length} ${t().questions}`
+    : S.review
+    ? `${t().weakTitle} · ${questions.length} ${t().questions}`
     : `${skillName(S.skill, S.lang)} · ${t().level} ${S.level} · ${questions.length} ${t().questions}`;
   head.appendChild(el("span", "muted small", label));
   const clockEl = el("span", "clock", clock(seconds));
@@ -3578,12 +3883,20 @@ function clockScreen(app) {
 }
 
 function recordProgress() {
-  if (S.exam) return; // exams do not unlock ladder levels
+  // Every answered question feeds the stats, whatever mode produced it. This is
+  // what makes weak-spot practice possible, and it is the one call a host would
+  // replace with a POST to its own API.
+  for (const part of S.parts) {
+    S.stats = accumulate(S.stats, part.paper.questions, part.marked.results);
+  }
+  write(STATS_KEY, S.stats);
+
+  if (S.exam || S.review) return; // neither unlocks a ladder level
   const cfg = getSkill(S.skill).levels[S.level - 1];
   const { score } = S.parts[0].marked;
   if (score >= cfg.pass) {
     S.progress[`${S.skill}|${S.level}`] = { score, at: Date.now() };
-    save(S.progress);
+    write(KEY, S.progress);
   }
   // In a real integration this is where the host is told, and the host decides
   // what to persist: onEvent({ type:"level-complete", skill, level, score, ... })
@@ -3608,7 +3921,7 @@ function results(app) {
   tiles.appendChild(tile(String(totals.trapped), t().trapped));
   stack.appendChild(tiles);
 
-  if (!S.exam) {
+  if (!S.exam && !S.review) {
     const cfg = getSkill(S.skill).levels[S.level - 1];
     const passed = totals.score >= cfg.pass;
     const note = el("div", "verdict " + (passed ? "ok" : "no"));
@@ -3636,7 +3949,8 @@ function results(app) {
   }
 
   const row = el("div", "row");
-  row.appendChild(btn(t().again, "primary", () => (S.exam ? startExam(S.exam.id) : startClock())));
+  row.appendChild(btn(t().again, "primary",
+    () => (S.exam ? startExam(S.exam.id) : S.review ? startReview() : startClock())));
   row.appendChild(btn(t().back, "", () => { S.screen = "ladder"; render(); }));
   stack.appendChild(row);
   app.appendChild(stack);
