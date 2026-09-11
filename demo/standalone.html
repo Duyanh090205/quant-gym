@@ -3552,8 +3552,10 @@ function percent(rng, level, t) {
   }
 
   const y = rng.pick([40, 50, 80, 120, 160, 200, 250, 400, 500, 800]);
-  let x = rng.pick([2, 4, 5, 8, 10, 16, 20, 25, 32, 40, 50, 60, 75, 100, 120, 150, 200]);
-  x = Math.min(x, y);
+  // Clamping x to y used to turn one question in fourteen into "y is what % of
+  // y", which answers 100 and teaches nothing. Draw from what actually fits.
+  const below = [2, 4, 5, 8, 10, 16, 20, 25, 32, 40, 50, 60, 75, 100, 120, 150, 200].filter((v) => v < y);
+  const x = rng.pick(below);
   return q({
     prompt: t.aWhatPercent(x, y),
     answer: round4((100 * x) / y),
