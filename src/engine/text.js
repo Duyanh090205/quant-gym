@@ -217,6 +217,153 @@ const en = {
   ttAOnly: () => "That is A on its own. B still has to come off.",
   ttLargestNote: () => "Comparing the bases alone does not work: a smaller base with a bigger exponent often wins, as 4^7 beats both 3^7 and 6^5. Work each one out.",
 
+  /* estimation — unit names, prompts, solutions and traps */
+  eUnits: {
+    secMin:    { one: "minute",   many: "minutes",    small: "seconds" },
+    minHour:   { one: "hour",     many: "hours",      small: "minutes" },
+    hourDay:   { one: "day",      many: "days",       small: "hours" },
+    dayWeek:   { one: "week",     many: "weeks",      small: "days" },
+    monthYear: { one: "year",     many: "years",      small: "months" },
+    gKg:       { one: "kilogram", many: "kilograms",  small: "grams" },
+    mKm:       { one: "kilometre", many: "kilometres", small: "metres" },
+    mlLitre:   { one: "litre",    many: "litres",     small: "millilitres" },
+    cmM:       { one: "metre",    many: "metres",     small: "centimetres" },
+    mmCm:      { one: "centimetre", many: "centimetres", small: "millimetres" },
+  },
+  eBeats: "beats",
+  eBreaths: "breaths",
+  eCups: "cups",
+  eWindows: "windows",
+  eMessages: "messages",
+  eSeats: "seats",
+  eBooks: "books",
+
+  eAskUnits: (small, n, many) => `How many ${small} in ${n} ${many}?`,
+  eSolUnits: (one, per, small, n, ans) =>
+    `One ${one} is ${per} ${small}, so ${n} of them is ${n} \u00d7 ${per} = ${ans}.`,
+  etOneUnitOnly: (one) => `That is one ${one}. The question asks about several of them.`,
+  etAddedNotMultiplied: "These two numbers multiply, they do not add. Each one of the first thing brings a whole set of the second.",
+
+  eAskHeartHour: (r) => `A heart beats ${r} times a minute. About how many beats in an hour?`,
+  eSolHeartHour: (r, ans) => `An hour is 60 minutes, and each of them costs ${r} beats: 60 \u00d7 ${r} = ${ans}.`,
+  etOneMinuteOnly: "That is one minute. An hour holds sixty of them.",
+  etOneSecondOnly: "That is one second. An hour is three thousand six hundred of them.",
+  etOneHourOnly: "That is one hour on its own. The question asks for longer than that.",
+  etOneDayOnly: "That is one day. A year is another 365 of them.",
+  etOneWeekOnly: "That is one week. A year holds fifty-two of them.",
+  etForgotPerMinute: "The rate you were given is per minute, not per hour, and every hour you counted holds sixty minutes.",
+
+  eAskTap: (r, h) => `A tap runs at ${r} litres a minute. How many litres in ${h} hours?`,
+  eSolTap: (r, perHour, h, ans) =>
+    `One hour gives 60 \u00d7 ${r} = ${perHour} litres, and ${h} hours gives ${h} \u00d7 ${perHour} = ${ans}.`,
+  eAskRead: (w, h) => `You read ${w} words a minute. About how many words in ${h} hours?`,
+  eSolRead: (w, perHour, h, ans) =>
+    `An hour is 60 \u00d7 ${w} = ${perHour} words, and ${h} hours is ${h} \u00d7 ${perHour} = ${ans}.`,
+  eAskCar: (v, h) => `A car holds ${v} kilometres an hour. How far does it go in ${h} hours?`,
+  eSolCar: (v, h, ans) => `Distance is speed times time: ${v} \u00d7 ${h} = ${ans} kilometres.`,
+  eAskMachine: (r, h) => `A machine makes ${r} parts an hour. How many does it make in a ${h}-hour shift?`,
+  eSolMachine: (r, h, ans) => `Every hour of the shift adds ${r}, so ${r} \u00d7 ${h} = ${ans}.`,
+  eAskDrip: (r) => `A tap drips ${r} times a second. About how many drips in an hour?`,
+  eSolDrip: (r, perMin, ans) =>
+    `A minute gives 60 \u00d7 ${r} = ${perMin} drips, and an hour is 60 of those minutes: 60 \u00d7 ${perMin} = ${ans}.`,
+
+  eAskHeartYear: (r) => `A heart beats ${r} times a minute. About how many beats in a year?`,
+  eAskBreathYear: (r) => `You breathe ${r} times a minute. About how many breaths in a year?`,
+  eSolPerYear: (r, perHour, perDay, ans, noun) =>
+    `Climb one step at a time rather than reaching for the whole thing at once. ` +
+    `An hour is 60 \u00d7 ${r} = ${perHour} ${noun}. A day is 24 hours: 24 \u00d7 ${perHour} = ${perDay}. ` +
+    `A year is 365 days: 365 \u00d7 ${perDay} = ${ans}.`,
+  etCountedDaysNotMinutes: "You multiplied by the days in a year but left out the minutes inside each day, and there are 1440 of those.",
+  eAskSleepYear: (h) => `You sleep ${h} hours a night. About how many hours of sleep is that in a year?`,
+  eSolSleepYear: (h, ans) => `A year is 365 nights, and each costs ${h} hours: 365 \u00d7 ${h} = ${ans}.`,
+  etAnsweredInMinutes: "That is the answer in minutes. The question asks for hours.",
+  eAskLight: (n) =>
+    `Light travels 300 thousand kilometres a second. About how far does it go in ${n} minutes, in thousands of kilometres?`,
+  eSolLight: (n, secs, ans) =>
+    `${n} minutes is ${n} \u00d7 60 = ${secs} seconds, and every second carries light 300 thousand kilometres: ` +
+    `${secs} \u00d7 300 = ${ans}.`,
+  etLightSeconds: "That is how far light gets in that many seconds. The question is in minutes, and each one is sixty seconds long.",
+  eAskRiver: (v) => `A river carries ${v} cubic metres of water past a point every second. About how much passes in a day?`,
+  eSolRiver: (v, perHour, ans) =>
+    `An hour is 3600 seconds: 3600 \u00d7 ${v} = ${perHour}. A day is 24 hours: 24 \u00d7 ${perHour} = ${ans} cubic metres.`,
+  etCountedMinutesNotSeconds: "You counted the minutes in a day rather than the seconds, and each minute holds sixty of those.",
+
+  eAskCups: (n, c) => `A school has ${n} students and each drinks ${c} cups of water a day. About how many cups a day is that?`,
+  eAskWindows: (n, w) => `A street has ${n} houses, each with about ${w} windows. Roughly how many windows along the street?`,
+  eAskMessages: (n, m) => `A group of ${n} people each send about ${m} messages a day. Roughly how many messages a day?`,
+  eAskBus: (b, s) => `A depot keeps ${b} buses with ${s} seats each. How many seats is that altogether?`,
+  eAskShelves: (s, b) => `A library has ${s} shelves holding about ${b} books each. Roughly how many books?`,
+  eSolTwoFactor: (a, b, ans, noun) =>
+    `Each of the ${a} brings ${b} of its own, so the two numbers multiply: ${a} \u00d7 ${b} = ${ans} ${noun}.`,
+  etOnePerPerson: "That would be the answer if each one brought a single thing. The question says each brings several.",
+
+  eAskTuners: (P, A, S) =>
+    `A city has ${P} thousand people. About 1 in ${A} of them owns a piano, and one tuner looks after ${S} pianos a year. ` +
+    `Roughly how many piano tuners does the city keep busy?`,
+  eSolTuners: (P, people, A, pianos, S, ans) =>
+    `Take one step at a time. ${P} thousand people is ${P} \u00d7 1000 = ${people}. ` +
+    `One piano for every ${A} of them gives ${people} \u00f7 ${A} = ${pianos} pianos. ` +
+    `A tuner covers ${S} pianos a year, so ${pianos} \u00f7 ${S} = ${ans} tuners.`,
+  etTunersPianos: "That is how many pianos the city has, not how many tuners. One tuner looks after hundreds of them.",
+  etTunersPeople: "That is the whole population. Only a small share of them owns a piano at all.",
+
+  eAskFuel: (N, K, L) =>
+    `A town has ${N} cars. Each drives about ${K} kilometres a year and burns ${L} litres of fuel per 100 kilometres. ` +
+    `Roughly how many litres does the town burn in a year?`,
+  eSolFuel: (N, K, km, L, ans) =>
+    `The cars cover ${N} \u00d7 ${K} = ${km} kilometres between them. Every 100 of those kilometres costs ${L} litres, ` +
+    `so ${km} \u00f7 100 \u00d7 ${L} = ${ans} litres.`,
+  etFuelDistance: "That is the distance the town drives, not the fuel it burns. Those kilometres still have to be turned into litres.",
+  etFuelPerHundred: "The rate is per 100 kilometres, not per kilometre, so this answer is a hundred times too big.",
+
+  eAskCoffee: (n, h, d) =>
+    `A coffee shop sells about ${n} cups an hour, opens ${h} hours a day and trades ${d} days a week. Roughly how many cups a week?`,
+  eSolCoffee: (n, h, perDay, d, ans) =>
+    `A day is ${n} \u00d7 ${h} = ${perDay} cups, and a week is ${d} of those days: ${perDay} \u00d7 ${d} = ${ans}.`,
+  etCoffeeOneDay: "That is a single day. The question asks about a week.",
+  etCoffeeNoHours: "You multiplied the days in but left the opening hours out, and each day is several hours long.",
+
+  eAskTiles: (w, l, per) =>
+    `A room is ${w} metres by ${l} metres, and ${per} tiles cover a square metre. Roughly how many tiles does the floor take?`,
+  eSolTiles: (w, l, area, per, ans) =>
+    `The floor is ${w} \u00d7 ${l} = ${area} square metres, and each square metre takes ${per} tiles: ${area} \u00d7 ${per} = ${ans}.`,
+  etTilesArea: "That is the floor area in square metres, not the number of tiles standing on it.",
+  etTilesPerimeter: "That is the distance round the edge of the room. A floor is covered by its area, not by its border.",
+
+  eAskEggs: (P, e) => `A country of ${P} million people eat about ${e} eggs each a week. Roughly how many million eggs a year?`,
+  eSolEggs: (P, e, perWeek, ans) =>
+    `A week takes ${P} \u00d7 ${e} = ${perWeek} million eggs, and a year is 52 weeks: ${perWeek} \u00d7 52 = ${ans} million.`,
+  etEggsWeek: "That is one week. A year is fifty-two of them.",
+  etEggsDays: "You multiplied by the days in a year, but the rate you were given is per week.",
+
+  eAskWater: (P, l) =>
+    `A city of ${P} thousand people each use about ${l} litres of water a day. Roughly how many cubic metres a day is that? ` +
+    `A cubic metre is 1000 litres.`,
+  eSolWater: (P, l, litres, ans) =>
+    `The city uses ${P} \u00d7 1000 \u00d7 ${l} = ${litres} litres. A cubic metre is 1000 litres, ` +
+    `so ${litres} \u00f7 1000 = ${ans} cubic metres. The two thousands cancel, which is why the answer is simply ${P} times ${l}.`,
+  etWaterLitres: "That is the answer in litres. The question asks for cubic metres, and each of those holds a thousand litres.",
+  etWaterPeople: "That is how many people live there, with nothing about how much water each of them drinks.",
+
+  eAskFlights: (F, s, pct) =>
+    `An airport handles ${F} flights a day. Each plane holds ${s} passengers and flies about ${pct}% full. ` +
+    `Roughly how many passengers a day?`,
+  eSolFlights: (s, pct, perFlight, F, ans) =>
+    `A full plane is ${s} passengers, and ${pct}% of that is ${s} \u00d7 ${pct} \u00f7 100 = ${perFlight}. ` +
+    `Then ${F} flights carry ${F} \u00d7 ${perFlight} = ${ans}.`,
+  etFlightsSeats: "That is every seat on offer. The planes do not fly full, which is the whole reason the percentage is there.",
+  etFlightsOneFlight: "That is a single flight. The airport runs many of them a day.",
+
+  eAskBarbers: (P, w, c, d) =>
+    `A town of ${P} thousand people get a haircut every ${w} weeks. A barber does ${c} cuts a day and works ${d} days a week. ` +
+    `Roughly how many barbers does the town need?`,
+  eSolBarbers: (P, people, w, cuts, c, d, perBarber, ans) =>
+    `${P} thousand people is ${P} \u00d7 1000 = ${people}, and each wants a cut every ${w} weeks, ` +
+    `so one week brings ${people} \u00f7 ${w} = ${cuts} haircuts. ` +
+    `One barber manages ${c} \u00d7 ${d} = ${perBarber} cuts a week, so the town needs ${cuts} \u00f7 ${perBarber} = ${ans}.`,
+  etBarbersCuts: "That is how many haircuts the town wants each week, not how many barbers it takes to give them.",
+  etBarbersOneBarber: "That is one barber's week. The town needs a good many barbers.",
+
   /* probability — event names, reused across prompts */
   pEvents: {
     die6: "a 6 when rolling a fair die",
@@ -809,6 +956,153 @@ const vi = {
   ttAddedNotSubtracted: () => "Cộng mất rồi, đề là trừ.",
   ttAOnly: () => "Đó mới là A. Còn phải trừ B đi.",
   ttLargestNote: () => "So cơ số không thôi thì không được: cơ số nhỏ với số mũ lớn thường thắng, như 4^7 lớn hơn cả 3^7 lẫn 6^5. Phải tính từng cái ra.",
+
+  /* ước lượng — tên đơn vị, đề bài, lời giải và bẫy */
+  eUnits: {
+    secMin:    { one: "phút",        many: "phút",        small: "giây" },
+    minHour:   { one: "giờ",         many: "giờ",         small: "phút" },
+    hourDay:   { one: "ngày",        many: "ngày",        small: "giờ" },
+    dayWeek:   { one: "tuần",        many: "tuần",        small: "ngày" },
+    monthYear: { one: "năm",          many: "năm",          small: "tháng" },
+    gKg:       { one: "ki-lô-gam",   many: "ki-lô-gam",   small: "gam" },
+    mKm:       { one: "ki-lô-mét",   many: "ki-lô-mét",   small: "mét" },
+    mlLitre:   { one: "lít",         many: "lít",         small: "mi-li-lít" },
+    cmM:       { one: "mét",         many: "mét",         small: "xăng-ti-mét" },
+    mmCm:      { one: "xăng-ti-mét", many: "xăng-ti-mét", small: "mi-li-mét" },
+  },
+  eBeats: "nhịp",
+  eBreaths: "nhịp thở",
+  eCups: "cốc",
+  eWindows: "cửa sổ",
+  eMessages: "tin nhắn",
+  eSeats: "chỗ ngồi",
+  eBooks: "cuốn sách",
+
+  eAskUnits: (small, n, many) => `Có bao nhiêu ${small} trong ${n} ${many}?`,
+  eSolUnits: (one, per, small, n, ans) =>
+    `Một ${one} là ${per} ${small}, nên ${n} ${one} là ${n} \u00d7 ${per} = ${ans}.`,
+  etOneUnitOnly: (one) => `Đó mới là một ${one}. Đề hỏi nhiều hơn thế.`,
+  etAddedNotMultiplied: "Hai số này nhân với nhau chứ không cộng. Mỗi cái của thứ nhất kéo theo nguyên một bộ của thứ hai.",
+
+  eAskHeartHour: (r) => `Tim đập ${r} nhịp một phút. Khoảng bao nhiêu nhịp trong một giờ?`,
+  eSolHeartHour: (r, ans) => `Một giờ là 60 phút, mỗi phút tốn ${r} nhịp: 60 \u00d7 ${r} = ${ans}.`,
+  etOneMinuteOnly: "Đó mới là một phút. Một giờ có sáu mươi phút.",
+  etOneSecondOnly: "Đó mới là một giây. Một giờ có ba nghìn sáu trăm giây.",
+  etOneHourOnly: "Đó mới là một giờ đứng riêng. Đề hỏi khoảng thời gian dài hơn.",
+  etOneDayOnly: "Đó mới là một ngày. Một năm còn 365 ngày như vậy.",
+  etOneWeekOnly: "Đó mới là một tuần. Một năm có năm mươi hai tuần.",
+  etForgotPerMinute: "Tốc độ đề cho là mỗi phút chứ không phải mỗi giờ, và mỗi giờ bạn đếm đều chứa sáu mươi phút.",
+
+  eAskTap: (r, h) => `Một vòi nước chảy ${r} lít một phút. Bao nhiêu lít trong ${h} giờ?`,
+  eSolTap: (r, perHour, h, ans) =>
+    `Một giờ được 60 \u00d7 ${r} = ${perHour} lít, và ${h} giờ được ${h} \u00d7 ${perHour} = ${ans}.`,
+  eAskRead: (w, h) => `Bạn đọc ${w} chữ một phút. Khoảng bao nhiêu chữ trong ${h} giờ?`,
+  eSolRead: (w, perHour, h, ans) =>
+    `Một giờ là 60 \u00d7 ${w} = ${perHour} chữ, và ${h} giờ là ${h} \u00d7 ${perHour} = ${ans}.`,
+  eAskCar: (v, h) => `Một chiếc xe chạy ${v} ki-lô-mét một giờ. Trong ${h} giờ nó đi được bao xa?`,
+  eSolCar: (v, h, ans) => `Quãng đường bằng tốc độ nhân thời gian: ${v} \u00d7 ${h} = ${ans} ki-lô-mét.`,
+  eAskMachine: (r, h) => `Một cái máy làm ${r} chi tiết một giờ. Một ca ${h} giờ thì làm được bao nhiêu?`,
+  eSolMachine: (r, h, ans) => `Mỗi giờ trong ca thêm ${r}, nên ${r} \u00d7 ${h} = ${ans}.`,
+  eAskDrip: (r) => `Một vòi nước nhỏ ${r} giọt một giây. Khoảng bao nhiêu giọt trong một giờ?`,
+  eSolDrip: (r, perMin, ans) =>
+    `Một phút được 60 \u00d7 ${r} = ${perMin} giọt, và một giờ là 60 phút như vậy: 60 \u00d7 ${perMin} = ${ans}.`,
+
+  eAskHeartYear: (r) => `Tim đập ${r} nhịp một phút. Khoảng bao nhiêu nhịp trong một năm?`,
+  eAskBreathYear: (r) => `Bạn thở ${r} nhịp một phút. Khoảng bao nhiêu nhịp thở trong một năm?`,
+  eSolPerYear: (r, perHour, perDay, ans, noun) =>
+    `Leo từng bậc một thay vì với ngay tới đích. ` +
+    `Một giờ là 60 \u00d7 ${r} = ${perHour} ${noun}. Một ngày là 24 giờ: 24 \u00d7 ${perHour} = ${perDay}. ` +
+    `Một năm là 365 ngày: 365 \u00d7 ${perDay} = ${ans}.`,
+  etCountedDaysNotMinutes: "Bạn đã nhân với số ngày trong năm nhưng bỏ quên số phút trong mỗi ngày, mà mỗi ngày có 1440 phút.",
+  eAskSleepYear: (h) => `Bạn ngủ ${h} tiếng một đêm. Một năm là khoảng bao nhiêu tiếng ngủ?`,
+  eSolSleepYear: (h, ans) => `Một năm là 365 đêm, mỗi đêm tốn ${h} tiếng: 365 \u00d7 ${h} = ${ans}.`,
+  etAnsweredInMinutes: "Đó là đáp án tính theo phút. Đề hỏi theo giờ.",
+  eAskLight: (n) =>
+    `Ánh sáng đi 300 nghìn ki-lô-mét một giây. Trong ${n} phút nó đi được khoảng bao xa, tính theo nghìn ki-lô-mét?`,
+  eSolLight: (n, secs, ans) =>
+    `${n} phút là ${n} \u00d7 60 = ${secs} giây, và mỗi giây ánh sáng đi 300 nghìn ki-lô-mét: ` +
+    `${secs} \u00d7 300 = ${ans}.`,
+  etLightSeconds: "Đó là quãng đường ánh sáng đi trong bấy nhiêu giây. Đề cho phút, mà mỗi phút dài sáu mươi giây.",
+  eAskRiver: (v) => `Một con sông đưa ${v} mét khối nước qua một điểm mỗi giây. Một ngày qua đó khoảng bao nhiêu?`,
+  eSolRiver: (v, perHour, ans) =>
+    `Một giờ là 3600 giây: 3600 \u00d7 ${v} = ${perHour}. Một ngày là 24 giờ: 24 \u00d7 ${perHour} = ${ans} mét khối.`,
+  etCountedMinutesNotSeconds: "Bạn đã đếm số phút trong một ngày thay vì số giây, mà mỗi phút chứa sáu mươi giây.",
+
+  eAskCups: (n, c) => `Một trường có ${n} học sinh, mỗi em uống ${c} cốc nước một ngày. Một ngày khoảng bao nhiêu cốc?`,
+  eAskWindows: (n, w) => `Một con phố có ${n} ngôi nhà, mỗi nhà khoảng ${w} cửa sổ. Cả phố khoảng bao nhiêu cửa sổ?`,
+  eAskMessages: (n, m) => `Một nhóm ${n} người, mỗi người gửi khoảng ${m} tin nhắn một ngày. Một ngày khoảng bao nhiêu tin nhắn?`,
+  eAskBus: (b, s) => `Một bến xe có ${b} xe buýt, mỗi xe ${s} chỗ ngồi. Tổng cộng bao nhiêu chỗ?`,
+  eAskShelves: (s, b) => `Một thư viện có ${s} kệ sách, mỗi kệ khoảng ${b} cuốn. Khoảng bao nhiêu cuốn sách?`,
+  eSolTwoFactor: (a, b, ans, noun) =>
+    `Mỗi cái trong ${a} mang theo ${b} của riêng nó, nên hai số nhân với nhau: ${a} \u00d7 ${b} = ${ans} ${noun}.`,
+  etOnePerPerson: "Đó là đáp án nếu mỗi cái chỉ mang theo một thứ. Đề nói mỗi cái mang theo nhiều.",
+
+  eAskTuners: (P, A, S) =>
+    `Một thành phố có ${P} nghìn dân. Khoảng 1 trên ${A} người sở hữu một cây đàn dương cầm, và một thợ chỉnh đàn lo được ${S} cây mỗi năm. ` +
+    `Thành phố nuôi sống khoảng bao nhiêu thợ chỉnh đàn?`,
+  eSolTuners: (P, people, A, pianos, S, ans) =>
+    `Đi từng bước một. ${P} nghìn dân là ${P} \u00d7 1000 = ${people}. ` +
+    `Cứ ${A} người có một cây đàn thì được ${people} \u00f7 ${A} = ${pianos} cây. ` +
+    `Một thợ lo ${S} cây một năm, nên ${pianos} \u00f7 ${S} = ${ans} thợ.`,
+  etTunersPianos: "Đó là số cây đàn trong thành phố, không phải số thợ. Một người thợ lo hàng trăm cây.",
+  etTunersPeople: "Đó là toàn bộ dân số. Chỉ một phần nhỏ trong đó có đàn dương cầm.",
+
+  eAskFuel: (N, K, L) =>
+    `Một thị trấn có ${N} xe hơi. Mỗi xe chạy khoảng ${K} ki-lô-mét một năm và tốn ${L} lít nhiên liệu cho mỗi 100 ki-lô-mét. ` +
+    `Một năm cả thị trấn đốt khoảng bao nhiêu lít?`,
+  eSolFuel: (N, K, km, L, ans) =>
+    `Các xe cộng lại chạy ${N} \u00d7 ${K} = ${km} ki-lô-mét. Cứ 100 ki-lô-mét tốn ${L} lít, ` +
+    `nên ${km} \u00f7 100 \u00d7 ${L} = ${ans} lít.`,
+  etFuelDistance: "Đó là quãng đường cả thị trấn chạy, không phải lượng nhiên liệu. Số ki-lô-mét đó còn phải đổi ra lít.",
+  etFuelPerHundred: "Mức tiêu hao là cho mỗi 100 ki-lô-mét chứ không phải mỗi ki-lô-mét, nên đáp án này lớn gấp một trăm lần.",
+
+  eAskCoffee: (n, h, d) =>
+    `Một quán cà phê bán khoảng ${n} cốc một giờ, mở ${h} tiếng một ngày và bán ${d} ngày một tuần. Một tuần khoảng bao nhiêu cốc?`,
+  eSolCoffee: (n, h, perDay, d, ans) =>
+    `Một ngày là ${n} \u00d7 ${h} = ${perDay} cốc, và một tuần là ${d} ngày như vậy: ${perDay} \u00d7 ${d} = ${ans}.`,
+  etCoffeeOneDay: "Đó mới là một ngày. Đề hỏi cả tuần.",
+  etCoffeeNoHours: "Bạn đã nhân số ngày vào nhưng bỏ quên số giờ mở cửa, mà mỗi ngày dài mấy tiếng.",
+
+  eAskTiles: (w, l, per) =>
+    `Một căn phòng ${w} mét nhân ${l} mét, và ${per} viên gạch phủ kín một mét vuông. Sàn phòng cần khoảng bao nhiêu viên?`,
+  eSolTiles: (w, l, area, per, ans) =>
+    `Sàn rộng ${w} \u00d7 ${l} = ${area} mét vuông, mỗi mét vuông cần ${per} viên: ${area} \u00d7 ${per} = ${ans}.`,
+  etTilesArea: "Đó là diện tích sàn tính theo mét vuông, không phải số viên gạch nằm trên đó.",
+  etTilesPerimeter: "Đó là chu vi quanh mép phòng. Sàn được phủ bằng diện tích chứ không phải bằng đường viền.",
+
+  eAskEggs: (P, e) => `Một nước có ${P} triệu dân, mỗi người ăn khoảng ${e} quả trứng một tuần. Một năm khoảng bao nhiêu triệu quả trứng?`,
+  eSolEggs: (P, e, perWeek, ans) =>
+    `Một tuần tốn ${P} \u00d7 ${e} = ${perWeek} triệu quả, và một năm là 52 tuần: ${perWeek} \u00d7 52 = ${ans} triệu.`,
+  etEggsWeek: "Đó mới là một tuần. Một năm có năm mươi hai tuần.",
+  etEggsDays: "Bạn đã nhân với số ngày trong năm, nhưng mức đề cho là mỗi tuần.",
+
+  eAskWater: (P, l) =>
+    `Một thành phố ${P} nghìn dân, mỗi người dùng khoảng ${l} lít nước một ngày. Một ngày khoảng bao nhiêu mét khối? ` +
+    `Một mét khối là 1000 lít.`,
+  eSolWater: (P, l, litres, ans) =>
+    `Thành phố dùng ${P} \u00d7 1000 \u00d7 ${l} = ${litres} lít. Một mét khối là 1000 lít, ` +
+    `nên ${litres} \u00f7 1000 = ${ans} mét khối. Hai con số nghìn triệt tiêu nhau, nên đáp án đơn giản là ${P} nhân ${l}.`,
+  etWaterLitres: "Đó là đáp án tính theo lít. Đề hỏi mét khối, mà mỗi mét khối chứa một nghìn lít.",
+  etWaterPeople: "Đó là số người sống ở đó, chưa nói gì tới lượng nước mỗi người dùng.",
+
+  eAskFlights: (F, s, pct) =>
+    `Một sân bay có ${F} chuyến bay một ngày. Mỗi máy bay chở ${s} khách và bay đầy khoảng ${pct}%. ` +
+    `Một ngày khoảng bao nhiêu hành khách?`,
+  eSolFlights: (s, pct, perFlight, F, ans) =>
+    `Một máy bay đầy là ${s} khách, và ${pct}% của nó là ${s} \u00d7 ${pct} \u00f7 100 = ${perFlight}. ` +
+    `Rồi ${F} chuyến chở ${F} \u00d7 ${perFlight} = ${ans}.`,
+  etFlightsSeats: "Đó là toàn bộ số ghế có sẵn. Máy bay không bay đầy, và đó chính là lý do đề cho phần trăm.",
+  etFlightsOneFlight: "Đó mới là một chuyến. Sân bay chạy rất nhiều chuyến mỗi ngày.",
+
+  eAskBarbers: (P, w, c, d) =>
+    `Một thị trấn ${P} nghìn dân, mỗi người cắt tóc ${w} tuần một lần. Một thợ cắt ${c} người một ngày và làm ${d} ngày một tuần. ` +
+    `Thị trấn cần khoảng bao nhiêu thợ cắt tóc?`,
+  eSolBarbers: (P, people, w, cuts, c, d, perBarber, ans) =>
+    `${P} nghìn dân là ${P} \u00d7 1000 = ${people}, mỗi người cắt ${w} tuần một lần, ` +
+    `nên một tuần có ${people} \u00f7 ${w} = ${cuts} lượt cắt. ` +
+    `Một thợ làm được ${c} \u00d7 ${d} = ${perBarber} lượt một tuần, nên thị trấn cần ${cuts} \u00f7 ${perBarber} = ${ans}.`,
+  etBarbersCuts: "Đó là số lượt cắt tóc thị trấn cần mỗi tuần, không phải số thợ để cắt hết chúng.",
+  etBarbersOneBarber: "Đó mới là một tuần của một người thợ. Thị trấn cần khá nhiều thợ.",
 
   /* probability — event names, reused across prompts */
   pEvents: {

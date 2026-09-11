@@ -12,7 +12,7 @@
  *   node scripts/build-demo.mjs
  */
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -28,9 +28,24 @@ const MODULES = [
   "src/engine/arithmetic.js",
   "src/engine/sequences.js",
   "src/engine/probability.js",
+  "src/engine/estimation.js",
   "src/engine/grade.js",
   "src/engine/index.js",
 ];
+
+// This list has been forgotten twice, and both times the demo shipped looking
+// fine and threw the moment a student opened the new topic. A missing module is
+// invisible here and obvious to the directory, so ask the directory.
+{
+  const onDisk = readdirSync(join(root, "src/engine")).filter((f) => f.endsWith(".js"));
+  const listed = new Set(MODULES.map((m) => m.split("/").pop()));
+  const missing = onDisk.filter((f) => !listed.has(f));
+  if (missing.length) {
+    console.error(`build-demo: src/engine has ${missing.join(", ")}, which MODULES does not list.`);
+    console.error("Add it in dependency order - a module may only import ones listed before it.");
+    process.exit(1);
+  }
+}
 
 /** Collect the names a module exports, then strip the ESM syntax. */
 function toCommonJs(src) {

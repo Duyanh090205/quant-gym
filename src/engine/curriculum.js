@@ -48,10 +48,24 @@ export const CURRICULUM = [
         [lv(15, 100, 12), lv(12, 130, 9), lv(12, 160, 9)]),
       skill("arith.percent", "Percentages", "Phần trăm",
         [lv(15, 110, 12), lv(15, 140, 11), lv(12, 160, 9)]),
-      skill("arith.estimate", "Estimation", "Ước lượng",
+      skill("arith.estimate", "Rough answers", "Tính áng chừng",
         [lv(10, 100, 8), lv(10, 110, 7), lv(10, 120, 7)]),
       skill("arith.puzzles", "Number puzzles", "Câu đố số học",
         [lv(10, 150, 8), lv(10, 180, 7), lv(8, 200, 6)]),
+    ],
+  },
+  {
+    id: "estimation",
+    name: { en: "Estimation", vi: "Ước lượng" },
+    blurb: {
+      en: "How big a thing is, and how many of them there are. The half of a trading interview with no formula in it.",
+      vi: "Một thứ lớn cỡ nào, và có bao nhiêu cái như thế. Nửa phần của buổi phỏng vấn giao dịch không có công thức nào cả.",
+    },
+    skills: [
+      skill("est.scale", "Scale and units", "Đơn vị và bậc độ lớn",
+        [lv(12, 150, 10), lv(10, 180, 8), lv(10, 240, 7)]),
+      skill("est.fermi", "Fermi estimates", "Ước lượng Fermi",
+        [lv(10, 200, 8), lv(8, 300, 6), lv(8, 360, 6)]),
     ],
   },
   {

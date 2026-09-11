@@ -15,6 +15,7 @@ import { makeRng, makeCode, hashSeed } from "./rng.js";
 import { ARITHMETIC } from "./arithmetic.js";
 import { SEQUENCES } from "./sequences.js";
 import { PROBABILITY } from "./probability.js";
+import { ESTIMATION } from "./estimation.js";
 import { CURRICULUM, EXAMS, ALL_SKILLS, getSkill, nextSkill, skillName, SKILL_ORDER } from "./curriculum.js";
 import { TEXT } from "./text.js";
 import { TIPS, getTip, tipsForSkill } from "./tips.js";
@@ -36,9 +37,10 @@ const MIXED = {
     ["prob.classics", 13],
   ],
   "seq.mixed": [["seq.find-rule", 50], ["seq.odd-one-out", 50]],
+  "est.mixed": [["est.scale", 50], ["est.fermi", 50]],
 };
 
-const GENERATORS = { ...ARITHMETIC, ...SEQUENCES, ...PROBABILITY };
+const GENERATORS = { ...ARITHMETIC, ...ESTIMATION, ...SEQUENCES, ...PROBABILITY };
 
 function pickWeighted(rng, pairs) {
   const total = pairs.reduce((a, p) => a + p[1], 0);
@@ -70,6 +72,9 @@ export function generate(skillId, level = 1, seed = Math.random(), lang = "en") 
   return build(skillId, level, rng, 0, lang);
 }
 
+/** Prefix to the topic it belongs to, so a host can group questions. */
+const TOPIC_OF = { arith: "arithmetic", est: "estimation", seq: "sequences", prob: "probability" };
+
 function build(skillId, level, rng, index, lang = "en") {
   const resolved = resolve(skillId, rng);
   const gen = GENERATORS[resolved];
@@ -83,7 +88,7 @@ function build(skillId, level, rng, index, lang = "en") {
     id: `${resolved}.L${lv}#${index}`,
     skill: resolved,
     requested: skillId,
-    topic: topic === "arith" ? "arithmetic" : topic === "seq" ? "sequences" : "probability",
+    topic: TOPIC_OF[topic] || topic,
     level: lv,
     format: "number",
     traps: [],
