@@ -644,7 +644,7 @@ const en = {
   eAskRead: (w, h) => `You read ${w} words a minute. About how many words in ${h} hours?`,
   eSolRead: (w, perHour, h, ans) =>
     `An hour is 60 \u00d7 ${w} = ${perHour} words, and ${h} hours is ${h} \u00d7 ${perHour} = ${ans}.`,
-  eAskCar: (v, h) => `A car holds ${v} kilometres an hour. How far does it go in ${h} hours?`,
+  eAskCar: (v, h) => `A car travels at ${v} kilometres an hour. How far does it go in ${h} hours?`,
   eSolCar: (v, h, ans) => `Distance is speed times time: ${v} \u00d7 ${h} = ${ans} kilometres.`,
   eAskMachine: (r, h) => `A machine makes ${r} parts an hour. How many does it make in a ${h}-hour shift?`,
   eSolMachine: (r, h, ans) => `Every hour of the shift adds ${r}, so ${r} \u00d7 ${h} = ${ans}.`,
@@ -668,6 +668,7 @@ const en = {
     `${n} minutes is ${n} \u00d7 60 = ${secs} seconds, and every second carries light 300 thousand kilometres: ` +
     `${secs} \u00d7 300 = ${ans}.`,
   etLightSeconds: "That is how far light gets in that many seconds. The question is in minutes, and each one is sixty seconds long.",
+  etLightOneMinute: "That is one minute's worth of travel. The question asks about several minutes, so multiply it up.",
   eAskRiver: (v) => `A river carries ${v} cubic metres of water past a point every second. About how much passes in a day?`,
   eSolRiver: (v, perHour, ans) =>
     `An hour is 3600 seconds: 3600 \u00d7 ${v} = ${perHour}. A day is 24 hours: 24 \u00d7 ${perHour} = ${ans} cubic metres.`,
@@ -675,12 +676,21 @@ const en = {
 
   eAskCups: (n, c) => `A school has ${n} students and each drinks ${c} cups of water a day. About how many cups a day is that?`,
   eAskWindows: (n, w) => `A street has ${n} houses, each with about ${w} windows. Roughly how many windows along the street?`,
-  eAskMessages: (n, m) => `A group of ${n} people each send about ${m} messages a day. Roughly how many messages a day?`,
+  eAskMessages: (n, m) => `In a group of ${n} people, each person sends about ${m} messages a day. Roughly how many messages a day altogether?`,
   eAskBus: (b, s) => `A depot keeps ${b} buses with ${s} seats each. How many seats is that altogether?`,
   eAskShelves: (s, b) => `A library has ${s} shelves holding about ${b} books each. Roughly how many books?`,
-  eSolTwoFactor: (a, b, ans, noun) =>
-    `Each of the ${a} brings ${b} of its own, so the two numbers multiply: ${a} \u00d7 ${b} = ${ans} ${noun}.`,
-  etOnePerPerson: "That would be the answer if each one brought a single thing. The question says each brings several.",
+  eSubjects: {
+    students: { one: "student", many: "students" },
+    houses:   { one: "house",   many: "houses" },
+    people:   { one: "person",  many: "people" },
+    buses:    { one: "bus",     many: "buses" },
+    shelves:  { one: "shelf",   many: "shelves" },
+  },
+  eSolTwoFactor: (a, subj, b, ans, noun) =>
+    `There are ${a} ${subj.many}, and each ${subj.one} accounts for ${b} ${noun}. ` +
+    `So the two numbers multiply: ${a} \u00d7 ${b} = ${ans}.`,
+  etOnePerPerson: (subj, noun) =>
+    `That is just the number of ${subj.many}. Each ${subj.one} accounts for several ${noun}, so the answer has to be bigger.`,
 
   eAskTuners: (P, A, S) =>
     `A city has ${P} thousand people. About 1 in ${A} of them owns a piano, and one tuner looks after ${S} pianos a year. ` +
@@ -715,14 +725,14 @@ const en = {
   etTilesArea: "That is the floor area in square metres, not the number of tiles standing on it.",
   etTilesPerimeter: "That is the distance round the edge of the room. A floor is covered by its area, not by its border.",
 
-  eAskEggs: (P, e) => `A country of ${P} million people eat about ${e} eggs each a week. Roughly how many million eggs a year?`,
+  eAskEggs: (P, e) => `In a country of ${P} million people, each person eats about ${e} eggs a week. Roughly how many million eggs a year?`,
   eSolEggs: (P, e, perWeek, ans) =>
     `A week takes ${P} \u00d7 ${e} = ${perWeek} million eggs, and a year is 52 weeks: ${perWeek} \u00d7 52 = ${ans} million.`,
   etEggsWeek: "That is one week. A year is fifty-two of them.",
   etEggsDays: "You multiplied by the days in a year, but the rate you were given is per week.",
 
   eAskWater: (P, l) =>
-    `A city of ${P} thousand people each use about ${l} litres of water a day. Roughly how many cubic metres a day is that? ` +
+    `In a city of ${P} thousand people, each person uses about ${l} litres of water a day. Roughly how many cubic metres a day is that? ` +
     `A cubic metre is 1000 litres.`,
   eSolWater: (P, l, litres, ans) =>
     `The city uses ${P} \u00d7 1000 \u00d7 ${l} = ${litres} litres. A cubic metre is 1000 litres, ` +
@@ -740,7 +750,7 @@ const en = {
   etFlightsOneFlight: "That is a single flight. The airport runs many of them a day.",
 
   eAskBarbers: (P, w, c, d) =>
-    `A town of ${P} thousand people get a haircut every ${w} weeks. A barber does ${c} cuts a day and works ${d} days a week. ` +
+    `In a town of ${P} thousand people, each person gets a haircut every ${w} weeks. A barber does ${c} cuts a day and works ${d} days a week. ` +
     `Roughly how many barbers does the town need?`,
   eSolBarbers: (P, people, w, cuts, c, d, perBarber, ans) =>
     `${P} thousand people is ${P} \u00d7 1000 = ${people}, and each wants a cut every ${w} weeks, ` +
@@ -1408,6 +1418,7 @@ const vi = {
     `${n} phút là ${n} \u00d7 60 = ${secs} giây, và mỗi giây ánh sáng đi 300 nghìn ki-lô-mét: ` +
     `${secs} \u00d7 300 = ${ans}.`,
   etLightSeconds: "Đó là quãng đường ánh sáng đi trong bấy nhiêu giây. Đề cho phút, mà mỗi phút dài sáu mươi giây.",
+  etLightOneMinute: "Đó là quãng đường của đúng một phút. Đề hỏi nhiều phút, nên còn phải nhân lên.",
   eAskRiver: (v) => `Một con sông đưa ${v} mét khối nước qua một điểm mỗi giây. Một ngày qua đó khoảng bao nhiêu?`,
   eSolRiver: (v, perHour, ans) =>
     `Một giờ là 3600 giây: 3600 \u00d7 ${v} = ${perHour}. Một ngày là 24 giờ: 24 \u00d7 ${perHour} = ${ans} mét khối.`,
@@ -1415,12 +1426,21 @@ const vi = {
 
   eAskCups: (n, c) => `Một trường có ${n} học sinh, mỗi em uống ${c} cốc nước một ngày. Một ngày khoảng bao nhiêu cốc?`,
   eAskWindows: (n, w) => `Một con phố có ${n} ngôi nhà, mỗi nhà khoảng ${w} cửa sổ. Cả phố khoảng bao nhiêu cửa sổ?`,
-  eAskMessages: (n, m) => `Một nhóm ${n} người, mỗi người gửi khoảng ${m} tin nhắn một ngày. Một ngày khoảng bao nhiêu tin nhắn?`,
+  eAskMessages: (n, m) => `Một nhóm ${n} người, mỗi người gửi khoảng ${m} tin nhắn một ngày. Một ngày tổng cộng khoảng bao nhiêu tin nhắn?`,
   eAskBus: (b, s) => `Một bến xe có ${b} xe buýt, mỗi xe ${s} chỗ ngồi. Tổng cộng bao nhiêu chỗ?`,
   eAskShelves: (s, b) => `Một thư viện có ${s} kệ sách, mỗi kệ khoảng ${b} cuốn. Khoảng bao nhiêu cuốn sách?`,
-  eSolTwoFactor: (a, b, ans, noun) =>
-    `Mỗi cái trong ${a} mang theo ${b} của riêng nó, nên hai số nhân với nhau: ${a} \u00d7 ${b} = ${ans} ${noun}.`,
-  etOnePerPerson: "Đó là đáp án nếu mỗi cái chỉ mang theo một thứ. Đề nói mỗi cái mang theo nhiều.",
+  eSubjects: {
+    students: { one: "học sinh", many: "học sinh" },
+    houses:   { one: "ngôi nhà", many: "ngôi nhà" },
+    people:   { one: "người",   many: "người" },
+    buses:    { one: "xe buýt",  many: "xe buýt" },
+    shelves:  { one: "kệ sách", many: "kệ sách" },
+  },
+  eSolTwoFactor: (a, subj, b, ans, noun) =>
+    `Có ${a} ${subj.many}, và mỗi ${subj.one} ứng với ${b} ${noun}. ` +
+    `Vậy hai số nhân với nhau: ${a} \u00d7 ${b} = ${ans}.`,
+  etOnePerPerson: (subj, noun) =>
+    `Đó mới là số ${subj.many}. Mỗi ${subj.one} ứng với nhiều ${noun}, nên đáp án phải lớn hơn thế.`,
 
   eAskTuners: (P, A, S) =>
     `Một thành phố có ${P} nghìn dân. Khoảng 1 trên ${A} người sở hữu một cây đàn dương cầm, và một thợ chỉnh đàn lo được ${S} cây mỗi năm. ` +
@@ -2327,7 +2347,7 @@ const TIPS = [
       why: "Nobody gets 3 \u00d7 6 wrong. What goes wrong is losing a zero somewhere in the middle, and keeping the two jobs apart means a slip in one cannot hide inside the other.",
     },
     vi: {
-      title: "Đếm chữ số không tách rời khỏi chữ số",
+      title: "Đếm chữ số không tách riêng khỏi các chữ số khác",
       when: "Mọi câu có số tròn: nghìn, triệu, hay tốc độ mỗi giây.",
       steps: [
         "Tách mỗi số thành phần chữ số nhỏ và một đống chữ số không.",
@@ -2350,12 +2370,12 @@ const TIPS = [
       title: "Say the chain out loud before you touch a number",
       when: "Any question asking how many of something there are, when nobody has counted them.",
       steps: [
-        "Say the answer as a product in words first: people, times cups each, times days. No arithmetic yet.",
-        "Check the words cancel down the chain. Litres per person per day, times people, times days, leaves litres.",
+        "Say the answer as a product in words first: students, times cups each. No arithmetic yet.",
+        "Check the words cancel along the chain: cups per student, times students, leaves cups. If they do not cancel, a factor is missing or upside down.",
         "Only now put the numbers in, one step at a time, and say each running total before moving on.",
       ],
       examples: [
-        { ask: "A school of 800 students each drink 3 cups of water a day. How many cups a day?",
+        { ask: "In a school of 800 students, each drinks 3 cups of water a day. How many cups a day?",
           work: "students times cups each: 800 \u00d7 3 = 2400" },
         { ask: "A city of 600 thousand people, 1 in 100 owns a piano, and one tuner covers 600 pianos a year. How many tuners?",
           work: "people to pianos: 600000 \u00f7 100 = 6000; pianos to tuners: 6000 \u00f7 600 = 10" },
@@ -2366,8 +2386,8 @@ const TIPS = [
       title: "Đọc chuỗi nhân chia thành lời trước khi động vào con số",
       when: "Mọi câu hỏi có bao nhiêu cái gì đó, khi chưa ai đếm chúng cả.",
       steps: [
-        "Nói đáp án thành một tích bằng lời trước: số người, nhân số cốc mỗi người, nhân số ngày. Chưa tính gì hết.",
-        "Kiểm tra các đơn vị triệt tiêu dọc chuỗi. Lít mỗi người mỗi ngày, nhân số người, nhân số ngày, còn lại lít.",
+        "Nói đáp án thành một tích bằng lời trước: số học sinh, nhân số cốc mỗi em. Chưa tính gì hết.",
+        "Kiểm tra đơn vị triệt tiêu dọc chuỗi: cốc mỗi học sinh, nhân số học sinh, còn lại cốc. Nếu không triệt tiêu được thì hoặc thiếu một thừa số, hoặc có một thừa số bị lật ngược.",
         "Đến lúc này mới thay số vào, từng bước một, và đọc kết quả trung gian trước khi đi tiếp.",
       ],
       examples: [
@@ -4974,7 +4994,7 @@ function scale(rng, level, t) {
       solution: t.eSolLight(n, 60 * n, 18000 * n),
       traps: [
         { value: 300 * n, why: t.etLightSeconds },
-        { value: 18000, why: t.etOneMinuteOnly },
+        { value: 18000, why: t.etLightOneMinute },
       ],
       tip: "count-the-zeros",
     });
@@ -5005,8 +5025,11 @@ function fermi(rng, level, t) {
       return q({
         prompt: t.eAskCups(n, c),
         answer: n * c,
-        solution: t.eSolTwoFactor(n, c, n * c, t.eCups),
-        traps: [{ value: n, why: t.etOnePerPerson }, { value: n + c, why: t.etAddedNotMultiplied }],
+        solution: t.eSolTwoFactor(n, t.eSubjects.students, c, n * c, t.eCups),
+        traps: [
+          { value: n, why: t.etOnePerPerson(t.eSubjects.students, t.eCups) },
+          { value: n + c, why: t.etAddedNotMultiplied },
+        ],
         tip: "chain-the-factors",
       });
     }
@@ -5017,8 +5040,11 @@ function fermi(rng, level, t) {
       return q({
         prompt: t.eAskWindows(n, w),
         answer: n * w,
-        solution: t.eSolTwoFactor(n, w, n * w, t.eWindows),
-        traps: [{ value: n, why: t.etOnePerPerson }, { value: n + w, why: t.etAddedNotMultiplied }],
+        solution: t.eSolTwoFactor(n, t.eSubjects.houses, w, n * w, t.eWindows),
+        traps: [
+          { value: n, why: t.etOnePerPerson(t.eSubjects.houses, t.eWindows) },
+          { value: n + w, why: t.etAddedNotMultiplied },
+        ],
         tip: "chain-the-factors",
       });
     }
@@ -5029,8 +5055,11 @@ function fermi(rng, level, t) {
       return q({
         prompt: t.eAskMessages(n, m),
         answer: n * m,
-        solution: t.eSolTwoFactor(n, m, n * m, t.eMessages),
-        traps: [{ value: n, why: t.etOnePerPerson }, { value: n + m, why: t.etAddedNotMultiplied }],
+        solution: t.eSolTwoFactor(n, t.eSubjects.people, m, n * m, t.eMessages),
+        traps: [
+          { value: n, why: t.etOnePerPerson(t.eSubjects.people, t.eMessages) },
+          { value: n + m, why: t.etAddedNotMultiplied },
+        ],
         tip: "chain-the-factors",
       });
     }
@@ -5041,7 +5070,7 @@ function fermi(rng, level, t) {
       return q({
         prompt: t.eAskBus(b, s),
         answer: b * s,
-        solution: t.eSolTwoFactor(b, s, b * s, t.eSeats),
+        solution: t.eSolTwoFactor(b, t.eSubjects.buses, s, b * s, t.eSeats),
         traps: [{ value: b + s, why: t.etAddedNotMultiplied }],
         tip: "chain-the-factors",
       });
@@ -5052,7 +5081,7 @@ function fermi(rng, level, t) {
     return q({
       prompt: t.eAskShelves(s, b),
       answer: s * b,
-      solution: t.eSolTwoFactor(s, b, s * b, t.eBooks),
+      solution: t.eSolTwoFactor(s, t.eSubjects.shelves, b, s * b, t.eBooks),
       traps: [{ value: s + b, why: t.etAddedNotMultiplied }],
       tip: "chain-the-factors",
     });
@@ -5063,7 +5092,7 @@ function fermi(rng, level, t) {
 
     if (shape === "tuners") {
       const got = until(rng, 40, (r) => {
-        const P = r.pick([600, 800, 1200, 1500, 2000]);
+        const P = r.pick([300, 400, 600, 800, 900]);
         const A = r.pick([100, 150, 200]);
         const S = r.pick([500, 600, 800]);
         return { P, A, S, pianos: (P * 1000) / A, answer: (P * 1000) / A / S };

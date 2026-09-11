@@ -196,7 +196,7 @@ export function scale(rng, level, t) {
       solution: t.eSolLight(n, 60 * n, 18000 * n),
       traps: [
         { value: 300 * n, why: t.etLightSeconds },
-        { value: 18000, why: t.etOneMinuteOnly },
+        { value: 18000, why: t.etLightOneMinute },
       ],
       tip: "count-the-zeros",
     });
@@ -227,8 +227,11 @@ export function fermi(rng, level, t) {
       return q({
         prompt: t.eAskCups(n, c),
         answer: n * c,
-        solution: t.eSolTwoFactor(n, c, n * c, t.eCups),
-        traps: [{ value: n, why: t.etOnePerPerson }, { value: n + c, why: t.etAddedNotMultiplied }],
+        solution: t.eSolTwoFactor(n, t.eSubjects.students, c, n * c, t.eCups),
+        traps: [
+          { value: n, why: t.etOnePerPerson(t.eSubjects.students, t.eCups) },
+          { value: n + c, why: t.etAddedNotMultiplied },
+        ],
         tip: "chain-the-factors",
       });
     }
@@ -239,8 +242,11 @@ export function fermi(rng, level, t) {
       return q({
         prompt: t.eAskWindows(n, w),
         answer: n * w,
-        solution: t.eSolTwoFactor(n, w, n * w, t.eWindows),
-        traps: [{ value: n, why: t.etOnePerPerson }, { value: n + w, why: t.etAddedNotMultiplied }],
+        solution: t.eSolTwoFactor(n, t.eSubjects.houses, w, n * w, t.eWindows),
+        traps: [
+          { value: n, why: t.etOnePerPerson(t.eSubjects.houses, t.eWindows) },
+          { value: n + w, why: t.etAddedNotMultiplied },
+        ],
         tip: "chain-the-factors",
       });
     }
@@ -251,8 +257,11 @@ export function fermi(rng, level, t) {
       return q({
         prompt: t.eAskMessages(n, m),
         answer: n * m,
-        solution: t.eSolTwoFactor(n, m, n * m, t.eMessages),
-        traps: [{ value: n, why: t.etOnePerPerson }, { value: n + m, why: t.etAddedNotMultiplied }],
+        solution: t.eSolTwoFactor(n, t.eSubjects.people, m, n * m, t.eMessages),
+        traps: [
+          { value: n, why: t.etOnePerPerson(t.eSubjects.people, t.eMessages) },
+          { value: n + m, why: t.etAddedNotMultiplied },
+        ],
         tip: "chain-the-factors",
       });
     }
@@ -263,7 +272,7 @@ export function fermi(rng, level, t) {
       return q({
         prompt: t.eAskBus(b, s),
         answer: b * s,
-        solution: t.eSolTwoFactor(b, s, b * s, t.eSeats),
+        solution: t.eSolTwoFactor(b, t.eSubjects.buses, s, b * s, t.eSeats),
         traps: [{ value: b + s, why: t.etAddedNotMultiplied }],
         tip: "chain-the-factors",
       });
@@ -274,7 +283,7 @@ export function fermi(rng, level, t) {
     return q({
       prompt: t.eAskShelves(s, b),
       answer: s * b,
-      solution: t.eSolTwoFactor(s, b, s * b, t.eBooks),
+      solution: t.eSolTwoFactor(s, t.eSubjects.shelves, b, s * b, t.eBooks),
       traps: [{ value: s + b, why: t.etAddedNotMultiplied }],
       tip: "chain-the-factors",
     });
@@ -285,7 +294,7 @@ export function fermi(rng, level, t) {
 
     if (shape === "tuners") {
       const got = until(rng, 40, (r) => {
-        const P = r.pick([600, 800, 1200, 1500, 2000]);
+        const P = r.pick([300, 400, 600, 800, 900]);
         const A = r.pick([100, 150, 200]);
         const S = r.pick([500, 600, 800]);
         return { P, A, S, pianos: (P * 1000) / A, answer: (P * 1000) / A / S };

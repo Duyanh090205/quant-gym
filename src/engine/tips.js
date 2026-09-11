@@ -433,7 +433,7 @@ export const TIPS = [
       why: "Nobody gets 3 \u00d7 6 wrong. What goes wrong is losing a zero somewhere in the middle, and keeping the two jobs apart means a slip in one cannot hide inside the other.",
     },
     vi: {
-      title: "Đếm chữ số không tách rời khỏi chữ số",
+      title: "Đếm chữ số không tách riêng khỏi các chữ số khác",
       when: "Mọi câu có số tròn: nghìn, triệu, hay tốc độ mỗi giây.",
       steps: [
         "Tách mỗi số thành phần chữ số nhỏ và một đống chữ số không.",
@@ -456,12 +456,12 @@ export const TIPS = [
       title: "Say the chain out loud before you touch a number",
       when: "Any question asking how many of something there are, when nobody has counted them.",
       steps: [
-        "Say the answer as a product in words first: people, times cups each, times days. No arithmetic yet.",
-        "Check the words cancel down the chain. Litres per person per day, times people, times days, leaves litres.",
+        "Say the answer as a product in words first: students, times cups each. No arithmetic yet.",
+        "Check the words cancel along the chain: cups per student, times students, leaves cups. If they do not cancel, a factor is missing or upside down.",
         "Only now put the numbers in, one step at a time, and say each running total before moving on.",
       ],
       examples: [
-        { ask: "A school of 800 students each drink 3 cups of water a day. How many cups a day?",
+        { ask: "In a school of 800 students, each drinks 3 cups of water a day. How many cups a day?",
           work: "students times cups each: 800 \u00d7 3 = 2400" },
         { ask: "A city of 600 thousand people, 1 in 100 owns a piano, and one tuner covers 600 pianos a year. How many tuners?",
           work: "people to pianos: 600000 \u00f7 100 = 6000; pianos to tuners: 6000 \u00f7 600 = 10" },
@@ -472,8 +472,8 @@ export const TIPS = [
       title: "Đọc chuỗi nhân chia thành lời trước khi động vào con số",
       when: "Mọi câu hỏi có bao nhiêu cái gì đó, khi chưa ai đếm chúng cả.",
       steps: [
-        "Nói đáp án thành một tích bằng lời trước: số người, nhân số cốc mỗi người, nhân số ngày. Chưa tính gì hết.",
-        "Kiểm tra các đơn vị triệt tiêu dọc chuỗi. Lít mỗi người mỗi ngày, nhân số người, nhân số ngày, còn lại lít.",
+        "Nói đáp án thành một tích bằng lời trước: số học sinh, nhân số cốc mỗi em. Chưa tính gì hết.",
+        "Kiểm tra đơn vị triệt tiêu dọc chuỗi: cốc mỗi học sinh, nhân số học sinh, còn lại cốc. Nếu không triệt tiêu được thì hoặc thiếu một thừa số, hoặc có một thừa số bị lật ngược.",
         "Đến lúc này mới thay số vào, từng bước một, và đọc kết quả trung gian trước khi đi tiếp.",
       ],
       examples: [

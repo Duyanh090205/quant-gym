@@ -1,245 +1,84 @@
-# Review notes
+# What is verified, and what is not
 
-Read before trusting the content. This is an honest account of what has been
-checked, by what, and what has not.
+Read this before trusting the content. Most of the engine is checked by machine,
+and the parts that are not are listed here rather than left for you to find.
 
-Last read end to end: 10 September 2026, all 24 tip cards in both languages,
-plus every generator's questions, solutions and traps.
+Last read end to end: 11 September 2026 — all 26 tip cards and every generator's
+questions, solutions and traps, in both languages.
 
 ---
 
 ## What a machine verifies
 
-`npm test` runs 52 tests. Three of them do the load-bearing work, and they are
-deliberately independent of one another, because a formula and the generator that
-produced it can be wrong in the same way.
+Every run of `npm test` re-checks all of this. None of it is a spot check.
 
-| Check | What it reads | Scale |
+| Test | What it holds to account | Scale |
 |---|---|---|
 | `engine.test.js` | every generated answer, re-derived from a formula written separately from the generator | ~1,000 questions per run |
-| `simulate.test.js` | the same answers, by playing the game instead of computing it | 265 distinct question shapes, 120,000 trials each |
-| `tip-arithmetic.test.js` | the hand-written tip cards, parsing and evaluating both sides of every equation printed on them | 140 equations across 24 cards in two languages |
-| `bilingual.test.js` | the two languages against each other: answers, traps, numbers, and what is left untranslated | every skill at every level |
-| `solution-arithmetic.test.js` | every equation printed inside a generated solution or trap, in both languages | 5,480 equations per run |
+| `simulate.test.js` | the same answers again, by playing the game rather than computing it | 348 distinct shapes, 120,000 trials each |
+| `estimation.test.js` | estimation answers, read back out of the sentence the student sees | 720 answers, conversions written from scratch |
+| `solution-arithmetic.test.js` | both sides of every equation printed inside a solution or a trap | 6,344 equations, plus 490 in traps |
 | `sequence-ambiguity.test.js` | whether a sequence admits two defensible answers, using rules fitted from scratch | 1,079 sequences, 789 odd-one-out |
+| `question-pool.test.js` | that every skill can fill its own paper without repeating a question | all 63 skill-levels |
+| `tip-arithmetic.test.js` | the hand-written tip cards, evaluating every equation printed on them | 150 equations across 26 cards |
+| `bilingual.test.js` | that the two languages never disagree about a number | every prompt, both languages |
 
-Simulation is the one worth explaining. It ignores the formulas entirely and
-rolls the dice, draws the balls, shuffles the envelopes, walks the walks and plays
-out the duels, using rejection sampling for the conditional questions. Every
-probability question the engine can produce is covered; a run reports `0 shapes
-had no simulator`, and the test fails if that number rises.
-
-Also enforced, because they are the failure modes that would quietly ruin a lesson:
-
-- Every trap is far enough from the right answer that marking can tell them apart.
-- Every trap and every worked solution carries an explanation, and the solution
-  arrives at the answer it claims.
-- No card uses a word a fifteen-year-old has not met (*likelihood*, *prior*,
-  *martingale*, *commute*, *sample space*, and others), in either language.
-- No card title is a formula.
-- Every card says when to reach for it.
-- Every example states its question, and holds exactly one question.
-- The two languages of a card never print different numbers.
+Three of these are worth a note. `simulate.test.js` fails if a probability shape
+has no simulator, so a new shape cannot be added without one.
+`question-pool.test.js` fails if a skill falls short of the paper the curriculum
+asks of it, and fails again if a skill listed as short has quietly been fixed and
+left on the list. `estimation.test.js` also refuses a worked solution that uses a
+figure its question never gave the student.
 
 ## What no machine checks
 
-**Prose reasoning.** Around 140 instruction steps, and a "why it works" and a
-"use it when" line on each of 24 cards in two languages, are arguments in words. The numbers inside them are checked; the
-arguments are not, and cannot be. They have been read end to end once, on the date
-above. If you change one, nothing will catch a new mistake in it.
+**Prose reasoning.** Around 150 instruction steps, plus a "why it works" and a
+"use it when" line on each of 26 cards in two languages, are arguments made in
+words. The numbers inside them are checked; the arguments are not, and cannot be.
+They have been read end to end on the date above. If you change one, nothing will
+catch a new mistake in it.
 
-**Four equations that cannot be parsed.** All in the ×11 trick, which uses
-positional notation: `3 (3+6) 6 = 396`. The test reports these rather than hiding
-them. Checked by hand: 36 × 11 = 396 and 78 × 11 = 858.
-
-**Claims about the real exam.** The Maven paper reproduced here comes from one
-sitting on 9 September 2026, recorded immediately afterwards from memory. The
-format is right. The exact difficulty of the arithmetic section is a judgement
-call, and the person who sat it reported the real thing was harder than this
-trainer was at the time.
+**Four equations that cannot be parsed.** All of them in the ×11 trick, which
+uses positional notation: `3 (3+6) 6 = 396`. The test reports these rather than
+hiding them. Checked by hand: 36 × 11 = 396 and 78 × 11 = 858.
 
 **Vietnamese fluency.** The translations are checked for numbers, for jargon, and
 for agreeing with the English on every answer and trap. What no test can check is
-whether they read naturally. A Vietnamese teacher should skim them once.
+whether they read naturally to a Vietnamese speaker. This is the largest
+unverified surface in the project.
 
-## What this read-through changed
+**Claims about real assessments.** Two papers reproduce formats reported from
+outside this repository:
 
-Two were real errors.
+- The Maven Securities paper comes from one sitting on 9 September 2026, written
+  down immediately afterwards from memory. The format is right. The difficulty of
+  the arithmetic section is a judgement call, and the person who sat it reported
+  that the real thing was harder than this trainer was at the time.
+- The 80-in-8 paper with penalties follows what candidates report of Optiver's
+  first round, including the pass mark of 55. That is community reporting, not an
+  official specification. What it teaches — that a guess you are not confident in
+  loses on average, so the right move is to leave it — holds whatever the real bar
+  turns out to be.
 
-1. **`split-and-add` contradicted its own example.** The step said to break the
-   *smaller* factor; the example breaks 54 in `17 × 54`. Now it says to break
-   whichever factor splits more cleanly.
-2. **`odd-one-out` stated a guarantee that only holds inside this trainer.**
-   "The first term is never the broken one" is true of this generator and of
-   nothing else. A student leaning on it in a real exam would be burned. It now
-   teaches testing the rule forward, and retrying on the assumption that an early
-   term is itself the odd one.
+**What the estimation topic deliberately will not do.** Every question states the
+assumptions it wants used, so that it can be marked without presenting an
+invented figure as the truth. What it trains is decomposition and the arithmetic
+of big round numbers. What it does not train is inventing the assumptions
+yourself: that has no single right answer and needs a person on the other side of
+the table.
 
-Two cards promised more than they taught, or less.
-
-3. **`subtract-hundreds-first` is used for addition too**, but its title said only
-   "subtract". Retitled to *Work from the left, and say each running total out
-   loud*, with an addition example added.
-4. **`times-five-and-eleven` triggered on 5, 9, 11, 25, 50 and 99** and taught only
-   two of them. Rebuilt around the idea that unifies all six: each is a 10 or a 100
-   with a small adjustment. A ×9 example was added.
-
-Four statements were invented statistics, now removed: *four families out of five*,
-*roughly a third of percentage questions*, *the most interviewed idea on this list*,
-*one of them is always miscounted*. Each has been replaced by a claim that is true.
-
-Two triggers were vague and are now concrete: what counts as a square worth the
-sliding trick, and when a cube root is worth reading off its last digit.
-
-Earlier passes, recorded here so the history is in one place:
-
-- A Vietnamese card wrote dice pairs as `(1,4) (2,3)`. Vietnamese uses the comma as
-  a decimal mark, so a reader sees one-point-four. Rewritten with semicolons.
-- The fraction anchors claimed `1/3 = 33.3%` with an equals sign. Now `≈`.
-- The expectation card rejected 99 as "not the average" without ever saying the
-  average is 100.
-- A card headed *The trick* for probability, where no shortcut exists and the
-  difficulty is recognising which idea a question wants. Probability and sequence
-  cards now read *How to see it*.
-
-## Changes driven by evidence rather than judgement
-
-Two sources of real data were read before this pass, and both changed the product.
-
-**`maven-drill-misses.csv`** records every question one student got wrong while
-preparing for the Maven paper. The engine's traps did not match it.
-
-| Skill | What the engine offered | What actually happened |
-|---|---|---|
-| 2×2 multiplication | "you forgot a partial product" | all six errors were the two partial products added wrong, by +10, +30, +40 or +100 |
-| Division | off by one | all three errors were off by four or five: an opening estimate pitched low and never corrected |
-
-Traps for both now match the recorded failures, and each says what to do about it
-rather than naming an omission the student did not make.
-
-**`BANG-GHI-NHO.md`**, the memory table the same student built while practising,
-contained three strong tricks the app did not teach at all. Each is now a card,
-and the generators produce the cases they are for:
-
-- The difference of two squares, for factors either side of a round number:
-  62 × 58 becomes 60² − 2². A quarter of level-3 multiplications are now built to
-  straddle a round number, because a trick the drill never presents is a trick
-  nobody learns.
-- Squaring a number ending in 5: for 35², take 3 × 4 and write 25 after it.
-- The seventeen square-root anchors, for estimation. Estimation was that student's
-  worst category, four errors out of seven in one session, and it was the only
-  skill with no card of its own.
-
-## Practice aimed at weak spots
-
-The same drill logs showed the deeper problem, which no amount of better content
-fixes: session after session spent on skills already at 95%, while 2×2
-multiplication sat at 50% and division kept running out of time. A ladder gives
-every skill the same attention whether or not you have it.
-
-`generateReview` builds a paper from whichever skills the student is getting
-wrong, ranked by need rather than by raw accuracy, so that two unlucky misses do
-not outrank a genuine gap. It mixes up to four skills and never takes more than
-half from one. `accumulate` folds any marked paper into the record that feeds it.
-
-Neither is checked by simulation, because neither is a maths claim. What is
-tested: the ranking order, the mix, reproducibility from a seed, that blanks do
-not count as evidence, that `accumulate` does not edit the record it is given, and
-that a record full of unknown keys does not break anything.
-
-## Translating the engine, and what it exposed
-
-Prompts and solutions were English only until 10 September. That is the wrong way
-round for this cohort: a tip card is read once, calmly, but a solution is read at
-the moment a student is stuck, and that is when a second language costs the most.
-
-The translation is not a layer on top. Generators take a resolved phrasebook as
-their third argument, each entry a function of the question's own numbers, so
-Vietnamese reorders them rather than following English word order.
-
-Doing it exposed four real faults that English alone would never have shown:
-
-1. **`Uniform[0,1]` and `C(10,2)` read as decimals in Vietnamese**, exactly like
-   the dice pairs found earlier. All now use a semicolon.
-2. **Marking rejected `0,272`.** The parser stripped a comma followed by three
-   digits as a thousands separator, right for English 1,234 and wrong for
-   Vietnamese 0,272. A comma between digits is genuinely ambiguous across the two
-   languages, so marking now tries both readings and accepts either.
-3. **The answer was shown with an English decimal point** on a Vietnamese question
-   whose own working used a comma. Two different numbers on one screen, to a
-   student already unsure.
-4. **A loop variable named `t` shadowed the phrasebook** in three generators,
-   which would have thrown the moment anyone touched those branches.
-
-`bilingual.test.js` now holds the pair to account: same seed, both languages, same
-answers, same traps, same numbers in the prompt, no English left in the Vietnamese,
-no comma-separated pairs, and the shown answer in the question's own convention.
-
-## Checking the solutions, not just the answers
-
-The tip cards had their arithmetic verified. The generated solutions did not, and
-they are the far bigger surface: thousands of worked lines assembled from templates
-at run time, in two languages. Pointing the same equation parser at them found
-**636 false equations reaching students**, in four families:
-
-- **Sentence fragments that read as equations.** "823 − 400 = 423, − 60 = 363"
-  prints the literal claim that −60 = 363. Steps now carry their running total.
-- **Notation that is simply wrong.** "0.25 × 100 = 25%" asserts 25 = 0.25, because
-  25% *is* 0.25. "50 × 40 = 2000 = 0.6435" asserts 2000 = 0.6435.
-- **An equals sign on a rounded value**, and one rounding coarse enough to matter:
-  a probability of 0.01157 was displayed as 0.012, out by nearly 4% on a question
-  graded to 0.5%.
-- **A missing bracket.** "1 ÷ 1/3 = 3" read left to right is 1/3.
-
-One real trap bug came out of the same sweep: level-1 multiplication splits the
-first factor while level 3 splits the second, and both used the sentence written
-for the second, so a 71 × 5 question explained itself with "the units, 71 × 1 = 5".
-
-Nought remain, of 5,480 equations checked per run.
-
-## Sequences with two defensible answers
-
-The standard and usually fair complaint about these tests: `2, 4, 8, 16` continues
-as 32 under doubling and as 22 under a quadratic through the same four points. A
-student who finds the second and is marked wrong learns only that the test is
-unreliable.
-
-`sequence-ambiguity.test.js` fits arithmetic, geometric, quadratic, Fibonacci and
-affine rules from scratch, knowing nothing about which family produced the
-question, and fails if two of them explain the terms while disagreeing about the
-answer. For odd-one-out it asks, for each position, whether the *other* terms lie
-on a simple rule, and fails if two positions qualify.
-
-Nothing was ambiguous: 1,079 sequences and 789 odd-one-out questions, and 1,172
-answers independently confirmed by a rule fitted without reference to the engine.
-
-## Accessibility
-
-`npm run audit:a11y` measures every visible run of text against whatever is
-actually painted behind it, in both themes across three screens, and reports
-controls with no accessible name or that the keyboard cannot reach.
-
-It found white text on the light-teal accent at **2.26:1** in dark mode, where
-ordinary text needs 4.5, and muted text at 4.24:1 in light mode. The ink on an
-accent is now a token rather than a literal, and the muted grey was darkened.
-
-Two things a screen reader needed and did not have: the countdown was never
-announced, and the verdict replaced the input in place with nothing to say it had.
-The clock now announces at a minute, thirty seconds, ten seconds and time-up
-rather than four times a second, and the verdict is a polite live region.
+**Accessibility.** `npm run audit:a11y` measures contrast against whatever is
+actually painted behind the text, in both themes, and checks that every control
+has a name and can be reached by keyboard. It does not run a screen reader; it
+checks the markup one would rely on.
 
 ## Open questions for whoever picks this up
 
-1. **Vietnamese fluency, not correctness.** Everything is now translated, and the
-   tests check that the two languages carry the same numbers, traps and answers.
-   What they cannot check is whether the Vietnamese reads well. A Vietnamese
-   teacher should skim it once.
+1. **A Vietnamese speaker should read the translations once.** Everything is
+   machine-checked for correctness; how it reads is not.
 2. **The pass marks in `curriculum.js` are guesses.** They were set to feel right,
-   not measured. After a cohort has used it, set them from real data.
-3. **Level 1 of a narrow skill can run out of distinct questions.** `generateSet`
-   returns `distinct` alongside `questions` so a caller can see when this happens;
-   it repeats a question rather than handing back a short paper.
-4. **A Vietnamese teacher has still not read it.** Everything below is machine
-   checked; how it reads is not.
-5. **The accessibility audit covers contrast, naming and keyboard reach.** It does
-   not cover an actual screen reader, only the markup one would rely on.
+   not measured. Set them from real data once a cohort has used the thing.
+3. **An actual screen-reader pass has not been done.**
+4. **`est.fermi` could grow an open-ended mode**, where the student supplies the
+   assumptions and a teacher judges the answer. It cannot be auto-marked, so it
+   belongs in a classroom rather than in this engine.

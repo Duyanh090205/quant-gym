@@ -52,7 +52,7 @@ function derive(p) {
   if ((m = p.match(/^You breathe (\d+) times a minute\. About how many breaths in a year/))) return +m[1] * YEAR_MIN;
   if ((m = p.match(/^A tap runs at (\d+) litres a minute\. How many litres in (\d+) hours/))) return +m[1] * MIN * +m[2];
   if ((m = p.match(/^You read (\d+) words a minute\. About how many words in (\d+) hours/))) return +m[1] * MIN * +m[2];
-  if ((m = p.match(/^A car holds (\d+) kilometres an hour\. How far does it go in (\d+) hours/))) return +m[1] * +m[2];
+  if ((m = p.match(/^A car travels at (\d+) kilometres an hour\. How far does it go in (\d+) hours/))) return +m[1] * +m[2];
   if ((m = p.match(/^A machine makes (\d+) parts an hour\. How many does it make in a (\d+)-hour shift/))) return +m[1] * +m[2];
   if ((m = p.match(/^A tap drips (\d+) times a second\. About how many drips in an hour/))) return +m[1] * HOUR;
   if ((m = p.match(/^You sleep (\d+) hours a night\. About how many hours of sleep is that in a year/))) return +m[1] * YEAR_DAYS;
@@ -66,7 +66,7 @@ function derive(p) {
   /* fermi — two factors */
   if ((m = p.match(/^A school has (\d+) students and each drinks (\d+) cups/))) return +m[1] * +m[2];
   if ((m = p.match(/^A street has (\d+) houses, each with about (\d+) windows/))) return +m[1] * +m[2];
-  if ((m = p.match(/^A group of (\d+) people each send about (\d+) messages/))) return +m[1] * +m[2];
+  if ((m = p.match(/^In a group of (\d+) people, each person sends about (\d+) messages/))) return +m[1] * +m[2];
   if ((m = p.match(/^A depot keeps (\d+) buses with (\d+) seats each/))) return +m[1] * +m[2];
   if ((m = p.match(/^A library has (\d+) shelves holding about (\d+) books each/))) return +m[1] * +m[2];
 
@@ -83,16 +83,16 @@ function derive(p) {
   if ((m = p.match(/^A room is (\d+) metres by (\d+) metres, and (\d+) tiles cover a square metre/))) {
     return +m[1] * +m[2] * +m[3];
   }
-  if ((m = p.match(/^A country of (\d+) million people eat about (\d+) eggs each a week/))) {
+  if ((m = p.match(/^In a country of (\d+) million people, each person eats about (\d+) eggs a week/))) {
     return +m[1] * +m[2] * 52;    // answer is in millions
   }
-  if ((m = p.match(/^A city of (\d+) thousand people each use about (\d+) litres/))) {
+  if ((m = p.match(/^In a city of (\d+) thousand people, each person uses about (\d+) litres/))) {
     return (+m[1] * 1000 * +m[2]) / 1000;   // litres to cubic metres
   }
   if ((m = p.match(/^An airport handles (\d+) flights a day\. Each plane holds (\d+) passengers and flies about (\d+)% full/))) {
     return (+m[1] * +m[2] * +m[3]) / 100;
   }
-  if ((m = p.match(/^A town of (\d+) thousand people get a haircut every (\d+) weeks\. A barber does (\d+) cuts a day and works (\d+) days a week/))) {
+  if ((m = p.match(/^In a town of (\d+) thousand people, each person gets a haircut every (\d+) weeks\. A barber does (\d+) cuts a day and works (\d+) days a week/))) {
     return (+m[1] * 1000) / +m[2] / (+m[3] * +m[4]);
   }
 

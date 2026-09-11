@@ -259,7 +259,7 @@ const en = {
   eAskRead: (w, h) => `You read ${w} words a minute. About how many words in ${h} hours?`,
   eSolRead: (w, perHour, h, ans) =>
     `An hour is 60 \u00d7 ${w} = ${perHour} words, and ${h} hours is ${h} \u00d7 ${perHour} = ${ans}.`,
-  eAskCar: (v, h) => `A car holds ${v} kilometres an hour. How far does it go in ${h} hours?`,
+  eAskCar: (v, h) => `A car travels at ${v} kilometres an hour. How far does it go in ${h} hours?`,
   eSolCar: (v, h, ans) => `Distance is speed times time: ${v} \u00d7 ${h} = ${ans} kilometres.`,
   eAskMachine: (r, h) => `A machine makes ${r} parts an hour. How many does it make in a ${h}-hour shift?`,
   eSolMachine: (r, h, ans) => `Every hour of the shift adds ${r}, so ${r} \u00d7 ${h} = ${ans}.`,
@@ -283,6 +283,7 @@ const en = {
     `${n} minutes is ${n} \u00d7 60 = ${secs} seconds, and every second carries light 300 thousand kilometres: ` +
     `${secs} \u00d7 300 = ${ans}.`,
   etLightSeconds: "That is how far light gets in that many seconds. The question is in minutes, and each one is sixty seconds long.",
+  etLightOneMinute: "That is one minute's worth of travel. The question asks about several minutes, so multiply it up.",
   eAskRiver: (v) => `A river carries ${v} cubic metres of water past a point every second. About how much passes in a day?`,
   eSolRiver: (v, perHour, ans) =>
     `An hour is 3600 seconds: 3600 \u00d7 ${v} = ${perHour}. A day is 24 hours: 24 \u00d7 ${perHour} = ${ans} cubic metres.`,
@@ -290,12 +291,21 @@ const en = {
 
   eAskCups: (n, c) => `A school has ${n} students and each drinks ${c} cups of water a day. About how many cups a day is that?`,
   eAskWindows: (n, w) => `A street has ${n} houses, each with about ${w} windows. Roughly how many windows along the street?`,
-  eAskMessages: (n, m) => `A group of ${n} people each send about ${m} messages a day. Roughly how many messages a day?`,
+  eAskMessages: (n, m) => `In a group of ${n} people, each person sends about ${m} messages a day. Roughly how many messages a day altogether?`,
   eAskBus: (b, s) => `A depot keeps ${b} buses with ${s} seats each. How many seats is that altogether?`,
   eAskShelves: (s, b) => `A library has ${s} shelves holding about ${b} books each. Roughly how many books?`,
-  eSolTwoFactor: (a, b, ans, noun) =>
-    `Each of the ${a} brings ${b} of its own, so the two numbers multiply: ${a} \u00d7 ${b} = ${ans} ${noun}.`,
-  etOnePerPerson: "That would be the answer if each one brought a single thing. The question says each brings several.",
+  eSubjects: {
+    students: { one: "student", many: "students" },
+    houses:   { one: "house",   many: "houses" },
+    people:   { one: "person",  many: "people" },
+    buses:    { one: "bus",     many: "buses" },
+    shelves:  { one: "shelf",   many: "shelves" },
+  },
+  eSolTwoFactor: (a, subj, b, ans, noun) =>
+    `There are ${a} ${subj.many}, and each ${subj.one} accounts for ${b} ${noun}. ` +
+    `So the two numbers multiply: ${a} \u00d7 ${b} = ${ans}.`,
+  etOnePerPerson: (subj, noun) =>
+    `That is just the number of ${subj.many}. Each ${subj.one} accounts for several ${noun}, so the answer has to be bigger.`,
 
   eAskTuners: (P, A, S) =>
     `A city has ${P} thousand people. About 1 in ${A} of them owns a piano, and one tuner looks after ${S} pianos a year. ` +
@@ -330,14 +340,14 @@ const en = {
   etTilesArea: "That is the floor area in square metres, not the number of tiles standing on it.",
   etTilesPerimeter: "That is the distance round the edge of the room. A floor is covered by its area, not by its border.",
 
-  eAskEggs: (P, e) => `A country of ${P} million people eat about ${e} eggs each a week. Roughly how many million eggs a year?`,
+  eAskEggs: (P, e) => `In a country of ${P} million people, each person eats about ${e} eggs a week. Roughly how many million eggs a year?`,
   eSolEggs: (P, e, perWeek, ans) =>
     `A week takes ${P} \u00d7 ${e} = ${perWeek} million eggs, and a year is 52 weeks: ${perWeek} \u00d7 52 = ${ans} million.`,
   etEggsWeek: "That is one week. A year is fifty-two of them.",
   etEggsDays: "You multiplied by the days in a year, but the rate you were given is per week.",
 
   eAskWater: (P, l) =>
-    `A city of ${P} thousand people each use about ${l} litres of water a day. Roughly how many cubic metres a day is that? ` +
+    `In a city of ${P} thousand people, each person uses about ${l} litres of water a day. Roughly how many cubic metres a day is that? ` +
     `A cubic metre is 1000 litres.`,
   eSolWater: (P, l, litres, ans) =>
     `The city uses ${P} \u00d7 1000 \u00d7 ${l} = ${litres} litres. A cubic metre is 1000 litres, ` +
@@ -355,7 +365,7 @@ const en = {
   etFlightsOneFlight: "That is a single flight. The airport runs many of them a day.",
 
   eAskBarbers: (P, w, c, d) =>
-    `A town of ${P} thousand people get a haircut every ${w} weeks. A barber does ${c} cuts a day and works ${d} days a week. ` +
+    `In a town of ${P} thousand people, each person gets a haircut every ${w} weeks. A barber does ${c} cuts a day and works ${d} days a week. ` +
     `Roughly how many barbers does the town need?`,
   eSolBarbers: (P, people, w, cuts, c, d, perBarber, ans) =>
     `${P} thousand people is ${P} \u00d7 1000 = ${people}, and each wants a cut every ${w} weeks, ` +
@@ -1023,6 +1033,7 @@ const vi = {
     `${n} phút là ${n} \u00d7 60 = ${secs} giây, và mỗi giây ánh sáng đi 300 nghìn ki-lô-mét: ` +
     `${secs} \u00d7 300 = ${ans}.`,
   etLightSeconds: "Đó là quãng đường ánh sáng đi trong bấy nhiêu giây. Đề cho phút, mà mỗi phút dài sáu mươi giây.",
+  etLightOneMinute: "Đó là quãng đường của đúng một phút. Đề hỏi nhiều phút, nên còn phải nhân lên.",
   eAskRiver: (v) => `Một con sông đưa ${v} mét khối nước qua một điểm mỗi giây. Một ngày qua đó khoảng bao nhiêu?`,
   eSolRiver: (v, perHour, ans) =>
     `Một giờ là 3600 giây: 3600 \u00d7 ${v} = ${perHour}. Một ngày là 24 giờ: 24 \u00d7 ${perHour} = ${ans} mét khối.`,
@@ -1030,12 +1041,21 @@ const vi = {
 
   eAskCups: (n, c) => `Một trường có ${n} học sinh, mỗi em uống ${c} cốc nước một ngày. Một ngày khoảng bao nhiêu cốc?`,
   eAskWindows: (n, w) => `Một con phố có ${n} ngôi nhà, mỗi nhà khoảng ${w} cửa sổ. Cả phố khoảng bao nhiêu cửa sổ?`,
-  eAskMessages: (n, m) => `Một nhóm ${n} người, mỗi người gửi khoảng ${m} tin nhắn một ngày. Một ngày khoảng bao nhiêu tin nhắn?`,
+  eAskMessages: (n, m) => `Một nhóm ${n} người, mỗi người gửi khoảng ${m} tin nhắn một ngày. Một ngày tổng cộng khoảng bao nhiêu tin nhắn?`,
   eAskBus: (b, s) => `Một bến xe có ${b} xe buýt, mỗi xe ${s} chỗ ngồi. Tổng cộng bao nhiêu chỗ?`,
   eAskShelves: (s, b) => `Một thư viện có ${s} kệ sách, mỗi kệ khoảng ${b} cuốn. Khoảng bao nhiêu cuốn sách?`,
-  eSolTwoFactor: (a, b, ans, noun) =>
-    `Mỗi cái trong ${a} mang theo ${b} của riêng nó, nên hai số nhân với nhau: ${a} \u00d7 ${b} = ${ans} ${noun}.`,
-  etOnePerPerson: "Đó là đáp án nếu mỗi cái chỉ mang theo một thứ. Đề nói mỗi cái mang theo nhiều.",
+  eSubjects: {
+    students: { one: "học sinh", many: "học sinh" },
+    houses:   { one: "ngôi nhà", many: "ngôi nhà" },
+    people:   { one: "người",   many: "người" },
+    buses:    { one: "xe buýt",  many: "xe buýt" },
+    shelves:  { one: "kệ sách", many: "kệ sách" },
+  },
+  eSolTwoFactor: (a, subj, b, ans, noun) =>
+    `Có ${a} ${subj.many}, và mỗi ${subj.one} ứng với ${b} ${noun}. ` +
+    `Vậy hai số nhân với nhau: ${a} \u00d7 ${b} = ${ans}.`,
+  etOnePerPerson: (subj, noun) =>
+    `Đó mới là số ${subj.many}. Mỗi ${subj.one} ứng với nhiều ${noun}, nên đáp án phải lớn hơn thế.`,
 
   eAskTuners: (P, A, S) =>
     `Một thành phố có ${P} nghìn dân. Khoảng 1 trên ${A} người sở hữu một cây đàn dương cầm, và một thợ chỉnh đàn lo được ${S} cây mỗi năm. ` +

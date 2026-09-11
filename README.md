@@ -196,9 +196,9 @@ Correctness is checked several ways, because each check misses what the others c
 ## Before you trust the content
 
 [docs/REVIEW.md](docs/REVIEW.md) is an honest account of what has been verified and
-what has not: which checks are machine-enforced, which 200-odd lines of prose
-reasoning only a human has read, what the last read-through changed and why, and
-the open questions for whoever picks this up next.
+what has not: which checks are machine-enforced and at what scale, which prose
+only a human has read, which claims about real assessments come from outside this
+repository, and the open questions for whoever picks this up next.
 
 ## Status
 
