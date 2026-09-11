@@ -288,7 +288,7 @@ export function conditional(rng, level, t) {
       traps: [
         { value: other, why: eldest
           ? t.ptChildOtherVersion(t.pSexWord(boys), kept.length, otherKept)
-          : t.ptChildOrder(kept.length, otherKept) },
+          : t.ptChildNamedOne(t.pSexWord(boys), kept.length, otherKept) },
         { value: 1 / 2 ** n, why: t.ptChildPrior },
       ],
       tip: "condition-shrinks-the-space",

@@ -688,9 +688,9 @@ const en = {
   ptChildOtherVersion: (sex, kept, other) =>
     `That is the answer to the other version, "at least one is a ${sex}". Naming a particular child is stronger ` +
     `information than saying one exists somewhere: it leaves ${kept} families rather than ${other}.`,
-  ptChildOrder: (kept, other) =>
-    `Families that differ only in birth order are different families: an older boy with a younger girl is not the ` +
-    `same family as an older girl with a younger boy. Counted separately they leave ${kept} cases, not ${other}.`,
+  ptChildNamedOne: (sex, kept, other) =>
+    `That is the answer to the other version, the one that names a particular child. "At least one is a ${sex}" only ` +
+    `says such a child exists somewhere, which rules out far less: ${kept} families survive it rather than ${other}.`,
   ptChildPrior: "That is the chance before anyone told you anything at all. What you were told rules some families out, so the answer has to be bigger than this.",
   ptCondUnconditional: "That is one die on its own, ignoring what you were told. The sum rules out most results and changes the answer.",
   ptCondPlain: (k) => `That is the chance of a ${k} in two rolls when you know nothing about the total.`,
@@ -728,7 +728,8 @@ const en = {
   pSolOrderEnds: (n, orders, less, both) =>
     `Whatever values turn up, all ${orders} orders of them are equally likely. The largest has to land in the first slot, ` +
     `which happens 1 time in ${n}. Once it has, the smallest has to land in the last slot among the ${less} places left, ` +
-    `1 time in ${less}. Neither condition tells you anything about the other, so 1/(${n} × ${less}) = 1/${both}.`,
+    `1 time in ${less}. That second count was taken after the first had already landed, so the two multiply: ` +
+    `1/(${n} × ${less}) = 1/${both}.`,
   pSolOrderEither: (orders) =>
     `All ${orders} orders are equally likely. Exactly one of them runs increasing and exactly one runs decreasing, ` +
     `so 2 of the ${orders}, which is 2/${orders}.`,
@@ -1438,9 +1439,9 @@ const vi = {
   ptChildOtherVersion: (sex, kept, other) =>
     `Đó là đáp án của phiên bản kia, "có ít nhất một con ${sex}". Chỉ đích danh một đứa là thông tin mạnh hơn ` +
     `việc nói rằng có một đứa nào đó: nó chỉ chừa lại ${kept} gia đình thay vì ${other}.`,
-  ptChildOrder: (kept, other) =>
-    `Những gia đình chỉ khác nhau ở thứ tự sinh vẫn là những gia đình khác nhau: anh trai với em gái không ` +
-    `phải là cùng một gia đình với chị gái và em trai. Đếm riêng ra thì còn ${kept} trường hợp chứ không phải ${other}.`,
+  ptChildNamedOne: (sex, kept, other) =>
+    `Đó là đáp án của phiên bản kia, phiên bản chỉ đích danh một đứa con. "Có ít nhất một con ${sex}" chỉ nói rằng ` +
+    `có một đứa như vậy ở đâu đó, nên loại đi ít hơn nhiều: còn ${kept} gia đình chứ không phải ${other}.`,
   ptChildPrior: "Đó là xác suất khi chưa ai nói gì với bạn cả. Thông tin bạn được cho đã loại bớt một số gia đình, nên đáp án bắt buộc phải lớn hơn con số này.",
   ptCondUnconditional: "Đó mới là một xúc xắc đứng riêng, bỏ qua điều bạn được cho biết. Cái tổng đã loại phần lớn kết quả và làm đổi đáp án.",
   ptCondPlain: (k) => `Đó là xác suất có mặt ${k} trong hai lần tung khi bạn chưa biết gì về tổng.`,
@@ -1478,7 +1479,8 @@ const vi = {
   pSolOrderEnds: (n, orders, less, both) =>
     `Dù các giá trị có là gì, cả ${orders} thứ tự của chúng đều đồng khả năng. Số lớn nhất phải rơi vào chỗ đầu tiên, ` +
     `chuyện đó xảy ra 1 lần trong ${n}. Khi nó đã rơi vào đó, số nhỏ nhất phải rơi vào chỗ cuối trong ${less} chỗ còn lại, ` +
-    `1 lần trong ${less}. Hai điều kiện không nói gì về nhau, nên 1/(${n} × ${less}) = 1/${both}.`,
+    `1 lần trong ${less}. Lần đếm thứ hai đã tính đến lần đầu rồi, nên hai số nhân với nhau: ` +
+    `1/(${n} × ${less}) = 1/${both}.`,
   pSolOrderEither: (orders) =>
     `Cả ${orders} thứ tự đều đồng khả năng. Đúng một thứ tự chạy tăng và đúng một thứ tự chạy giảm, ` +
     `nên 2 trong ${orders}, tức 2/${orders}.`,
