@@ -118,6 +118,23 @@ const EV1 = [
   { k: "coinPay", a: 5, traps: [10, 2.5] },
 ];
 
+// The largest of three dice is worth k in k^3 - (k-1)^3 of the 216 results;
+// the smallest follows by relabelling every face v as 7 - v, which leaves a fair
+// die alone and swaps the two. The gap between two dice is counted by hand.
+const EV3 = [
+  { k: "maxThree", a: 1071 / 216, traps: [6, 3.5] },
+  { k: "minThree", a: 441 / 216, traps: [1, 3.5] },
+  { k: "absDiff", a: 70 / 36, traps: [0, 3.5] },
+];
+
+// Each extra re-roll is worth less than the one before, and the threshold you
+// keep at climbs with the value of the game behind you.
+const REROLL = [
+  { k: 1, a: 4.25 },
+  { k: 2, a: 14 / 3 },
+  { k: 3, a: 89 / 18 },
+];
+
 const EV2 = [
   { k: "product", a: 12.25, traps: [7, 21, 12] },
   { k: "larger", a: 161 / 36, traps: [3.5, 6] },
@@ -167,15 +184,48 @@ export function expectedValue(rng, level, t) {
     });
   }
 
-  const k = rng.pick([1, 1, 2]);
+  const shape = rng.pick(["reroll", "reroll", "reroll", "dice3", "dice3", "aces"]);
+
+  if (shape === "dice3") {
+    const v = rng.pick(EV3);
+    return q({
+      prompt: t.pAskEV(t.pEvNames[v.k]),
+      answer: v.a,
+      format: "number",
+      solution: t.pSolEV[v.k],
+      traps: traps(v.traps, t.ptEV[v.k]),
+      tip: "expectation-is-a-weighted-average",
+    });
+  }
+
+  if (shape === "aces") {
+    // Cards drawn without replacement affect one another, and the average still
+    // adds up regardless. That independence is not required is the single most
+    // useful thing to know about expectation, and nothing else here shows it.
+    const n = rng.pick([5, 13, 26]);
+    return q({
+      prompt: t.pAskAces(n),
+      answer: n / 13,
+      format: "number",
+      solution: t.pSolAces(n, t.f(n / 13)),
+      traps: [
+        { value: 1 / 13, why: t.ptAcesOneCard(n) },
+        { value: 4, why: t.ptAcesAllFour },
+      ],
+      tip: "expectation-is-a-weighted-average",
+    });
+  }
+
+  const i = rng.int(0, REROLL.length - 1);
+  const v = REROLL[i];
   return q({
-    prompt: t.pAskReroll(k),
-    answer: k === 1 ? 4.25 : 14 / 3,
+    prompt: t.pAskReroll(v.k),
+    answer: v.a,
     format: "number",
-    solution: k === 1 ? t.pSolReroll1 : t.pSolReroll2,
+    solution: v.k === 1 ? t.pSolReroll1 : v.k === 2 ? t.pSolReroll2 : t.pSolReroll3,
     traps: [
       { value: 3.5, why: t.ptRerollPlain },
-      { value: k === 1 ? 14 / 3 : 4.25, why: t.ptRerollOther },
+      { value: REROLL[(i + 1) % REROLL.length].a, why: t.ptRerollOther },
       { value: 5, why: t.ptRerollFive },
     ],
     tip: "expectation-is-a-weighted-average",
@@ -183,52 +233,84 @@ export function expectedValue(rng, level, t) {
 }
 
 /* ── 3. Conditional probability ──────────────────────────────────────────── */
+/**
+ * Every sum-and-face pair worth asking about: the face has to be possible given
+ * the sum, and it must not be forced by it. With two dice a face turns up in one
+ * surviving result when the sum is twice that face, and in two otherwise.
+ */
+const CONDITIONED_DICE = (() => {
+  const out = [];
+  for (let s = 3; s <= 11; s++) {
+    const pairs = [];
+    for (let a = 1; a <= 6; a++) if (s - a >= 1 && s - a <= 6) pairs.push([a, s - a]);
+    for (let k = 1; k <= 6; k++) {
+      const hits = pairs.filter(([a, b]) => a === k || b === k).length;
+      if (hits > 0 && hits < pairs.length) out.push({ s, k, hits, total: pairs.length });
+    }
+  }
+  return out;
+})();
+
 export function conditional(rng, level, t) {
   if (level === 1) {
-    const v = rng.pick(["least", "least", "elder", "leastG"]);
-    if (v === "elder") {
-      return q({
-        prompt: t.pTwoChildStem + t.pAskElder,
-        answer: 1 / 2,
-        solution: t.pSolElder,
-        traps: [{ value: 1 / 3, why: t.ptElderThird }],
-        tip: "condition-shrinks-the-space",
-      });
+    // The two-children problem, opened up. A third child is not decoration: the
+    // gap between the two conditions widens from 1/2-against-1/3 to
+    // 1/4-against-1/7, which makes it much harder to believe the two questions
+    // are the same question, and that belief is the whole mistake.
+    const n = rng.pick([2, 2, 2, 3]);
+    const boys = rng.chance(0.5);
+    const eldest = rng.chance(0.5);
+    const want = boys ? "B" : "G";
+
+    // Every family, oldest child first.
+    const families = [];
+    for (let i = 0; i < 2 ** n; i++) {
+      let s = "";
+      for (let j = n - 1; j >= 0; j--) s += ((i >> j) & 1) ? "B" : "G";
+      families.push(s);
     }
-    if (v === "leastG") {
-      return q({
-        prompt: t.pTwoChildStem + t.pAskLeastGirl,
-        answer: 1 / 3,
-        solution: t.pSolLeastGirl,
-        traps: [{ value: 1 / 2, why: t.ptTwoChildHalf }],
-        tip: "condition-shrinks-the-space",
-      });
-    }
+    const target = want.repeat(n);
+    const kept = eldest
+      ? families.filter((f) => f[0] === want)
+      : families.filter((f) => f.includes(want));
+
+    const answer = 1 / kept.length;
+    const other = eldest ? 1 / (2 ** n - 1) : 1 / 2 ** (n - 1);
+    const otherKept = eldest ? 2 ** n - 1 : 2 ** (n - 1);
+
     return q({
-      prompt: t.pTwoChildStem + t.pAskLeastBoy,
-      answer: 1 / 3,
-      solution: t.pSolLeastBoy,
+      prompt: t.pChildStem(n) + t.pAskChildren(eldest, boys, n),
+      answer,
+      solution: t.pSolChildren(
+        families.join(", "),
+        eldest ? t.pCondEldest(boys, n) : t.pCondLeast(boys),
+        kept.join(", "), kept.length, target),
       traps: [
-        { value: 1 / 2, why: t.ptTwoChildHalf },
-        { value: 1 / 4, why: t.ptTwoChildQuarter },
+        { value: other, why: eldest
+          ? t.ptChildOtherVersion(t.pSexWord(boys), kept.length, otherKept)
+          : t.ptChildOrder(kept.length, otherKept) },
+        { value: 1 / 2 ** n, why: t.ptChildPrior },
       ],
       tip: "condition-shrinks-the-space",
     });
   }
 
   if (level === 2) {
-    const s = rng.pick([7, 8, 9, 10]);
-    const total = 13 - s;
+    // The face asked about used to be a hard-coded 6, which made four questions
+    // out of a skill that has thirty. Every (sum, face) pair is fair game except
+    // the two dull ends: a face the sum rules out entirely, and a face that
+    // every surviving result already contains. Neither teaches conditioning.
+    const v = rng.pick(CONDITIONED_DICE);
     const pairs = [];
-    for (let a = 1; a <= 6; a++) if (s - a >= 1 && s - a <= 6) pairs.push(`(${a}${t.sep}${s - a})`);
+    for (let a = 1; a <= 6; a++) if (v.s - a >= 1 && v.s - a <= 6) pairs.push(`(${a}${t.sep}${v.s - a})`);
     return q({
-      prompt: t.pAskCondDice(s),
-      answer: 2 / total,
-      solution: t.pSolCondDice(pairs.join(" "), total, t.f(2 / total)),
+      prompt: t.pAskCondDice(v.s, v.k),
+      answer: v.hits / v.total,
+      solution: t.pSolCondDice(pairs.join(" "), v.total, v.hits, v.k, t.f(v.hits / v.total)),
       traps: [
         { value: 1 / 6, why: t.ptCondUnconditional },
-        { value: 11 / 36, why: t.ptCondPlain },
-        { value: 1 / total, why: t.ptCondOnePair(total) },
+        { value: 11 / 36, why: t.ptCondPlain(v.k) },
+        { value: 1 / v.total, why: t.ptCondOnePair(v.total, v.k) },
       ],
       tip: "condition-shrinks-the-space",
     });
@@ -292,17 +374,27 @@ export function bayes(rng, level, t) {
     }
   }
 
-  const n = rng.int(1, 3);
+  // Asking about the two-headed coin as well as the fair one is not padding: same
+  // evidence, same arithmetic, and the two answers add to 1, which is the fastest
+  // way to see that a run of heads never had to be explained by certainty.
+  // Longer runs then show the belief moving, one flip at a time.
+  const n = rng.int(1, 5);
+  const wantFair = rng.chance(0.5);
   const fair = 1 / 2 ** n;
   const headsText = n === 1 ? t.pBoxOneHead : t.pBoxManyHeads(n);
+  const share = wantFair ? fair / (fair + 1) : 1 / (fair + 1);
   return q({
-    prompt: t.pAskBox(n),
-    answer: fair / (fair + 1),
-    solution: t.pSolBox(headsText, t.f(fair), t.f(fair / (fair + 1))),
+    prompt: t.pAskBox(n, wantFair),
+    answer: share,
+    solution: wantFair
+      ? t.pSolBox(headsText, t.f(fair), t.f(share))
+      : t.pSolBoxHeads(headsText, t.f(fair), t.f(share)),
     traps: [
       { value: 1 / 3, why: t.ptBoxPrior },
       { value: 1 / 2, why: t.ptBoxHalf },
-      { value: fair, why: t.ptBoxAlone(headsText) },
+      wantFair
+        ? { value: fair, why: t.ptBoxAlone(headsText) }
+        : { value: 1, why: t.ptBoxCertain },
     ],
     tip: "bayes-likelihood-share",
   });
@@ -418,6 +510,39 @@ export function symmetry(rng, level, t) {
   }
 
   if (level === 2) {
+    // Three questions about the same fact — every ordering is equally likely —
+    // asked from three sides, because a student who has only ever seen "strictly
+    // increasing" learns the sentence rather than the reason.
+    const shape = rng.pick(["mono", "mono", "mono", "ends", "either"]);
+
+    if (shape === "ends") {
+      const n = rng.pick([4, 5, 6]);
+      return q({
+        prompt: t.pAskOrderEnds(n),
+        answer: 1 / (n * (n - 1)),
+        solution: t.pSolOrderEnds(n, fact(n), n - 1, n * (n - 1)),
+        traps: [
+          { value: 1 / fact(n), why: t.ptEndsFullOrder },
+          { value: 1 / n, why: t.ptEndsFirstOnly },
+        ],
+        tip: "symmetry-orderings",
+      });
+    }
+
+    if (shape === "either") {
+      const n = rng.pick([4, 5]);
+      return q({
+        prompt: t.pAskOrderEither(n),
+        answer: 2 / fact(n),
+        solution: t.pSolOrderEither(fact(n)),
+        traps: [
+          { value: 1 / fact(n), why: t.ptEitherOne },
+          { value: 1 / n, why: t.ptMonoMax },
+        ],
+        tip: "symmetry-orderings",
+      });
+    }
+
     const n = rng.int(3, 5);
     const up = rng.chance(0.5);
     const dir = up ? t.pStrictUp : t.pStrictDown;

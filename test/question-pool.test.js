@@ -24,17 +24,16 @@ import assert from "node:assert/strict";
 import { generateSet, ALL_SKILLS, getSkill } from "../src/engine/index.js";
 
 /**
- * Skills whose pool is known to be smaller than the paper asked of them, with
- * the size they reach today. Each one needs its generator opened up: a constant
- * where a parameter would do, or a formula written for one particular case.
- * Delete an entry when its skill is widened — the test insists on it.
+ * Empty, and meant to stay that way. It is here so that a skill added later can
+ * be landed honestly while its pool is still being filled out: put it here with
+ * the number it reaches, and the gap is recorded rather than hidden. The second
+ * test below then refuses to let the entry rot — it fails if the pool shrinks
+ * further, and it fails once the pool is big enough and the entry is still
+ * listed. An empty object means every skill currently fills its own paper.
+ *
+ *   "prob.example|2": 4,   // why it is thin, and what would open it up
  */
 const KNOWN_THIN = {
-  "prob.expected-value|3": 2,   // the re-roll game, written for 1 and 2 re-rolls only
-  "prob.conditional|1": 3,      // the two-children problem, three phrasings of it
-  "prob.conditional|2": 4,      // "sum is S, at least one 6" — the 6 is hard-coded
-  "prob.bayes|3": 3,            // the three-coin box, varying only the number of flips
-  "prob.symmetry|2": 6,         // ordering questions over 3 and 4 draws
 };
 
 /** How many questions the app will ask of this skill at this level. */

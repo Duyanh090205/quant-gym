@@ -121,8 +121,25 @@ function simulate(q) {
       return v;
     });
   }
-  if ((m = p.match(/You may re-roll up to (once|2 times)/))) {
-    const rerolls = m[1] === "once" ? 1 : 2;
+  if (/Expected value of the largest of three fair dice/.test(p)) return mean(() => Math.max(die(), die(), die()));
+  if (/Expected value of the smallest of three fair dice/.test(p)) return mean(() => Math.min(die(), die(), die()));
+  if (/Expected value of the gap between two fair dice/.test(p)) return mean(() => Math.abs(die() - die()));
+  if ((m = p.match(/Expected number of aces in a hand of (\d+) cards/))) {
+    const n = +m[1];
+    return mean(() => {
+      // Deal n distinct cards: ranks 1-4 of the 52 positions are the aces.
+      const deck = [...Array(52).keys()];
+      let aces = 0;
+      for (let i = 0; i < n; i++) {
+        const j = i + rng.int(0, 51 - i);
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+        if (deck[i] < 4) aces++;
+      }
+      return aces;
+    }, 40000);
+  }
+  if ((m = p.match(/You may re-roll up to (once|2 times|3 times)/))) {
+    const rerolls = m[1] === "once" ? 1 : parseInt(m[1], 10);
     // Play it the way the card says: keep a roll worth more than a fresh game.
     const value = (left) => {
       if (left === 0) return 3.5;
@@ -140,18 +157,22 @@ function simulate(q) {
   }
 
   /* ── conditional ── */
-  if (/at least one is a boy\. Probability both are boys/i.test(p)) {
-    return conditional(() => { const a = coin(), b = coin(); return a || b ? (a && b ? 1 : 0) : null; });
+  if ((m = p.match(/A family has (\d+) children[^.]*\. (The old(?:er|est) child is|At least one is) a (boy|girl)\./))) {
+    const n = +m[1];
+    const eldest = m[2].startsWith("The old");
+    const wantBoy = m[3] === "boy";
+    return conditional(() => {
+      // true is a boy; index 0 is the oldest child.
+      const kids = [...Array(n)].map(() => coin());
+      const is = (k) => k === wantBoy;
+      const given = eldest ? is(kids[0]) : kids.some(is);
+      if (!given) return null;
+      return kids.every(is) ? 1 : 0;
+    });
   }
-  if (/at least one is a girl\. Probability both are girls/i.test(p)) {
-    return conditional(() => { const a = coin(), b = coin(); return !a || !b ? (!a && !b ? 1 : 0) : null; });
-  }
-  if (/The older child is a boy\. Probability both are boys/.test(p)) {
-    return conditional(() => { const older = coin(), younger = coin(); return older ? (younger ? 1 : 0) : null; });
-  }
-  if ((m = p.match(/the sum is (\d+)\. Probability at least one die shows a 6/))) {
-    const s = +m[1];
-    return conditional(() => { const a = die(), b = die(); return a + b === s ? (a === 6 || b === 6 ? 1 : 0) : null; });
+  if ((m = p.match(/the sum is (\d+)\. Probability at least one die shows a (\d)/))) {
+    const [s, k] = [+m[1], +m[2]];
+    return conditional(() => { const a = die(), b = die(); return a + b === s ? (a === k || b === k ? 1 : 0) : null; });
   }
   if ((m = p.match(/urn holds (\d+) red and (\d+) blue balls\. You draw 2 without replacement\. Probability both are red/))) {
     const [r, b] = [+m[1], +m[2]];
@@ -183,15 +204,16 @@ function simulate(q) {
       return rng.float() < set[i] ? (Math.abs(set[i] - target) < 1e-9 ? 1 : 0) : null;
     });
   }
-  if ((m = p.match(/one fair, one two-headed, one two-tailed\. You pick one at random and flip it (?:once: heads|(\d+) times: all heads)/))) {
+  if ((m = p.match(/one fair, one two-headed, one two-tailed\. You pick one at random and flip it (?:once: heads|(\d+) times: all heads)\. Probability it is the (fair|two-headed) coin/))) {
     const n = m[1] ? +m[1] : 1;
+    const target = m[2] === "fair" ? 0 : 1;
     return conditional(() => {
       const which = rng.int(0, 2);            // 0 fair, 1 two-headed, 2 two-tailed
       for (let i = 0; i < n; i++) {
         const heads = which === 0 ? coin() : which === 1;
         if (!heads) return null;
       }
-      return which === 0 ? 1 : 0;
+      return which === target ? 1 : 0;
     });
   }
 
@@ -244,6 +266,25 @@ function simulate(q) {
     return mean(() => {
       const v = [...Array(n)].map(() => rng.float());
       return v.indexOf(Math.max(...v)) === j - 1 ? 1 : 0;
+    });
+  }
+  if ((m = p.match(/(\d+) independent draws from a continuous distribution\. Probability the first one drawn is the largest and the last one drawn is the smallest/))) {
+    const n = +m[1];
+    return mean(() => {
+      const v = [...Array(n)].map(() => rng.float());
+      return v[0] === Math.max(...v) && v[n - 1] === Math.min(...v) ? 1 : 0;
+    });
+  }
+  if ((m = p.match(/(\d+) independent draws from a continuous distribution\. Probability they come out either strictly increasing or strictly decreasing/))) {
+    const n = +m[1];
+    return mean(() => {
+      const v = [...Array(n)].map(() => rng.float());
+      let up = true, down = true;
+      for (let i = 1; i < n; i++) {
+        if (v[i] <= v[i - 1]) up = false;
+        if (v[i] >= v[i - 1]) down = false;
+      }
+      return up || down ? 1 : 0;
     });
   }
   if ((m = p.match(/(\d+) independent draws from a continuous distribution\. Probability they come out strictly (increasing|decreasing)/))) {

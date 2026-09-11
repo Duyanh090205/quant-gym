@@ -182,11 +182,43 @@ test("probability answers agree with formulas written separately", () => {
           const rA = +m[2] / (+m[1] + +m[2]);
           const rB = +m[4] / (+m[3] + +m[4]);
           closeTo(q.answer, rB / (rA + rB), "Bayes urns"); checked++;
-        } else if ((m = p.match(/sum is (\d+)\. Probability at least one die shows a 6/))) {
-          closeTo(q.answer, 2 / (13 - +m[1]), "conditional dice"); checked++;
-        } else if ((m = p.match(/flip it (?:once: heads|(\d+) times: all heads)/))) {
+        } else if ((m = p.match(/sum is (\d+)\. Probability at least one die shows a (\d)/))) {
+          // Counted from scratch rather than by the generator's shortcut.
+          const [s, k] = [+m[1], +m[2]];
+          let total = 0, hits = 0;
+          for (let a = 1; a <= 6; a++) {
+            const b = s - a;
+            if (b < 1 || b > 6) continue;
+            total++;
+            if (a === k || b === k) hits++;
+          }
+          closeTo(q.answer, hits / total, `conditional dice ${s}/${k}`); checked++;
+        } else if ((m = p.match(/flip it (?:once: heads|(\d+) times: all heads)\. Probability it is the (fair|two-headed) coin/))) {
           const n = m[1] ? +m[1] : 1;
-          closeTo(q.answer, 1 / 2 ** n / (1 / 2 ** n + 1), "three-coin box"); checked++;
+          const fair = 1 / 2 ** n;
+          // Each coin is picked equally often; the two-tailed one never shows heads.
+          const want = m[2] === "fair" ? fair : 1;
+          closeTo(q.answer, want / (fair + 1), `three-coin box, ${m[2]}`); checked++;
+        } else if ((m = p.match(/A family has (\d+) children[^.]*\. (The old(?:er|est) child is|At least one is) a (boy|girl)\./))) {
+          // 2^n families, all equally likely. Naming the oldest keeps half of
+          // them; "at least one" keeps everything except the single family
+          // with none. Exactly one survivor is all of the asked-for sex.
+          const n = +m[1];
+          const kept = m[2].startsWith("The old") ? 2 ** (n - 1) : 2 ** n - 1;
+          closeTo(q.answer, 1 / kept, `${n} children, ${m[2]}`); checked++;
+        } else if ((m = p.match(/Expected number of aces in a hand of (\d+) cards/))) {
+          closeTo(q.answer, (+m[1] * 4) / 52, "aces in a hand"); checked++;
+        } else if ((m = p.match(/^(\d+) doors hide one car[\s\S]*(switch to the one door still shut|stay with your first door)/))) {
+          const n = +m[1];
+          closeTo(q.answer, m[2].startsWith("switch") ? (n - 1) / n : 1 / n, `${n}-door Monty`); checked++;
+        } else if ((m = p.match(/(\d+) independent draws[\s\S]*first one drawn is the largest and the last one drawn is the smallest/))) {
+          const n = +m[1];
+          closeTo(q.answer, 1 / (n * (n - 1)), "largest first, smallest last"); checked++;
+        } else if ((m = p.match(/(\d+) independent draws[\s\S]*either strictly increasing or strictly decreasing/))) {
+          const n = +m[1];
+          let f = 1;
+          for (let i = 2; i <= n; i++) f *= i;
+          closeTo(q.answer, 2 / f, "increasing or decreasing"); checked++;
         } else if ((m = p.match(/(\d+) letters are placed at random into \d+ addressed envelopes\. Probability that (no letter|at least one letter)/))) {
           const n = +m[1];
           const D = { 3: 2, 4: 9, 5: 44 }[n];
