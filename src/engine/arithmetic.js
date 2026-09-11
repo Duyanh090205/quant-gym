@@ -64,10 +64,27 @@ function timesTableRoute(a, b, t) {
 }
 
 export function timesTables(rng, level, t) {
-  const hi = level === 1 ? 9 : level === 2 ? 12 : 19;
-  const lo = level === 3 ? 11 : 2;
-  const a = rng.int(lo, hi);
-  const b = rng.int(2, level === 1 ? 9 : 12);
+  if (level === 3) {
+    // Teens times teens. The old level 3 kept one factor at 12 or under, which
+    // is level 2 with a bigger partner; 17 × 19 is the table a trader has.
+    const a = rng.int(11, 19);
+    const b = rng.int(11, 19);
+    const ua = a - 10, ub = b - 10;
+    return q({
+      prompt: `${a} × ${b}`,
+      answer: a * b,
+      solution: t.aTeens(a, b, ub, a + ub, (a + ub) * 10, ua, ua * ub, a * b),
+      traps: [
+        { value: (a + ub) * 10, why: t.ttTeensNoUnits(ua, ub, ua * ub) },
+        { value: a * (b - 1), why: t.ttRowEarly(a, b - 1) },
+        { value: a + b, why: t.ttAddedNotMultiplied() },
+      ],
+      tip: "split-and-add",
+    });
+  }
+  const hi = level === 1 ? 9 : 12;
+  const a = rng.int(2, hi);
+  const b = rng.int(2, hi);
   return q({
     prompt: `${a} × ${b}`,
     answer: a * b,
@@ -161,7 +178,47 @@ export function multiply(rng, level, t) {
   // A quarter of these are built to straddle a round number, because that is
   // exactly the shape the difference-of-squares trick is for, and a trick the
   // drill never presents is a trick nobody learns.
-  if (rng.chance(0.25)) {
+  // Level 3 is what the paper has: two-digit by two-digit is the floor, and
+  // three-digit by one- and two-digit is the ceiling. Weighted the way the
+  // sitting felt: 3×2 most often.
+  const shape = rng.pick(["straddle", "2x2", "2x2", "3x1", "3x2", "3x2"]);
+
+  if (shape === "3x1") {
+    const a = rng.int(102, 999);
+    const b = rng.int(3, 9);
+    const h = Math.floor(a / 100) * 100, tn = Math.floor((a % 100) / 10) * 10, u = a % 10;
+    return q({
+      prompt: `${a} × ${b}`,
+      answer: a * b,
+      solution: t.aSplitThree(a, b, h, tn, u, h * b, tn * b, u * b, a * b),
+      traps: [
+        { value: (tn + u) * b + h, why: t.ttForgotHundreds(h, b, h * b) },
+        { value: a * b + 100, why: t.ttCarryHundred(h * b + tn * b, u * b) },
+        { value: a * b - 100, why: t.ttHundredDropped() },
+      ],
+      tip: "split-and-add",
+    });
+  }
+
+  if (shape === "3x2") {
+    const a = rng.int(102, 999);
+    const b = rng.int(12, 99);
+    const tens = Math.floor(b / 10) * 10;
+    return q({
+      prompt: `${a} × ${b}`,
+      answer: a * b,
+      solution: splitMul(a, b, t),
+      traps: [
+        { value: a * tens, why: t.ttOnlyTens(a, tens, b % 10, a * (b % 10)) },
+        { value: a * (b % 10), why: t.ttOnlyUnits(a, b % 10, tens, a * tens) },
+        { value: a * b + 100, why: t.ttCarryHundred(a * tens, a * (b % 10)) },
+        { value: a * b - 100, why: t.ttHundredDropped() },
+      ],
+      tip: "split-and-add",
+    });
+  }
+
+  if (shape === "straddle") {
     const centre = rng.int(3, 9) * 10;
     const d = rng.int(1, 4);
     const lo = centre - d, hi = centre + d;
@@ -233,8 +290,30 @@ export function divide(rng, level, t) {
     });
   }
 
-  const b = rng.int(12, 29);
-  const ans = rng.int(21, 99);
+  if (rng.chance(0.4)) {
+    // The paper does not always divide evenly. Divisors whose fractions stop
+    // within two decimal places, so the answer is typed and not rounded.
+    const b = rng.pick([4, 5, 20, 25, 50]);
+    const whole = rng.int(11, 99);
+    const r = rng.int(1, b - 1);
+    const total = b * whole + r;
+    const frac = round4(r / b);
+    return q({
+      prompt: `${total} ÷ ${b}`,
+      answer: round4(whole + frac),
+      solution: t.aDivideRemainder(b, whole, b * whole, total, r, t.n(frac), t.n(round4(whole + frac))),
+      traps: [
+        { value: whole, why: t.ttDroppedRemainder(r) },
+        { value: whole + 1, why: t.ttRoundedUp(r, b) },
+        { value: round4(whole + r / 10), why: t.ttRemainderAsTenths(r, b) },
+      ],
+      tip: "reduce-before-dividing",
+    });
+  }
+
+  // Divisors up to 79, as the drill that matched the sitting had them.
+  const b = rng.int(12, 79);
+  const ans = rng.int(11, 99);
   return q({
     prompt: `${b * ans} ÷ ${b}`,
     answer: ans,
@@ -253,7 +332,7 @@ export function divide(rng, level, t) {
 
 /* ── 5. Squares ──────────────────────────────────────────────────────────── */
 export function squares(rng, level, t) {
-  const range = [[11, 25], [21, 40], [26, 59]][level - 1];
+  const range = [[11, 25], [21, 40], [26, 99]][level - 1];
   const n = rng.int(range[0], range[1]);
   const d = n % 10 <= 5 ? n % 10 : n % 10 - 10;
   const slid = (n - d) * (n + d); // the rule-of-one product, before adding d²
@@ -371,7 +450,45 @@ export function fractions(rng, level, t) {
     });
   }
 
+  const op = rng.pick(["add", "sub", "div", "div"]);
   const lcm = (d1 * d2) / gcd(d1, d2);
+
+  if (op === "div") {
+    // Flip the second and multiply. The most-reported trap is multiplying
+    // straight across without flipping, so it is the first one listed.
+    const top = n1 * d2, bot = d1 * n2;
+    const g = gcd(top, bot);
+    return q({
+      prompt: `${n1}/${d1} ÷ ${n2}/${d2}`,
+      answer: round4(top / bot),
+      solution: t.aFracDiv(n1, d1, n2, d2, d2, n2, top, bot,
+                           g > 1 ? `${top / g}/${bot / g}` : null, t.n(round4(top / bot))),
+      traps: [
+        { value: round4((n1 * n2) / (d1 * d2)), why: t.ttNotFlipped() },
+        { value: round4((d1 * n2) / (n1 * d2)), why: t.ttFlippedWrongOne() },
+      ],
+      tip: "fraction-anchors",
+    });
+  }
+
+  if (op === "sub") {
+    // Keep it positive: the paper never asks for a negative fraction.
+    const [big, small] = n1 / d1 >= n2 / d2 ? [[n1, d1], [n2, d2]] : [[n2, d2], [n1, d1]];
+    if (big[0] * small[1] === small[0] * big[1]) return fractions(rng, level, t);   // equal: redraw
+    const a1 = (big[0] * lcm) / big[1], a2 = (small[0] * lcm) / small[1];
+    return q({
+      prompt: `${big[0]}/${big[1]} − ${small[0]}/${small[1]}`,
+      answer: round4(big[0] / big[1] - small[0] / small[1]),
+      solution: t.aFracSub(big[0], big[1], a1, small[0], small[1], a2, lcm, a1 - a2,
+                           t.n(round4(big[0] / big[1] - small[0] / small[1]))),
+      traps: [
+        { value: round4((big[0] - small[0]) / (big[1] - small[1] || 1)), why: t.ttTopsAndBottoms() },
+        { value: round4(big[0] / big[1] + small[0] / small[1]), why: t.ttAddedNotSubtracted() },
+      ],
+      tip: "fraction-anchors",
+    });
+  }
+
   return q({
     prompt: `${n1}/${d1} + ${n2}/${d2}`,
     answer: round4(n1 / d1 + n2 / d2),
@@ -417,6 +534,45 @@ export function percent(rng, level, t) {
       answer: round4((p * y) / 100),
       solution: t.aPctBuild(t.n(round4(ten)), t.n(round4(p / 10)), t.n(p), t.n(round4((p * y) / 100)), y),
       traps: [{ value: round4((p * y) / 1000), why: t.ttFactorOfTenCheck() }],
+      tip: "percent-flip",
+    });
+  }
+
+  const kind = rng.pick(["what", "any", "any", "chain"]);
+
+  if (kind === "any") {
+    // 37% of 200. The drill that matched the sitting logged this as the gap:
+    // percentages here only ever came in the pretty sizes. Base a multiple of
+    // ten, so the answer has at most one decimal place.
+    const p = rng.int(3, 97);
+    const y = rng.pick([...Array(57).keys()].map((i) => (i + 4) * 10).filter((v) => v !== 100));  // 100 makes it trivial
+    const one = y / 100;
+    return q({
+      prompt: t.aPercentOf(p, y),
+      answer: round4(p * one),
+      solution: t.aPctOnePercent(y, t.n(one), p, t.n(round4(p * one))),
+      traps: [
+        { value: round4(p * one * 10), why: t.ttFactorOfTen() },
+        { value: round4(p * one / 10), why: t.ttFactorOfTenCheck() },
+      ],
+      tip: "percent-flip",
+    });
+  }
+
+  if (kind === "chain") {
+    const y = rng.pick([200, 400, 500, 800, 1000]);
+    const up = rng.pick([10, 15, 20, 25, 30, 40, 50]);
+    const down = rng.pick([10, 20, 25, 30, 40, 50]);
+    const mid = round4(y * (1 + up / 100));
+    const end = round4(mid * (1 - down / 100));
+    return q({
+      prompt: t.aAskPctChain(y, up, down),
+      answer: end,
+      solution: t.aPctChain(y, up, t.n(round4(1 + up / 100)), t.n(mid), down, t.n(round4(1 - down / 100)), t.n(end)),
+      traps: [
+        { value: round4(y * (1 + (up - down) / 100)), why: t.ttChainAdded(up, down) },
+        { value: mid, why: t.ttChainHalfDone(down) },
+      ],
       tip: "percent-flip",
     });
   }
@@ -495,7 +651,7 @@ function maskDigit(rng, n) {
 }
 
 export function puzzles(rng, level, t) {
-  const kinds = level === 1 ? ["balance"] : level === 2 ? ["balance", "missing"] : ["missing", "relation", "largest"];
+  const kinds = level === 1 ? ["balance"] : level === 2 ? ["balance", "missing"] : ["missing", "relation", "largest", "balance"];
   const kind = rng.pick(kinds);
 
   if (kind === "balance") {

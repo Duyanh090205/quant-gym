@@ -217,6 +217,39 @@ const en = {
   ttAOnly: () => "That is A on its own. B still has to come off.",
   ttLargestNote: () => "Comparing the bases alone does not work: a smaller base with a bigger exponent often wins, as 4^7 beats both 3^7 and 6^5. Work each one out.",
 
+  /* arithmetic — the level-3 shapes the paper actually has */
+  aTeens: (a, b, ub, plus, tens, ua, units, whole) =>
+    `Teens times teens: add the units of one to the whole of the other, times ten, then add the product of the two units. ` +
+    `${a} + ${ub} = ${plus}, so ${plus} × 10 = ${tens}. The units are ${ua} × ${ub} = ${units}. Then ${tens} + ${units} = ${whole}.`,
+  ttTeensNoUnits: (ua, ub, units) => `That is the first half only. The two units still multiply: ${ua} × ${ub} = ${units}, and it goes on the end.`,
+  aSplitThree: (a, b, h, tn, u, hb, tb, ub, whole) =>
+    `Three pieces, biggest first: ${a} = ${h} + ${tn} + ${u}. ` +
+    `${h} × ${b} = ${hb}, ${tn} × ${b} = ${tb}, ${u} × ${b} = ${ub}. Add them as you go: ${hb} + ${tb} + ${ub} = ${whole}.`,
+  ttForgotHundreds: (h, b, hb) => `The hundreds were added on instead of multiplied. ${h} × ${b} = ${hb}, not ${h}.`,
+  aDivideRemainder: (b, whole, product, total, r, frac, ans) =>
+    `It does not come out even, and that is the point. ${b} × ${whole} = ${product}, leaving ${total} − ${product} = ${r}. ` +
+    `Now ${r} ÷ ${b} = ${frac}, so the answer is ${whole} + ${frac} = ${ans}.`,
+  ttDroppedRemainder: (r) => `That is the whole-number part only. There were ${r} left over, and they are worth something.`,
+  ttRoundedUp: (r, b) => `Rounded up to the next whole number. The paper wants the exact figure: ${r} over ${b}, as a decimal, on the end.`,
+  ttRemainderAsTenths: (r, b) => `The remainder was written as tenths. It is ${r} out of ${b}, not ${r} out of 10.`,
+  aFracDiv: (n1, d1, n2, d2, fn, fd, top, bot, cancelled, whole) =>
+    `Dividing by a fraction is multiplying by it upside down: (${n1}/${d1}) ÷ (${n2}/${d2}) = (${n1}/${d1}) × (${fn}/${fd}). ` +
+    `Tops ${n1} × ${fn} = ${top}, bottoms ${d1} × ${fd} = ${bot}. ` +
+    (cancelled ? `That cancels to ${cancelled}, which is ${whole}.` : `As a decimal that is ${whole}.`),
+  ttNotFlipped: () => "Multiplied straight across without flipping the second fraction. Division flips it first.",
+  ttFlippedWrongOne: () => "The first fraction was flipped instead of the second. Only the one you divide by turns over.",
+  aFracSub: (n1, d1, a1, n2, d2, a2, lcm, diff, whole) =>
+    `Subtracting needs the same bottom. Both fit into ${lcm}: ${n1}/${d1} = ${a1}/${lcm} and ${n2}/${d2} = ${a2}/${lcm}. ` +
+    `Now take the tops: ${a1} − ${a2} = ${diff}, so ${diff}/${lcm} = ${whole}`,
+  aPctOnePercent: (y, one, p, whole) =>
+    `Any percentage at all: find one per cent first. 1% of ${y} is ${one}, so ${p}% is ${p} of those: ${p} × ${one} = ${whole}`,
+  aAskPctChain: (y, up, down) => `Start at ${y}. Increase it by ${up}%, then decrease the result by ${down}%. What is it now?`,
+  aPctChain: (y, up, upFactor, mid, down, downFactor, end) =>
+    `Two steps, each a multiplication. Up ${up}% means × ${upFactor}: ${y} × ${upFactor} = ${mid}. ` +
+    `Down ${down}% means × ${downFactor}: ${mid} × ${downFactor} = ${end}. The percentages do not cancel, because the second one acts on a different number.`,
+  ttChainAdded: (up, down) => `Added the percentages: up ${up} and down ${down} as one net move. They act on different numbers, so they do not add.`,
+  ttChainHalfDone: (down) => `That is after the increase only. The ${down}% decrease is still to come.`,
+
   /* estimation — unit names, prompts, solutions and traps */
   eUnits: {
     secMin:    { one: "minute",   many: "minutes",    small: "seconds" },
@@ -1001,6 +1034,39 @@ const vi = {
   ttAddedNotSubtracted: () => "Cộng mất rồi, đề là trừ.",
   ttAOnly: () => "Đó mới là A. Còn phải trừ B đi.",
   ttLargestNote: () => "So cơ số không thôi thì không được: cơ số nhỏ với số mũ lớn thường thắng, như 4^7 lớn hơn cả 3^7 lẫn 6^5. Phải tính từng cái ra.",
+
+  /* số học — các dạng cấp 3 có trên đề thật */
+  aTeens: (a, b, ub, plus, tens, ua, units, whole) =>
+    `Hai số từ 11 tới 19 nhân nhau: lấy hàng đơn vị của số này cộng vào nguyên số kia, nhân mười, rồi cộng tích hai hàng đơn vị. ` +
+    `${a} + ${ub} = ${plus}, nên ${plus} × 10 = ${tens}. Hai hàng đơn vị là ${ua} × ${ub} = ${units}. Rồi ${tens} + ${units} = ${whole}.`,
+  ttTeensNoUnits: (ua, ub, units) => `Đó mới là nửa đầu. Hai hàng đơn vị vẫn phải nhân: ${ua} × ${ub} = ${units}, và cộng vào cuối.`,
+  aSplitThree: (a, b, h, tn, u, hb, tb, ub, whole) =>
+    `Ba phần, phần lớn trước: ${a} = ${h} + ${tn} + ${u}. ` +
+    `${h} × ${b} = ${hb}, ${tn} × ${b} = ${tb}, ${u} × ${b} = ${ub}. Cộng dần theo từng bước: ${hb} + ${tb} + ${ub} = ${whole}.`,
+  ttForgotHundreds: (h, b, hb) => `Hàng trăm bị cộng vào thay vì nhân. ${h} × ${b} = ${hb}, không phải ${h}.`,
+  aDivideRemainder: (b, whole, product, total, r, frac, ans) =>
+    `Chia không hết, và đó chính là ý đề. ${b} × ${whole} = ${product}, còn lại ${total} − ${product} = ${r}. ` +
+    `Giờ ${r} ÷ ${b} = ${frac}, nên đáp án là ${whole} + ${frac} = ${ans}.`,
+  ttDroppedRemainder: (r) => `Đó mới là phần nguyên. Còn dư ${r}, và phần dư đó có giá trị.`,
+  ttRoundedUp: (r, b) => `Làm tròn lên số nguyên kế tiếp. Đề muốn con số chính xác: ${r} trên ${b}, đổi ra thập phân, gắn vào cuối.`,
+  ttRemainderAsTenths: (r, b) => `Phần dư bị viết thành phần mười. Nó là ${r} trên ${b}, không phải ${r} trên 10.`,
+  aFracDiv: (n1, d1, n2, d2, fn, fd, top, bot, cancelled, whole) =>
+    `Chia cho một phân số là nhân với nghịch đảo của nó: (${n1}/${d1}) ÷ (${n2}/${d2}) = (${n1}/${d1}) × (${fn}/${fd}). ` +
+    `Tử ${n1} × ${fn} = ${top}, mẫu ${d1} × ${fd} = ${bot}. ` +
+    (cancelled ? `Rút gọn thành ${cancelled}, tức ${whole}.` : `Đổi ra thập phân là ${whole}.`),
+  ttNotFlipped: () => "Nhân thẳng mà không lật phân số thứ hai. Phép chia phải lật nó trước.",
+  ttFlippedWrongOne: () => "Lật phân số thứ nhất thay vì thứ hai. Chỉ phân số đem chia mới được lật.",
+  aFracSub: (n1, d1, a1, n2, d2, a2, lcm, diff, whole) =>
+    `Muốn trừ thì phải cùng mẫu. Cả hai đều quy về ${lcm}: ${n1}/${d1} = ${a1}/${lcm} và ${n2}/${d2} = ${a2}/${lcm}. ` +
+    `Giờ trừ tử: ${a1} − ${a2} = ${diff}, nên ${diff}/${lcm} = ${whole}`,
+  aPctOnePercent: (y, one, p, whole) =>
+    `Phần trăm bất kỳ: tìm một phần trăm trước. 1% của ${y} là ${one}, nên ${p}% là ${p} lần số đó: ${p} × ${one} = ${whole}`,
+  aAskPctChain: (y, up, down) => `Bắt đầu từ ${y}. Tăng ${up}%, rồi giảm kết quả đi ${down}%. Giờ còn bao nhiêu?`,
+  aPctChain: (y, up, upFactor, mid, down, downFactor, end) =>
+    `Hai bước, mỗi bước là một phép nhân. Tăng ${up}% là × ${upFactor}: ${y} × ${upFactor} = ${mid}. ` +
+    `Giảm ${down}% là × ${downFactor}: ${mid} × ${downFactor} = ${end}. Hai phần trăm không triệt tiêu nhau, vì cái thứ hai tác động lên một con số khác.`,
+  ttChainAdded: (up, down) => `Cộng hai phần trăm lại: tăng ${up} và giảm ${down} thành một bước ròng. Chúng tác động lên hai con số khác nhau, nên không cộng được.`,
+  ttChainHalfDone: (down) => `Đó mới là sau bước tăng. Bước giảm ${down}% vẫn còn phía trước.`,
 
   /* ước lượng — tên đơn vị, đề bài, lời giải và bẫy */
   eUnits: {

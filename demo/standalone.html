@@ -602,6 +602,39 @@ const en = {
   ttAOnly: () => "That is A on its own. B still has to come off.",
   ttLargestNote: () => "Comparing the bases alone does not work: a smaller base with a bigger exponent often wins, as 4^7 beats both 3^7 and 6^5. Work each one out.",
 
+  /* arithmetic — the level-3 shapes the paper actually has */
+  aTeens: (a, b, ub, plus, tens, ua, units, whole) =>
+    `Teens times teens: add the units of one to the whole of the other, times ten, then add the product of the two units. ` +
+    `${a} + ${ub} = ${plus}, so ${plus} × 10 = ${tens}. The units are ${ua} × ${ub} = ${units}. Then ${tens} + ${units} = ${whole}.`,
+  ttTeensNoUnits: (ua, ub, units) => `That is the first half only. The two units still multiply: ${ua} × ${ub} = ${units}, and it goes on the end.`,
+  aSplitThree: (a, b, h, tn, u, hb, tb, ub, whole) =>
+    `Three pieces, biggest first: ${a} = ${h} + ${tn} + ${u}. ` +
+    `${h} × ${b} = ${hb}, ${tn} × ${b} = ${tb}, ${u} × ${b} = ${ub}. Add them as you go: ${hb} + ${tb} + ${ub} = ${whole}.`,
+  ttForgotHundreds: (h, b, hb) => `The hundreds were added on instead of multiplied. ${h} × ${b} = ${hb}, not ${h}.`,
+  aDivideRemainder: (b, whole, product, total, r, frac, ans) =>
+    `It does not come out even, and that is the point. ${b} × ${whole} = ${product}, leaving ${total} − ${product} = ${r}. ` +
+    `Now ${r} ÷ ${b} = ${frac}, so the answer is ${whole} + ${frac} = ${ans}.`,
+  ttDroppedRemainder: (r) => `That is the whole-number part only. There were ${r} left over, and they are worth something.`,
+  ttRoundedUp: (r, b) => `Rounded up to the next whole number. The paper wants the exact figure: ${r} over ${b}, as a decimal, on the end.`,
+  ttRemainderAsTenths: (r, b) => `The remainder was written as tenths. It is ${r} out of ${b}, not ${r} out of 10.`,
+  aFracDiv: (n1, d1, n2, d2, fn, fd, top, bot, cancelled, whole) =>
+    `Dividing by a fraction is multiplying by it upside down: (${n1}/${d1}) ÷ (${n2}/${d2}) = (${n1}/${d1}) × (${fn}/${fd}). ` +
+    `Tops ${n1} × ${fn} = ${top}, bottoms ${d1} × ${fd} = ${bot}. ` +
+    (cancelled ? `That cancels to ${cancelled}, which is ${whole}.` : `As a decimal that is ${whole}.`),
+  ttNotFlipped: () => "Multiplied straight across without flipping the second fraction. Division flips it first.",
+  ttFlippedWrongOne: () => "The first fraction was flipped instead of the second. Only the one you divide by turns over.",
+  aFracSub: (n1, d1, a1, n2, d2, a2, lcm, diff, whole) =>
+    `Subtracting needs the same bottom. Both fit into ${lcm}: ${n1}/${d1} = ${a1}/${lcm} and ${n2}/${d2} = ${a2}/${lcm}. ` +
+    `Now take the tops: ${a1} − ${a2} = ${diff}, so ${diff}/${lcm} = ${whole}`,
+  aPctOnePercent: (y, one, p, whole) =>
+    `Any percentage at all: find one per cent first. 1% of ${y} is ${one}, so ${p}% is ${p} of those: ${p} × ${one} = ${whole}`,
+  aAskPctChain: (y, up, down) => `Start at ${y}. Increase it by ${up}%, then decrease the result by ${down}%. What is it now?`,
+  aPctChain: (y, up, upFactor, mid, down, downFactor, end) =>
+    `Two steps, each a multiplication. Up ${up}% means × ${upFactor}: ${y} × ${upFactor} = ${mid}. ` +
+    `Down ${down}% means × ${downFactor}: ${mid} × ${downFactor} = ${end}. The percentages do not cancel, because the second one acts on a different number.`,
+  ttChainAdded: (up, down) => `Added the percentages: up ${up} and down ${down} as one net move. They act on different numbers, so they do not add.`,
+  ttChainHalfDone: (down) => `That is after the increase only. The ${down}% decrease is still to come.`,
+
   /* estimation — unit names, prompts, solutions and traps */
   eUnits: {
     secMin:    { one: "minute",   many: "minutes",    small: "seconds" },
@@ -1386,6 +1419,39 @@ const vi = {
   ttAddedNotSubtracted: () => "Cộng mất rồi, đề là trừ.",
   ttAOnly: () => "Đó mới là A. Còn phải trừ B đi.",
   ttLargestNote: () => "So cơ số không thôi thì không được: cơ số nhỏ với số mũ lớn thường thắng, như 4^7 lớn hơn cả 3^7 lẫn 6^5. Phải tính từng cái ra.",
+
+  /* số học — các dạng cấp 3 có trên đề thật */
+  aTeens: (a, b, ub, plus, tens, ua, units, whole) =>
+    `Hai số từ 11 tới 19 nhân nhau: lấy hàng đơn vị của số này cộng vào nguyên số kia, nhân mười, rồi cộng tích hai hàng đơn vị. ` +
+    `${a} + ${ub} = ${plus}, nên ${plus} × 10 = ${tens}. Hai hàng đơn vị là ${ua} × ${ub} = ${units}. Rồi ${tens} + ${units} = ${whole}.`,
+  ttTeensNoUnits: (ua, ub, units) => `Đó mới là nửa đầu. Hai hàng đơn vị vẫn phải nhân: ${ua} × ${ub} = ${units}, và cộng vào cuối.`,
+  aSplitThree: (a, b, h, tn, u, hb, tb, ub, whole) =>
+    `Ba phần, phần lớn trước: ${a} = ${h} + ${tn} + ${u}. ` +
+    `${h} × ${b} = ${hb}, ${tn} × ${b} = ${tb}, ${u} × ${b} = ${ub}. Cộng dần theo từng bước: ${hb} + ${tb} + ${ub} = ${whole}.`,
+  ttForgotHundreds: (h, b, hb) => `Hàng trăm bị cộng vào thay vì nhân. ${h} × ${b} = ${hb}, không phải ${h}.`,
+  aDivideRemainder: (b, whole, product, total, r, frac, ans) =>
+    `Chia không hết, và đó chính là ý đề. ${b} × ${whole} = ${product}, còn lại ${total} − ${product} = ${r}. ` +
+    `Giờ ${r} ÷ ${b} = ${frac}, nên đáp án là ${whole} + ${frac} = ${ans}.`,
+  ttDroppedRemainder: (r) => `Đó mới là phần nguyên. Còn dư ${r}, và phần dư đó có giá trị.`,
+  ttRoundedUp: (r, b) => `Làm tròn lên số nguyên kế tiếp. Đề muốn con số chính xác: ${r} trên ${b}, đổi ra thập phân, gắn vào cuối.`,
+  ttRemainderAsTenths: (r, b) => `Phần dư bị viết thành phần mười. Nó là ${r} trên ${b}, không phải ${r} trên 10.`,
+  aFracDiv: (n1, d1, n2, d2, fn, fd, top, bot, cancelled, whole) =>
+    `Chia cho một phân số là nhân với nghịch đảo của nó: (${n1}/${d1}) ÷ (${n2}/${d2}) = (${n1}/${d1}) × (${fn}/${fd}). ` +
+    `Tử ${n1} × ${fn} = ${top}, mẫu ${d1} × ${fd} = ${bot}. ` +
+    (cancelled ? `Rút gọn thành ${cancelled}, tức ${whole}.` : `Đổi ra thập phân là ${whole}.`),
+  ttNotFlipped: () => "Nhân thẳng mà không lật phân số thứ hai. Phép chia phải lật nó trước.",
+  ttFlippedWrongOne: () => "Lật phân số thứ nhất thay vì thứ hai. Chỉ phân số đem chia mới được lật.",
+  aFracSub: (n1, d1, a1, n2, d2, a2, lcm, diff, whole) =>
+    `Muốn trừ thì phải cùng mẫu. Cả hai đều quy về ${lcm}: ${n1}/${d1} = ${a1}/${lcm} và ${n2}/${d2} = ${a2}/${lcm}. ` +
+    `Giờ trừ tử: ${a1} − ${a2} = ${diff}, nên ${diff}/${lcm} = ${whole}`,
+  aPctOnePercent: (y, one, p, whole) =>
+    `Phần trăm bất kỳ: tìm một phần trăm trước. 1% của ${y} là ${one}, nên ${p}% là ${p} lần số đó: ${p} × ${one} = ${whole}`,
+  aAskPctChain: (y, up, down) => `Bắt đầu từ ${y}. Tăng ${up}%, rồi giảm kết quả đi ${down}%. Giờ còn bao nhiêu?`,
+  aPctChain: (y, up, upFactor, mid, down, downFactor, end) =>
+    `Hai bước, mỗi bước là một phép nhân. Tăng ${up}% là × ${upFactor}: ${y} × ${upFactor} = ${mid}. ` +
+    `Giảm ${down}% là × ${downFactor}: ${mid} × ${downFactor} = ${end}. Hai phần trăm không triệt tiêu nhau, vì cái thứ hai tác động lên một con số khác.`,
+  ttChainAdded: (up, down) => `Cộng hai phần trăm lại: tăng ${up} và giảm ${down} thành một bước ròng. Chúng tác động lên hai con số khác nhau, nên không cộng được.`,
+  ttChainHalfDone: (down) => `Đó mới là sau bước tăng. Bước giảm ${down}% vẫn còn phía trước.`,
 
   /* ước lượng — tên đơn vị, đề bài, lời giải và bẫy */
   eUnits: {
@@ -2975,21 +3041,21 @@ const CURRICULUM = [
     },
     skills: [
       skill("arith.times-tables", "Times tables", "Bảng cửu chương",
-        [lv(20, 90, 17), lv(20, 80, 17), lv(20, 90, 16)]),
+        [lv(20, 90, 17), lv(20, 80, 17), lv(20, 120, 15)]),
       skill("arith.add-subtract", "Add and subtract", "Cộng và trừ",
-        [lv(20, 120, 16), lv(20, 150, 16), lv(15, 180, 12)]),
+        [lv(20, 120, 16), lv(20, 150, 16), lv(15, 120, 11)]),
       skill("arith.multiply", "Multiply", "Nhân",
-        [lv(15, 120, 12), lv(15, 120, 12), lv(12, 180, 9)]),
+        [lv(15, 120, 12), lv(15, 120, 12), lv(12, 120, 8)]),
       skill("arith.divide", "Divide", "Chia",
-        [lv(15, 110, 12), lv(15, 130, 12), lv(12, 180, 9)]),
+        [lv(15, 110, 12), lv(15, 130, 12), lv(12, 120, 8)]),
       skill("arith.squares", "Squares", "Bình phương",
-        [lv(15, 90, 13), lv(15, 100, 12), lv(12, 150, 9)]),
+        [lv(15, 90, 13), lv(15, 100, 12), lv(12, 100, 9)]),
       skill("arith.roots", "Roots and powers", "Căn và luỹ thừa",
         [lv(12, 100, 10), lv(12, 120, 9), lv(10, 150, 7)]),
       skill("arith.fractions", "Fractions and decimals", "Phân số và thập phân",
-        [lv(15, 100, 12), lv(12, 130, 9), lv(12, 160, 9)]),
+        [lv(15, 100, 12), lv(12, 130, 9), lv(12, 120, 8)]),
       skill("arith.percent", "Percentages", "Phần trăm",
-        [lv(15, 110, 12), lv(15, 140, 11), lv(12, 160, 9)]),
+        [lv(15, 110, 12), lv(15, 140, 11), lv(12, 120, 8)]),
       skill("arith.estimate", "Rough answers", "Tính áng chừng",
         [lv(10, 100, 8), lv(10, 110, 7), lv(10, 120, 7)]),
       skill("arith.puzzles", "Number puzzles", "Câu đố số học",
@@ -3198,10 +3264,27 @@ function timesTableRoute(a, b, t) {
 }
 
 function timesTables(rng, level, t) {
-  const hi = level === 1 ? 9 : level === 2 ? 12 : 19;
-  const lo = level === 3 ? 11 : 2;
-  const a = rng.int(lo, hi);
-  const b = rng.int(2, level === 1 ? 9 : 12);
+  if (level === 3) {
+    // Teens times teens. The old level 3 kept one factor at 12 or under, which
+    // is level 2 with a bigger partner; 17 × 19 is the table a trader has.
+    const a = rng.int(11, 19);
+    const b = rng.int(11, 19);
+    const ua = a - 10, ub = b - 10;
+    return q({
+      prompt: `${a} × ${b}`,
+      answer: a * b,
+      solution: t.aTeens(a, b, ub, a + ub, (a + ub) * 10, ua, ua * ub, a * b),
+      traps: [
+        { value: (a + ub) * 10, why: t.ttTeensNoUnits(ua, ub, ua * ub) },
+        { value: a * (b - 1), why: t.ttRowEarly(a, b - 1) },
+        { value: a + b, why: t.ttAddedNotMultiplied() },
+      ],
+      tip: "split-and-add",
+    });
+  }
+  const hi = level === 1 ? 9 : 12;
+  const a = rng.int(2, hi);
+  const b = rng.int(2, hi);
   return q({
     prompt: `${a} × ${b}`,
     answer: a * b,
@@ -3295,7 +3378,47 @@ function multiply(rng, level, t) {
   // A quarter of these are built to straddle a round number, because that is
   // exactly the shape the difference-of-squares trick is for, and a trick the
   // drill never presents is a trick nobody learns.
-  if (rng.chance(0.25)) {
+  // Level 3 is what the paper has: two-digit by two-digit is the floor, and
+  // three-digit by one- and two-digit is the ceiling. Weighted the way the
+  // sitting felt: 3×2 most often.
+  const shape = rng.pick(["straddle", "2x2", "2x2", "3x1", "3x2", "3x2"]);
+
+  if (shape === "3x1") {
+    const a = rng.int(102, 999);
+    const b = rng.int(3, 9);
+    const h = Math.floor(a / 100) * 100, tn = Math.floor((a % 100) / 10) * 10, u = a % 10;
+    return q({
+      prompt: `${a} × ${b}`,
+      answer: a * b,
+      solution: t.aSplitThree(a, b, h, tn, u, h * b, tn * b, u * b, a * b),
+      traps: [
+        { value: (tn + u) * b + h, why: t.ttForgotHundreds(h, b, h * b) },
+        { value: a * b + 100, why: t.ttCarryHundred(h * b + tn * b, u * b) },
+        { value: a * b - 100, why: t.ttHundredDropped() },
+      ],
+      tip: "split-and-add",
+    });
+  }
+
+  if (shape === "3x2") {
+    const a = rng.int(102, 999);
+    const b = rng.int(12, 99);
+    const tens = Math.floor(b / 10) * 10;
+    return q({
+      prompt: `${a} × ${b}`,
+      answer: a * b,
+      solution: splitMul(a, b, t),
+      traps: [
+        { value: a * tens, why: t.ttOnlyTens(a, tens, b % 10, a * (b % 10)) },
+        { value: a * (b % 10), why: t.ttOnlyUnits(a, b % 10, tens, a * tens) },
+        { value: a * b + 100, why: t.ttCarryHundred(a * tens, a * (b % 10)) },
+        { value: a * b - 100, why: t.ttHundredDropped() },
+      ],
+      tip: "split-and-add",
+    });
+  }
+
+  if (shape === "straddle") {
     const centre = rng.int(3, 9) * 10;
     const d = rng.int(1, 4);
     const lo = centre - d, hi = centre + d;
@@ -3367,8 +3490,30 @@ function divide(rng, level, t) {
     });
   }
 
-  const b = rng.int(12, 29);
-  const ans = rng.int(21, 99);
+  if (rng.chance(0.4)) {
+    // The paper does not always divide evenly. Divisors whose fractions stop
+    // within two decimal places, so the answer is typed and not rounded.
+    const b = rng.pick([4, 5, 20, 25, 50]);
+    const whole = rng.int(11, 99);
+    const r = rng.int(1, b - 1);
+    const total = b * whole + r;
+    const frac = round4(r / b);
+    return q({
+      prompt: `${total} ÷ ${b}`,
+      answer: round4(whole + frac),
+      solution: t.aDivideRemainder(b, whole, b * whole, total, r, t.n(frac), t.n(round4(whole + frac))),
+      traps: [
+        { value: whole, why: t.ttDroppedRemainder(r) },
+        { value: whole + 1, why: t.ttRoundedUp(r, b) },
+        { value: round4(whole + r / 10), why: t.ttRemainderAsTenths(r, b) },
+      ],
+      tip: "reduce-before-dividing",
+    });
+  }
+
+  // Divisors up to 79, as the drill that matched the sitting had them.
+  const b = rng.int(12, 79);
+  const ans = rng.int(11, 99);
   return q({
     prompt: `${b * ans} ÷ ${b}`,
     answer: ans,
@@ -3387,7 +3532,7 @@ function divide(rng, level, t) {
 
 /* ── 5. Squares ──────────────────────────────────────────────────────────── */
 function squares(rng, level, t) {
-  const range = [[11, 25], [21, 40], [26, 59]][level - 1];
+  const range = [[11, 25], [21, 40], [26, 99]][level - 1];
   const n = rng.int(range[0], range[1]);
   const d = n % 10 <= 5 ? n % 10 : n % 10 - 10;
   const slid = (n - d) * (n + d); // the rule-of-one product, before adding d²
@@ -3505,7 +3650,45 @@ function fractions(rng, level, t) {
     });
   }
 
+  const op = rng.pick(["add", "sub", "div", "div"]);
   const lcm = (d1 * d2) / gcd(d1, d2);
+
+  if (op === "div") {
+    // Flip the second and multiply. The most-reported trap is multiplying
+    // straight across without flipping, so it is the first one listed.
+    const top = n1 * d2, bot = d1 * n2;
+    const g = gcd(top, bot);
+    return q({
+      prompt: `${n1}/${d1} ÷ ${n2}/${d2}`,
+      answer: round4(top / bot),
+      solution: t.aFracDiv(n1, d1, n2, d2, d2, n2, top, bot,
+                           g > 1 ? `${top / g}/${bot / g}` : null, t.n(round4(top / bot))),
+      traps: [
+        { value: round4((n1 * n2) / (d1 * d2)), why: t.ttNotFlipped() },
+        { value: round4((d1 * n2) / (n1 * d2)), why: t.ttFlippedWrongOne() },
+      ],
+      tip: "fraction-anchors",
+    });
+  }
+
+  if (op === "sub") {
+    // Keep it positive: the paper never asks for a negative fraction.
+    const [big, small] = n1 / d1 >= n2 / d2 ? [[n1, d1], [n2, d2]] : [[n2, d2], [n1, d1]];
+    if (big[0] * small[1] === small[0] * big[1]) return fractions(rng, level, t);   // equal: redraw
+    const a1 = (big[0] * lcm) / big[1], a2 = (small[0] * lcm) / small[1];
+    return q({
+      prompt: `${big[0]}/${big[1]} − ${small[0]}/${small[1]}`,
+      answer: round4(big[0] / big[1] - small[0] / small[1]),
+      solution: t.aFracSub(big[0], big[1], a1, small[0], small[1], a2, lcm, a1 - a2,
+                           t.n(round4(big[0] / big[1] - small[0] / small[1]))),
+      traps: [
+        { value: round4((big[0] - small[0]) / (big[1] - small[1] || 1)), why: t.ttTopsAndBottoms() },
+        { value: round4(big[0] / big[1] + small[0] / small[1]), why: t.ttAddedNotSubtracted() },
+      ],
+      tip: "fraction-anchors",
+    });
+  }
+
   return q({
     prompt: `${n1}/${d1} + ${n2}/${d2}`,
     answer: round4(n1 / d1 + n2 / d2),
@@ -3551,6 +3734,45 @@ function percent(rng, level, t) {
       answer: round4((p * y) / 100),
       solution: t.aPctBuild(t.n(round4(ten)), t.n(round4(p / 10)), t.n(p), t.n(round4((p * y) / 100)), y),
       traps: [{ value: round4((p * y) / 1000), why: t.ttFactorOfTenCheck() }],
+      tip: "percent-flip",
+    });
+  }
+
+  const kind = rng.pick(["what", "any", "any", "chain"]);
+
+  if (kind === "any") {
+    // 37% of 200. The drill that matched the sitting logged this as the gap:
+    // percentages here only ever came in the pretty sizes. Base a multiple of
+    // ten, so the answer has at most one decimal place.
+    const p = rng.int(3, 97);
+    const y = rng.pick([...Array(57).keys()].map((i) => (i + 4) * 10).filter((v) => v !== 100));  // 100 makes it trivial
+    const one = y / 100;
+    return q({
+      prompt: t.aPercentOf(p, y),
+      answer: round4(p * one),
+      solution: t.aPctOnePercent(y, t.n(one), p, t.n(round4(p * one))),
+      traps: [
+        { value: round4(p * one * 10), why: t.ttFactorOfTen() },
+        { value: round4(p * one / 10), why: t.ttFactorOfTenCheck() },
+      ],
+      tip: "percent-flip",
+    });
+  }
+
+  if (kind === "chain") {
+    const y = rng.pick([200, 400, 500, 800, 1000]);
+    const up = rng.pick([10, 15, 20, 25, 30, 40, 50]);
+    const down = rng.pick([10, 20, 25, 30, 40, 50]);
+    const mid = round4(y * (1 + up / 100));
+    const end = round4(mid * (1 - down / 100));
+    return q({
+      prompt: t.aAskPctChain(y, up, down),
+      answer: end,
+      solution: t.aPctChain(y, up, t.n(round4(1 + up / 100)), t.n(mid), down, t.n(round4(1 - down / 100)), t.n(end)),
+      traps: [
+        { value: round4(y * (1 + (up - down) / 100)), why: t.ttChainAdded(up, down) },
+        { value: mid, why: t.ttChainHalfDone(down) },
+      ],
       tip: "percent-flip",
     });
   }
@@ -3629,7 +3851,7 @@ function maskDigit(rng, n) {
 }
 
 function puzzles(rng, level, t) {
-  const kinds = level === 1 ? ["balance"] : level === 2 ? ["balance", "missing"] : ["missing", "relation", "largest"];
+  const kinds = level === 1 ? ["balance"] : level === 2 ? ["balance", "missing"] : ["missing", "relation", "largest", "balance"];
   const kind = rng.pick(kinds);
 
   if (kind === "balance") {
