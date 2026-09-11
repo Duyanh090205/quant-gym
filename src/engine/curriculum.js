@@ -114,17 +114,18 @@ export const CURRICULUM = [
  * Exam papers. These are not part of the ladder; they are the thing the ladder
  * is preparing you for, unlocked once the probability topic is mastered.
  *
- * `maven-round-1` reproduces a real first-round paper sat on 9 September 2026:
- * every question of a part on one page, typed answers, a countdown, and no
- * negative marking anywhere, so a blank is strictly worse than a guess.
+ * `maven-round-1` follows the format of a first-round paper as recorded after
+ * one sitting: every question of a part on one page, typed answers, a
+ * countdown, and no negative marking anywhere, so a blank is strictly worse
+ * than a guess. The questions are this engine's; only the shape is borrowed.
  */
 export const EXAMS = [
   {
     id: "maven-round-1",
-    name: { en: "Maven Securities, round 1", vi: "Maven Securities, vòng 1" },
+    name: { en: "Maven-format paper", vi: "Đề theo format Maven" },
     note: {
-      en: "The real format: 50 arithmetic in 5 minutes, 20 odd-one-out in 12, 15 probability in 15. +1 for correct, 0 for wrong, 0 for blank.",
-      vi: "Format thật: 50 câu tính nhẩm trong 5 phút, 20 câu tìm số lạc trong 12, 15 câu xác suất trong 15. Đúng +1, sai 0, bỏ trống 0.",
+      en: "Modelled on the format of a Maven Securities first round: 50 arithmetic in 5 minutes, 20 odd-one-out in 12, 15 probability in 15. +1 for correct, 0 for wrong, 0 for blank.",
+      vi: "Theo format vòng 1 của Maven Securities: 50 câu tính nhẩm trong 5 phút, 20 câu tìm số lạc trong 12, 15 câu xác suất trong 15. Đúng +1, sai 0, bỏ trống 0.",
     },
     // Each part is a blend of rungs, not one rung. The probability split is
     // measured: of the thirteen questions recalled from the sitting, three were

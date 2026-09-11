@@ -50,10 +50,11 @@ unverified surface in the project.
 **Claims about real assessments.** Two papers reproduce formats reported from
 outside this repository:
 
-- The Maven Securities paper comes from one sitting on 9 September 2026, written
-  down immediately afterwards from memory. The format is right. The difficulty of
-  the arithmetic section is a judgement call, and the person who sat it reported
-  that the real thing was harder than this trainer was at the time.
+- The Maven-format paper takes its shape - counts, timings, marking - from one
+  sitting on 9 September 2026, written down immediately afterwards from memory.
+  None of its questions are the assessment's; they are generated here. The
+  difficulty is a judgement call, and the person who sat it reported that the
+  real thing was harder than this trainer was at the time.
 - Level 3 of every arithmetic skill is pitched from the drill that matched the
   Maven sitting and from the three questions photographed during it: a digit
   missing from a three-digit multiplier, `2 × 232 = 16 × ?`, and which of

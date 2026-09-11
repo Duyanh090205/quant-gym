@@ -22,7 +22,7 @@ import { TIPS, getTip, tipsForSkill } from "./tips.js";
 import { grade, gradeSet, displayAnswer } from "./grade.js";
 import { frac, fmt, parseAnswer, num } from "./format.js";
 
-/* Weights inside the two "mixed" pseudo-skills, tuned to the real Maven paper:
+/* Weights inside the two "mixed" pseudo-skills, tuned to the Maven-format paper:
    arithmetic is dominated by add/subtract and multiplication, and probability
    spreads evenly across the seven ideas. */
 const MIXED = {

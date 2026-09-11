@@ -90,9 +90,10 @@ truth. Inventing the assumptions is the next step up and it needs a teacher on
 the other side of the table; what is here is the half that can be practised
 alone, and it is the half students get wrong.
 
-Three full papers sit at the end of the ladder. One reproduces a Maven Securities
-first round sat on 9 September 2026: 50 arithmetic in 5 minutes, 20 odd-one-out
-in 12, 15 probability in 15, with no negative marking anywhere.
+Three full papers sit at the end of the ladder. One follows the format of a Maven
+Securities first round: 50 arithmetic in 5 minutes, 20 odd-one-out in 12, 15
+probability in 15, with no negative marking anywhere. The questions are the
+engine's own; only the shape and the pace are borrowed.
 
 Another charges for a wrong answer: 80 questions in 8 minutes, +1 right, −1
 wrong, 0 blank, which is the shape candidates report from Optiver's first round.

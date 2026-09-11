@@ -7,7 +7,7 @@
  * a student nothing about how they were supposed to see it.
  *
  * From one family object we build both question types: "what comes next" and
- * "which term breaks the rule". The second is what Maven actually asks, and it is
+ * "which term breaks the rule". The second is what the Maven-format paper asks, and it is
  * the harder skill, because you have to hold a candidate rule in mind while
  * testing it against every term.
  */

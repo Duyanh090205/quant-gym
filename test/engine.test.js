@@ -448,7 +448,7 @@ test("a paper has no repeated prompt and is not dominated by one skill", () => {
   }
 });
 
-test("the Maven paper matches the format that was actually sat", () => {
+test("the Maven-format paper matches the format that was recorded", () => {
   const exam = generateExam("maven-round-1", "seed");
   assert.equal(exam.parts.length, 3);
   assert.deepEqual(exam.parts.map((p) => [p.questions.length, p.seconds]), [[50, 300], [20, 720], [15, 900]]);
@@ -457,7 +457,7 @@ test("the Maven paper matches the format that was actually sat", () => {
   }
 });
 
-test("the Maven paper draws from every rung of the ladder, as the real one did", () => {
+test("the Maven-format paper draws from every rung of the ladder, as the sitting did", () => {
   // Of the thirteen probability questions recalled from the sitting, three were
   // level-1 ideas, seven level-2, two level-3. A paper pinned to one level could
   // never reproduce that, and did not: five of the thirteen were unreachable.
