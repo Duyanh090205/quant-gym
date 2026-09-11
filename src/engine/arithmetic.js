@@ -184,7 +184,10 @@ export function multiply(rng, level, t) {
   const shape = rng.pick(["straddle", "2x2", "2x2", "3x1", "3x2", "3x2"]);
 
   if (shape === "3x1") {
-    const a = rng.int(102, 999);
+    let a = rng.int(102, 999);
+    // A zero in the tens or units prints an empty piece ("0 × 9 = 0") and a
+    // trap about carrying nothing. Those are two-piece questions; draw again.
+    while (a % 10 === 0 || Math.floor((a % 100) / 10) === 0) a = rng.int(102, 999);
     const b = rng.int(3, 9);
     const h = Math.floor(a / 100) * 100, tn = Math.floor((a % 100) / 10) * 10, u = a % 10;
     return q({

@@ -268,9 +268,9 @@ const en = {
   dSolMulFrac: (a, num, den, b, share, ans) =>
     `${a} is ${num}/${den} in disguise, so take ${num}/${den} of ${b}: ${b} ÷ ${den} = ${share}` + (num === 1 ? `.` : `, and ${share} × ${num} = ${ans}.`),
   dSolDiv: (a, d, scale, a2, d2, ans) =>
-    `Make the divisor a whole number first: multiply both sides by ${scale}, which does not change the answer. ` +
+    `Make the divisor a whole number first: multiply both numbers by ${scale}, which does not change the answer. ` +
     `${a} ÷ ${d} becomes ${a2} ÷ ${d2}, and ${a2} ÷ ${d2} = ${ans}.`,
-  dtDividendNotScaled: (a, d2) => `The divisor was scaled up to ${d2} but ${a} was left as it was. Whatever you do to one side you do to the other.`,
+  dtDividendNotScaled: (a, d2) => `The divisor was scaled up to ${d2} but ${a} was left as it was. Whatever you do to one number you do to the other.`,
 
   /* estimation — unit names, prompts, solutions and traps */
   eUnits: {
@@ -295,12 +295,12 @@ const en = {
 
   eAskUnits: (small, n, many) => `How many ${small} in ${n} ${many}?`,
   eSolUnits: (one, per, small, n, ans) =>
-    `One ${one} is ${per} ${small}, so ${n} of them is ${n} \u00d7 ${per} = ${ans}.`,
+    `One ${one} is ${per} ${small}, so ${n} of them is ${n} × ${per} = ${ans}.`,
   etOneUnitOnly: (one) => `That is one ${one}. The question asks about several of them.`,
   etAddedNotMultiplied: "These two numbers multiply, they do not add. Each one of the first thing brings a whole set of the second.",
 
   eAskHeartHour: (r) => `A heart beats ${r} times a minute. About how many beats in an hour?`,
-  eSolHeartHour: (r, ans) => `An hour is 60 minutes, and each of them costs ${r} beats: 60 \u00d7 ${r} = ${ans}.`,
+  eSolHeartHour: (r, ans) => `An hour is 60 minutes, and each of them costs ${r} beats: 60 × ${r} = ${ans}.`,
   etOneMinuteOnly: "That is one minute. An hour holds sixty of them.",
   etOneSecondOnly: "That is one second. An hour is three thousand six hundred of them.",
   etOneHourOnly: "That is one hour on its own. The question asks for longer than that.",
@@ -310,38 +310,38 @@ const en = {
 
   eAskTap: (r, h) => `A tap runs at ${r} litres a minute. How many litres in ${h} hours?`,
   eSolTap: (r, perHour, h, ans) =>
-    `One hour gives 60 \u00d7 ${r} = ${perHour} litres, and ${h} hours gives ${h} \u00d7 ${perHour} = ${ans}.`,
+    `One hour gives 60 × ${r} = ${perHour} litres, and ${h} hours gives ${h} × ${perHour} = ${ans}.`,
   eAskRead: (w, h) => `You read ${w} words a minute. About how many words in ${h} hours?`,
   eSolRead: (w, perHour, h, ans) =>
-    `An hour is 60 \u00d7 ${w} = ${perHour} words, and ${h} hours is ${h} \u00d7 ${perHour} = ${ans}.`,
+    `An hour is 60 × ${w} = ${perHour} words, and ${h} hours is ${h} × ${perHour} = ${ans}.`,
   eAskCar: (v, h) => `A car travels at ${v} kilometres an hour. How far does it go in ${h} hours?`,
-  eSolCar: (v, h, ans) => `Distance is speed times time: ${v} \u00d7 ${h} = ${ans} kilometres.`,
+  eSolCar: (v, h, ans) => `Distance is speed times time: ${v} × ${h} = ${ans} kilometres.`,
   eAskMachine: (r, h) => `A machine makes ${r} parts an hour. How many does it make in a ${h}-hour shift?`,
-  eSolMachine: (r, h, ans) => `Every hour of the shift adds ${r}, so ${r} \u00d7 ${h} = ${ans}.`,
+  eSolMachine: (r, h, ans) => `Every hour of the shift adds ${r}, so ${r} × ${h} = ${ans}.`,
   eAskDrip: (r) => `A tap drips ${r} times a second. About how many drips in an hour?`,
   eSolDrip: (r, perMin, ans) =>
-    `A minute gives 60 \u00d7 ${r} = ${perMin} drips, and an hour is 60 of those minutes: 60 \u00d7 ${perMin} = ${ans}.`,
+    `A minute gives 60 × ${r} = ${perMin} drips, and an hour is 60 of those minutes: 60 × ${perMin} = ${ans}.`,
 
   eAskHeartYear: (r) => `A heart beats ${r} times a minute. About how many beats in a year?`,
   eAskBreathYear: (r) => `You breathe ${r} times a minute. About how many breaths in a year?`,
   eSolPerYear: (r, perHour, perDay, ans, noun) =>
     `Climb one step at a time rather than reaching for the whole thing at once. ` +
-    `An hour is 60 \u00d7 ${r} = ${perHour} ${noun}. A day is 24 hours: 24 \u00d7 ${perHour} = ${perDay}. ` +
-    `A year is 365 days: 365 \u00d7 ${perDay} = ${ans}.`,
+    `An hour is 60 × ${r} = ${perHour} ${noun}. A day is 24 hours: 24 × ${perHour} = ${perDay}. ` +
+    `A year is 365 days: 365 × ${perDay} = ${ans}.`,
   etCountedDaysNotMinutes: "You multiplied by the days in a year but left out the minutes inside each day, and there are 1440 of those.",
   eAskSleepYear: (h) => `You sleep ${h} hours a night. About how many hours of sleep is that in a year?`,
-  eSolSleepYear: (h, ans) => `A year is 365 nights, and each costs ${h} hours: 365 \u00d7 ${h} = ${ans}.`,
+  eSolSleepYear: (h, ans) => `A year is 365 nights, and each costs ${h} hours: 365 × ${h} = ${ans}.`,
   etAnsweredInMinutes: "That is the answer in minutes. The question asks for hours.",
   eAskLight: (n) =>
     `Light travels 300 thousand kilometres a second. About how far does it go in ${n} minutes, in thousands of kilometres?`,
   eSolLight: (n, secs, ans) =>
-    `${n} minutes is ${n} \u00d7 60 = ${secs} seconds, and every second carries light 300 thousand kilometres: ` +
-    `${secs} \u00d7 300 = ${ans}.`,
+    `${n} minutes is ${n} × 60 = ${secs} seconds, and every second carries light 300 thousand kilometres: ` +
+    `${secs} × 300 = ${ans}.`,
   etLightSeconds: "That is how far light gets in that many seconds. The question is in minutes, and each one is sixty seconds long.",
   etLightOneMinute: "That is one minute's worth of travel. The question asks about several minutes, so multiply it up.",
   eAskRiver: (v) => `A river carries ${v} cubic metres of water past a point every second. About how much passes in a day?`,
   eSolRiver: (v, perHour, ans) =>
-    `An hour is 3600 seconds: 3600 \u00d7 ${v} = ${perHour}. A day is 24 hours: 24 \u00d7 ${perHour} = ${ans} cubic metres.`,
+    `An hour is 3600 seconds: 3600 × ${v} = ${perHour}. A day is 24 hours: 24 × ${perHour} = ${ans} cubic metres.`,
   etCountedMinutesNotSeconds: "You counted the minutes in a day rather than the seconds, and each minute holds sixty of those.",
 
   eAskCups: (n, c) => `A school has ${n} students and each drinks ${c} cups of water a day. About how many cups a day is that?`,
@@ -358,7 +358,7 @@ const en = {
   },
   eSolTwoFactor: (a, subj, b, ans, noun) =>
     `There are ${a} ${subj.many}, and each ${subj.one} accounts for ${b} ${noun}. ` +
-    `So the two numbers multiply: ${a} \u00d7 ${b} = ${ans}.`,
+    `So the two numbers multiply: ${a} × ${b} = ${ans}.`,
   etOnePerPerson: (subj, noun) =>
     `That is just the number of ${subj.many}. Each ${subj.one} accounts for several ${noun}, so the answer has to be bigger.`,
 
@@ -366,9 +366,9 @@ const en = {
     `One piano tuner looks after ${S} pianos a year. A city of ${P} thousand people has ${shops} music shops, ` +
     `and about 1 person in ${A} owns a piano. Roughly how many tuners does the city keep busy?`,
   eSolTuners: (P, people, A, pianos, S, ans) =>
-    `Take one step at a time. ${P} thousand people is ${P} \u00d7 1000 = ${people}. ` +
-    `One piano for every ${A} of them gives ${people} \u00f7 ${A} = ${pianos} pianos. ` +
-    `A tuner covers ${S} pianos a year, so ${pianos} \u00f7 ${S} = ${ans} tuners.`,
+    `Take one step at a time. ${P} thousand people is ${P} × 1000 = ${people}. ` +
+    `One piano for every ${A} of them gives ${people} ÷ ${A} = ${pianos} pianos. ` +
+    `A tuner covers ${S} pianos a year, so ${pianos} ÷ ${S} = ${ans} tuners.`,
   etTunersPianos: "That is how many pianos the city has, not how many tuners. One tuner looks after hundreds of them.",
   etTunersPeople: "That is the whole population. Only a small share of them owns a piano at all.",
 
@@ -376,42 +376,42 @@ const en = {
   etFuelPerHundred: "The rate is per 100 kilometres, not per kilometre, so this answer is a hundred times too big.",
 
   eSolCoffee: (n, h, perDay, d, ans) =>
-    `A day is ${n} \u00d7 ${h} = ${perDay} cups, and a week is ${d} of those days: ${perDay} \u00d7 ${d} = ${ans}.`,
+    `A day is ${n} × ${h} = ${perDay} cups, and a week is ${d} of those days: ${perDay} × ${d} = ${ans}.`,
   etCoffeeOneDay: "That is a single day. The question asks about a week.",
   etCoffeeNoHours: "You multiplied the days in but left the opening hours out, and each day is several hours long.",
 
   eSolTiles: (w, l, area, per, ans) =>
-    `The floor is ${w} \u00d7 ${l} = ${area} square metres, and each square metre takes ${per} tiles: ${area} \u00d7 ${per} = ${ans}.`,
+    `The floor is ${w} × ${l} = ${area} square metres, and each square metre takes ${per} tiles: ${area} × ${per} = ${ans}.`,
   etTilesArea: "That is the floor area in square metres, not the number of tiles standing on it.",
   etTilesPerimeter: "That is the distance round the edge of the room. A floor is covered by its area, not by its border.",
 
   eSolEggs: (P, e, perWeek, ans) =>
-    `A week takes ${P} \u00d7 ${e} = ${perWeek} million eggs, and a year is 52 weeks: ${perWeek} \u00d7 52 = ${ans} million.`,
+    `A week takes ${P} × ${e} = ${perWeek} million eggs, and a year is 52 weeks: ${perWeek} × 52 = ${ans} million.`,
   etEggsWeek: "That is one week. A year is fifty-two of them.",
   etEggsDays: "You multiplied by the days in a year, but the rate you were given is per week.",
 
   eSolWater: (P, l, litres, ans) =>
-    `The city uses ${P} \u00d7 1000 \u00d7 ${l} = ${litres} litres. A cubic metre is 1000 litres, ` +
-    `so ${litres} \u00f7 1000 = ${ans} cubic metres. The two thousands cancel, which is why the answer is simply ${P} times ${l}.`,
+    `The city uses ${P} × 1000 × ${l} = ${litres} litres. A cubic metre is 1000 litres, ` +
+    `so ${litres} ÷ 1000 = ${ans} cubic metres. The two thousands cancel, which is why the answer is simply ${P} times ${l}.`,
   etWaterLitres: "That is the answer in litres. The question asks for cubic metres, and each of those holds a thousand litres.",
   etWaterPeople: "That is how many people live there, with nothing about how much water each of them drinks.",
 
   etFlightsSeats: "That is every seat on offer. The planes do not fly full, which is the whole reason the percentage is there.",
-  etFlightsOneFlight: "That is a single flight. The airport runs many of them a day.",
+  etFlightsOneFlight: "That is a single flight. The airline runs many of them a day, and the question asks for a week of them.",
 
   eSolBarbers: (P, people, w, cuts, c, d, perBarber, ans) =>
-    `${P} thousand people is ${P} \u00d7 1000 = ${people}, and each wants a cut every ${w} weeks, ` +
-    `so one week brings ${people} \u00f7 ${w} = ${cuts} haircuts. ` +
-    `One barber manages ${c} \u00d7 ${d} = ${perBarber} cuts a week, so the town needs ${cuts} \u00f7 ${perBarber} = ${ans}.`,
+    `${P} thousand people is ${P} × 1000 = ${people}, and each wants a cut every ${w} weeks, ` +
+    `so one week brings ${people} ÷ ${w} = ${cuts} haircuts. ` +
+    `One barber manages ${c} × ${d} = ${perBarber} cuts a week, so the town needs ${cuts} ÷ ${perBarber} = ${ans}.`,
   etBarbersCuts: "That is how many haircuts the town wants each week, not how many barbers it takes to give them.",
   etBarbersOneBarber: "That is one barber's week. The town needs a good many barbers.",
 
   eNoise: {
-    shops: "music shops", people: "people", tables: "tables", ceiling: "ceiling height",
+    shops: "music shops", people: "population", tables: "tables", ceiling: "ceiling height",
     farms: "farms", reservoirs: "reservoirs", staff: "staff", barbershops: "barbershops",
     weight: "weight of a box",
   },
-  eIgnored: (noun) => `The ${noun} never enters the calculation. A question can hand you a number you do not need, and deciding what to leave out is part of the work.`,
+  eIgnored: (noun) => `Nothing here uses the ${noun}. A question can hand you a number you do not need, and deciding what to leave out is part of the work.`,
 
   eAskPacking: (a, b, c, x, y, z, kg) =>
     `A shipping container measures ${a} metres by ${b} metres by ${c} metres. A box measures ${x} centimetres ` +
@@ -1108,9 +1108,9 @@ const vi = {
   dSolMulFrac: (a, num, den, b, share, ans) =>
     `${a} chính là ${num}/${den} trá hình, nên lấy ${num}/${den} của ${b}: ${b} ÷ ${den} = ${share}` + (num === 1 ? `.` : `, và ${share} × ${num} = ${ans}.`),
   dSolDiv: (a, d, scale, a2, d2, ans) =>
-    `Làm cho số chia thành số nguyên trước: nhân cả hai vế với ${scale}, đáp án không đổi. ` +
+    `Làm cho số chia thành số nguyên trước: nhân cả hai số với ${scale}, đáp án không đổi. ` +
     `${a} ÷ ${d} thành ${a2} ÷ ${d2}, và ${a2} ÷ ${d2} = ${ans}.`,
-  dtDividendNotScaled: (a, d2) => `Số chia đã được nhân lên thành ${d2} nhưng ${a} thì để nguyên. Làm gì với vế này thì phải làm y hệt với vế kia.`,
+  dtDividendNotScaled: (a, d2) => `Số chia đã được nhân lên thành ${d2} nhưng ${a} thì để nguyên. Làm gì với số này thì phải làm y hệt với số kia.`,
 
   /* ước lượng — tên đơn vị, đề bài, lời giải và bẫy */
   eUnits: {
@@ -1135,12 +1135,12 @@ const vi = {
 
   eAskUnits: (small, n, many) => `Có bao nhiêu ${small} trong ${n} ${many}?`,
   eSolUnits: (one, per, small, n, ans) =>
-    `Một ${one} là ${per} ${small}, nên ${n} ${one} là ${n} \u00d7 ${per} = ${ans}.`,
+    `Một ${one} là ${per} ${small}, nên ${n} ${one} là ${n} × ${per} = ${ans}.`,
   etOneUnitOnly: (one) => `Đó mới là một ${one}. Đề hỏi nhiều hơn thế.`,
   etAddedNotMultiplied: "Hai số này nhân với nhau chứ không cộng. Mỗi cái của thứ nhất kéo theo nguyên một bộ của thứ hai.",
 
   eAskHeartHour: (r) => `Tim đập ${r} nhịp một phút. Khoảng bao nhiêu nhịp trong một giờ?`,
-  eSolHeartHour: (r, ans) => `Một giờ là 60 phút, mỗi phút tốn ${r} nhịp: 60 \u00d7 ${r} = ${ans}.`,
+  eSolHeartHour: (r, ans) => `Một giờ là 60 phút, mỗi phút tốn ${r} nhịp: 60 × ${r} = ${ans}.`,
   etOneMinuteOnly: "Đó mới là một phút. Một giờ có sáu mươi phút.",
   etOneSecondOnly: "Đó mới là một giây. Một giờ có ba nghìn sáu trăm giây.",
   etOneHourOnly: "Đó mới là một giờ đứng riêng. Đề hỏi khoảng thời gian dài hơn.",
@@ -1150,38 +1150,38 @@ const vi = {
 
   eAskTap: (r, h) => `Một vòi nước chảy ${r} lít một phút. Bao nhiêu lít trong ${h} giờ?`,
   eSolTap: (r, perHour, h, ans) =>
-    `Một giờ được 60 \u00d7 ${r} = ${perHour} lít, và ${h} giờ được ${h} \u00d7 ${perHour} = ${ans}.`,
+    `Một giờ được 60 × ${r} = ${perHour} lít, và ${h} giờ được ${h} × ${perHour} = ${ans}.`,
   eAskRead: (w, h) => `Bạn đọc ${w} chữ một phút. Khoảng bao nhiêu chữ trong ${h} giờ?`,
   eSolRead: (w, perHour, h, ans) =>
-    `Một giờ là 60 \u00d7 ${w} = ${perHour} chữ, và ${h} giờ là ${h} \u00d7 ${perHour} = ${ans}.`,
+    `Một giờ là 60 × ${w} = ${perHour} chữ, và ${h} giờ là ${h} × ${perHour} = ${ans}.`,
   eAskCar: (v, h) => `Một chiếc xe chạy ${v} ki-lô-mét một giờ. Trong ${h} giờ nó đi được bao xa?`,
-  eSolCar: (v, h, ans) => `Quãng đường bằng tốc độ nhân thời gian: ${v} \u00d7 ${h} = ${ans} ki-lô-mét.`,
+  eSolCar: (v, h, ans) => `Quãng đường bằng tốc độ nhân thời gian: ${v} × ${h} = ${ans} ki-lô-mét.`,
   eAskMachine: (r, h) => `Một cái máy làm ${r} chi tiết một giờ. Một ca ${h} giờ thì làm được bao nhiêu?`,
-  eSolMachine: (r, h, ans) => `Mỗi giờ trong ca thêm ${r}, nên ${r} \u00d7 ${h} = ${ans}.`,
+  eSolMachine: (r, h, ans) => `Mỗi giờ trong ca thêm ${r}, nên ${r} × ${h} = ${ans}.`,
   eAskDrip: (r) => `Một vòi nước nhỏ ${r} giọt một giây. Khoảng bao nhiêu giọt trong một giờ?`,
   eSolDrip: (r, perMin, ans) =>
-    `Một phút được 60 \u00d7 ${r} = ${perMin} giọt, và một giờ là 60 phút như vậy: 60 \u00d7 ${perMin} = ${ans}.`,
+    `Một phút được 60 × ${r} = ${perMin} giọt, và một giờ là 60 phút như vậy: 60 × ${perMin} = ${ans}.`,
 
   eAskHeartYear: (r) => `Tim đập ${r} nhịp một phút. Khoảng bao nhiêu nhịp trong một năm?`,
   eAskBreathYear: (r) => `Bạn thở ${r} nhịp một phút. Khoảng bao nhiêu nhịp thở trong một năm?`,
   eSolPerYear: (r, perHour, perDay, ans, noun) =>
     `Leo từng bậc một thay vì với ngay tới đích. ` +
-    `Một giờ là 60 \u00d7 ${r} = ${perHour} ${noun}. Một ngày là 24 giờ: 24 \u00d7 ${perHour} = ${perDay}. ` +
-    `Một năm là 365 ngày: 365 \u00d7 ${perDay} = ${ans}.`,
+    `Một giờ là 60 × ${r} = ${perHour} ${noun}. Một ngày là 24 giờ: 24 × ${perHour} = ${perDay}. ` +
+    `Một năm là 365 ngày: 365 × ${perDay} = ${ans}.`,
   etCountedDaysNotMinutes: "Bạn đã nhân với số ngày trong năm nhưng bỏ quên số phút trong mỗi ngày, mà mỗi ngày có 1440 phút.",
   eAskSleepYear: (h) => `Bạn ngủ ${h} tiếng một đêm. Một năm là khoảng bao nhiêu tiếng ngủ?`,
-  eSolSleepYear: (h, ans) => `Một năm là 365 đêm, mỗi đêm tốn ${h} tiếng: 365 \u00d7 ${h} = ${ans}.`,
+  eSolSleepYear: (h, ans) => `Một năm là 365 đêm, mỗi đêm tốn ${h} tiếng: 365 × ${h} = ${ans}.`,
   etAnsweredInMinutes: "Đó là đáp án tính theo phút. Đề hỏi theo giờ.",
   eAskLight: (n) =>
     `Ánh sáng đi 300 nghìn ki-lô-mét một giây. Trong ${n} phút nó đi được khoảng bao xa, tính theo nghìn ki-lô-mét?`,
   eSolLight: (n, secs, ans) =>
-    `${n} phút là ${n} \u00d7 60 = ${secs} giây, và mỗi giây ánh sáng đi 300 nghìn ki-lô-mét: ` +
-    `${secs} \u00d7 300 = ${ans}.`,
+    `${n} phút là ${n} × 60 = ${secs} giây, và mỗi giây ánh sáng đi 300 nghìn ki-lô-mét: ` +
+    `${secs} × 300 = ${ans}.`,
   etLightSeconds: "Đó là quãng đường ánh sáng đi trong bấy nhiêu giây. Đề cho phút, mà mỗi phút dài sáu mươi giây.",
   etLightOneMinute: "Đó là quãng đường của đúng một phút. Đề hỏi nhiều phút, nên còn phải nhân lên.",
   eAskRiver: (v) => `Một con sông đưa ${v} mét khối nước qua một điểm mỗi giây. Một ngày qua đó khoảng bao nhiêu?`,
   eSolRiver: (v, perHour, ans) =>
-    `Một giờ là 3600 giây: 3600 \u00d7 ${v} = ${perHour}. Một ngày là 24 giờ: 24 \u00d7 ${perHour} = ${ans} mét khối.`,
+    `Một giờ là 3600 giây: 3600 × ${v} = ${perHour}. Một ngày là 24 giờ: 24 × ${perHour} = ${ans} mét khối.`,
   etCountedMinutesNotSeconds: "Bạn đã đếm số phút trong một ngày thay vì số giây, mà mỗi phút chứa sáu mươi giây.",
 
   eAskCups: (n, c) => `Một trường có ${n} học sinh, mỗi em uống ${c} cốc nước một ngày. Một ngày khoảng bao nhiêu cốc?`,
@@ -1198,17 +1198,17 @@ const vi = {
   },
   eSolTwoFactor: (a, subj, b, ans, noun) =>
     `Có ${a} ${subj.many}, và mỗi ${subj.one} ứng với ${b} ${noun}. ` +
-    `Vậy hai số nhân với nhau: ${a} \u00d7 ${b} = ${ans}.`,
+    `Vậy hai số nhân với nhau: ${a} × ${b} = ${ans}.`,
   etOnePerPerson: (subj, noun) =>
     `Đó mới là số ${subj.many}. Mỗi ${subj.one} ứng với nhiều ${noun}, nên đáp án phải lớn hơn thế.`,
 
   eAskTuners: (S, P, shops, A) =>
     `Một thợ chỉnh đàn lo được ${S} cây dương cầm mỗi năm. Một thành phố ${P} nghìn dân có ${shops} cửa hàng nhạc cụ, ` +
-    `và khoảng 1 người trong ${A} người sở hữu một cây đàn. Thành phố nuôi sống khoảng bao nhiêu thợ chỉnh đàn?`,
+    `và khoảng 1 người trong ${A} người sở hữu một cây đàn. Thành phố có đủ việc cho khoảng bao nhiêu thợ chỉnh đàn?`,
   eSolTuners: (P, people, A, pianos, S, ans) =>
-    `Đi từng bước một. ${P} nghìn dân là ${P} \u00d7 1000 = ${people}. ` +
-    `Cứ ${A} người có một cây đàn thì được ${people} \u00f7 ${A} = ${pianos} cây. ` +
-    `Một thợ lo ${S} cây một năm, nên ${pianos} \u00f7 ${S} = ${ans} thợ.`,
+    `Đi từng bước một. ${P} nghìn dân là ${P} × 1000 = ${people}. ` +
+    `Cứ ${A} người có một cây đàn thì được ${people} ÷ ${A} = ${pianos} cây. ` +
+    `Một thợ lo ${S} cây một năm, nên ${pianos} ÷ ${S} = ${ans} thợ.`,
   etTunersPianos: "Đó là số cây đàn trong thành phố, không phải số thợ. Một người thợ lo hàng trăm cây.",
   etTunersPeople: "Đó là toàn bộ dân số. Chỉ một phần nhỏ trong đó có đàn dương cầm.",
 
@@ -1216,92 +1216,92 @@ const vi = {
   etFuelPerHundred: "Mức tiêu hao là cho mỗi 100 ki-lô-mét chứ không phải mỗi ki-lô-mét, nên đáp án này lớn gấp một trăm lần.",
 
   eSolCoffee: (n, h, perDay, d, ans) =>
-    `Một ngày là ${n} \u00d7 ${h} = ${perDay} cốc, và một tuần là ${d} ngày như vậy: ${perDay} \u00d7 ${d} = ${ans}.`,
+    `Một ngày là ${n} × ${h} = ${perDay} cốc, và một tuần là ${d} ngày như vậy: ${perDay} × ${d} = ${ans}.`,
   etCoffeeOneDay: "Đó mới là một ngày. Đề hỏi cả tuần.",
   etCoffeeNoHours: "Bạn đã nhân số ngày vào nhưng bỏ quên số giờ mở cửa, mà mỗi ngày dài mấy tiếng.",
 
   eSolTiles: (w, l, area, per, ans) =>
-    `Sàn rộng ${w} \u00d7 ${l} = ${area} mét vuông, mỗi mét vuông cần ${per} viên: ${area} \u00d7 ${per} = ${ans}.`,
+    `Sàn rộng ${w} × ${l} = ${area} mét vuông, mỗi mét vuông cần ${per} viên: ${area} × ${per} = ${ans}.`,
   etTilesArea: "Đó là diện tích sàn tính theo mét vuông, không phải số viên gạch nằm trên đó.",
   etTilesPerimeter: "Đó là chu vi quanh mép phòng. Sàn được phủ bằng diện tích chứ không phải bằng đường viền.",
 
   eSolEggs: (P, e, perWeek, ans) =>
-    `Một tuần tốn ${P} \u00d7 ${e} = ${perWeek} triệu quả, và một năm là 52 tuần: ${perWeek} \u00d7 52 = ${ans} triệu.`,
+    `Một tuần tốn ${P} × ${e} = ${perWeek} triệu quả, và một năm là 52 tuần: ${perWeek} × 52 = ${ans} triệu.`,
   etEggsWeek: "Đó mới là một tuần. Một năm có năm mươi hai tuần.",
   etEggsDays: "Bạn đã nhân với số ngày trong năm, nhưng mức đề cho là mỗi tuần.",
 
   eSolWater: (P, l, litres, ans) =>
-    `Thành phố dùng ${P} \u00d7 1000 \u00d7 ${l} = ${litres} lít. Một mét khối là 1000 lít, ` +
-    `nên ${litres} \u00f7 1000 = ${ans} mét khối. Hai con số nghìn triệt tiêu nhau, nên đáp án đơn giản là ${P} nhân ${l}.`,
+    `Thành phố dùng ${P} × 1000 × ${l} = ${litres} lít. Một mét khối là 1000 lít, ` +
+    `nên ${litres} ÷ 1000 = ${ans} mét khối. Hai con số nghìn triệt tiêu nhau, nên đáp án đơn giản là ${P} nhân ${l}.`,
   etWaterLitres: "Đó là đáp án tính theo lít. Đề hỏi mét khối, mà mỗi mét khối chứa một nghìn lít.",
   etWaterPeople: "Đó là số người sống ở đó, chưa nói gì tới lượng nước mỗi người dùng.",
 
   etFlightsSeats: "Đó là toàn bộ số ghế có sẵn. Máy bay không bay đầy, và đó chính là lý do đề cho phần trăm.",
-  etFlightsOneFlight: "Đó mới là một chuyến. Sân bay chạy rất nhiều chuyến mỗi ngày.",
+  etFlightsOneFlight: "Đó mới là một chuyến. Hãng bay chạy rất nhiều chuyến mỗi ngày, và đề hỏi cả một tuần như vậy.",
 
   eSolBarbers: (P, people, w, cuts, c, d, perBarber, ans) =>
-    `${P} nghìn dân là ${P} \u00d7 1000 = ${people}, mỗi người cắt ${w} tuần một lần, ` +
-    `nên một tuần có ${people} \u00f7 ${w} = ${cuts} lượt cắt. ` +
-    `Một thợ làm được ${c} \u00d7 ${d} = ${perBarber} lượt một tuần, nên thị trấn cần ${cuts} \u00f7 ${perBarber} = ${ans}.`,
+    `${P} nghìn dân là ${P} × 1000 = ${people}, mỗi người cắt ${w} tuần một lần, ` +
+    `nên một tuần có ${people} ÷ ${w} = ${cuts} lượt cắt. ` +
+    `Một thợ làm được ${c} × ${d} = ${perBarber} lượt một tuần, nên thị trấn cần ${cuts} ÷ ${perBarber} = ${ans}.`,
   etBarbersCuts: "Đó là số lượt cắt tóc thị trấn cần mỗi tuần, không phải số thợ để cắt hết chúng.",
   etBarbersOneBarber: "Đó mới là một tuần của một người thợ. Thị trấn cần khá nhiều thợ.",
 
   eNoise: {
-    shops: "s\u1ed1 c\u1eeda h\u00e0ng nh\u1ea1c c\u1ee5", people: "d\u00e2n s\u1ed1", tables: "s\u1ed1 b\u00e0n", ceiling: "chi\u1ec1u cao tr\u1ea7n",
-    farms: "s\u1ed1 trang tr\u1ea1i", reservoirs: "s\u1ed1 h\u1ed3 ch\u1ee9a", staff: "s\u1ed1 nh\u00e2n vi\u00ean", barbershops: "s\u1ed1 ti\u1ec7m c\u1eaft t\u00f3c",
-    weight: "c\u00e2n n\u1eb7ng c\u1ee7a m\u1ed9t th\u00f9ng",
+    shops: "số cửa hàng nhạc cụ", people: "dân số", tables: "số bàn", ceiling: "chiều cao trần",
+    farms: "số trang trại", reservoirs: "số hồ chứa", staff: "số nhân viên", barbershops: "số tiệm cắt tóc",
+    weight: "cân nặng của một thùng",
   },
-  eIgnored: (noun) => `${noun} kh\u00f4ng h\u1ec1 tham gia v\u00e0o ph\u00e9p t\u00ednh. \u0110\u1ec1 c\u00f3 th\u1ec3 \u0111\u01b0a cho b\u1ea1n m\u1ed9t con s\u1ed1 kh\u00f4ng c\u1ea7n d\u00f9ng, v\u00e0 quy\u1ebft \u0111\u1ecbnh b\u1ecf c\u00e1i g\u00ec ra c\u0169ng l\u00e0 m\u1ed9t ph\u1ea7n c\u1ee7a vi\u1ec7c.`,
+  eIgnored: (noun) => `${noun.charAt(0).toUpperCase() + noun.slice(1)} không hề tham gia vào phép tính. Đề có thể đưa cho bạn một con số không cần dùng, và quyết định bỏ cái gì ra cũng là một phần của bài toán.`,
 
   eAskPacking: (a, b, c, x, y, z, kg) =>
-    `M\u1ed9t th\u00f9ng container d\u00e0i ${a} m\u00e9t, r\u1ed9ng ${b} m\u00e9t, cao ${c} m\u00e9t. M\u1ed9t chi\u1ebfc h\u1ed9p c\u00f3 k\u00edch th\u01b0\u1edbc ${x} x\u0103ng-ti-m\u00e9t ` +
-    `nh\u00e2n ${y} x\u0103ng-ti-m\u00e9t nh\u00e2n ${z} x\u0103ng-ti-m\u00e9t v\u00e0 n\u1eb7ng ${kg} ki-l\u00f4-gam khi \u0111\u1ea7y. B\u1ecf qua c\u00e2n n\u1eb7ng v\u00e0 ph\u1ea7n kho\u1ea3ng tr\u1ed1ng ` +
-    `gi\u1eefa c\u00e1c h\u1ed9p, x\u1ebfp \u0111\u01b0\u1ee3c kho\u1ea3ng bao nhi\u00eau h\u1ed9p v\u00e0o container?`,
+    `Một thùng container dài ${a} mét, rộng ${b} mét, cao ${c} mét. Một chiếc hộp có kích thước ` +
+    `${x} × ${y} × ${z} xăng-ti-mét và nặng ${kg} ki-lô-gam khi đầy. Bỏ qua cân nặng và phần khoảng trống ` +
+    `giữa các hộp, xếp được khoảng bao nhiêu hộp vào container?`,
   eSolPacking: (a, b, c, holdM, x, y, z, boxCm, holdCm, ans) =>
-    `Th\u1ec3 t\u00edch chia th\u1ec3 t\u00edch, nh\u01b0ng hai b\u00ean kh\u00e1c \u0111\u01a1n v\u1ecb, v\u00e0 \u0111\u00f3 ch\u00ednh l\u00e0 ch\u1ed7 hay h\u1ecfng. ` +
-    `Container l\u00e0 ${a} × ${b} × ${c} = ${holdM} m\u00e9t kh\u1ed1i. H\u1ed9p l\u00e0 ${x} × ${y} × ${z} = ${boxCm} x\u0103ng-ti-m\u00e9t kh\u1ed1i. ` +
-    `M\u1ed9t m\u00e9t l\u00e0 100 x\u0103ng-ti-m\u00e9t, n\u00ean m\u1ed9t m\u00e9t kh\u1ed1i l\u00e0 100 × 100 × 100 = 1000000 x\u0103ng-ti-m\u00e9t kh\u1ed1i, ` +
-    `t\u1ee9c container b\u1eb1ng ${holdM} × 1000000 = ${holdCm} x\u0103ng-ti-m\u00e9t kh\u1ed1i. R\u1ed3i ${holdCm} ÷ ${boxCm} = ${ans}.`,
-  etPackingThousand: "M\u1ed9t m\u00e9t kh\u1ed1i kh\u00f4ng ph\u1ea3i m\u1ed9t ngh\u00ecn x\u0103ng-ti-m\u00e9t kh\u1ed1i. L\u1eadp ph\u01b0\u01a1ng m\u00e9t th\u00ec l\u1eadp ph\u01b0\u01a1ng lu\u00f4n c\u1ea3 tr\u0103m, n\u00ean n\u00f3 l\u00e0 m\u1ed9t tri\u1ec7u.",
-  etPackingOneEdge: "\u0110\u00f3 l\u00e0 so m\u1ed9t c\u1ea1nh v\u1edbi m\u1ed9t c\u1ea1nh. M\u1ed9t chi\u1ebfc h\u1ed9p chi\u1ebfm ch\u1ed7 theo c\u1ea3 ba chi\u1ec1u c\u00f9ng l\u00fac, n\u00ean ph\u1ea3i nh\u00e2n c\u1ea3 ba v\u00e0o.",
+    `Thể tích chia thể tích, nhưng hai bên khác đơn vị, và đó chính là chỗ hay hỏng. ` +
+    `Container là ${a} × ${b} × ${c} = ${holdM} mét khối. Hộp là ${x} × ${y} × ${z} = ${boxCm} xăng-ti-mét khối. ` +
+    `Một mét là 100 xăng-ti-mét, nên một mét khối là 100 × 100 × 100 = 1000000 xăng-ti-mét khối, ` +
+    `tức container bằng ${holdM} × 1000000 = ${holdCm} xăng-ti-mét khối. Rồi ${holdCm} ÷ ${boxCm} = ${ans}.`,
+  etPackingThousand: "Một mét khối không phải một nghìn xăng-ti-mét khối. Lập phương mét thì lập phương luôn cả trăm, nên nó là một triệu.",
+  etPackingOneEdge: "Đó là so một cạnh với một cạnh. Một chiếc hộp chiếm chỗ theo cả ba chiều cùng lúc, nên phải nhân cả ba vào.",
 
   eAskFuel: (pop, N, L, K) =>
-    `M\u1ed9t th\u1ecb tr\u1ea5n ${pop} ngh\u00ecn d\u00e2n s\u1edf h\u1eefu ${N} xe h\u01a1i. M\u1ed9t chi\u1ebfc xe t\u1ed1n ${L} l\u00edt nhi\u00ean li\u1ec7u cho m\u1ed7i 100 ki-l\u00f4-m\u00e9t, ` +
-    `v\u00e0 ch\u1ea1y kho\u1ea3ng ${K} ki-l\u00f4-m\u00e9t m\u1ed9t th\u00e1ng. M\u1ed9t n\u0103m c\u1ea3 th\u1ecb tr\u1ea5n \u0111\u1ed1t kho\u1ea3ng bao nhi\u00eau l\u00edt?`,
+    `Một thị trấn ${pop} nghìn dân sở hữu ${N} xe hơi. Một chiếc xe tốn ${L} lít nhiên liệu cho mỗi 100 ki-lô-mét, ` +
+    `và chạy khoảng ${K} ki-lô-mét một tháng. Một năm cả thị trấn đốt khoảng bao nhiêu lít?`,
   eSolFuel: (K, year, N, km, L, ans) =>
-    `M\u1ee9c \u0111\u1ec1 cho l\u00e0 theo th\u00e1ng c\u00f2n c\u00e2u h\u1ecfi l\u00e0 theo n\u0103m, n\u00ean b\u1eaft \u0111\u1ea7u t\u1eeb \u0111\u00f3: ${K} × 12 = ${year} ki-l\u00f4-m\u00e9t m\u1ed9t xe. ` +
-    `T\u1ea5t c\u1ea3 xe c\u1ed9ng l\u1ea1i ch\u1ea1y ${N} × ${year} = ${km} ki-l\u00f4-m\u00e9t. C\u1ee9 100 ki-l\u00f4-m\u00e9t t\u1ed1n ${L} l\u00edt, ` +
-    `n\u00ean ${km} ÷ 100 × ${L} = ${ans} l\u00edt.`,
-  etFuelMonth: "\u0110\u00f3 m\u1edbi l\u00e0 m\u1ed9t th\u00e1ng. \u0110\u1ec1 h\u1ecfi c\u1ea3 n\u0103m, v\u00e0 kh\u00f4ng c\u00e2u n\u00e0o trong \u0111\u1ec1 nh\u00e2n 12 s\u1eb5n cho b\u1ea1n.",
+    `Mức đề cho là theo tháng còn câu hỏi là theo năm, nên bắt đầu từ đó: ${K} × 12 = ${year} ki-lô-mét một xe. ` +
+    `Tất cả xe cộng lại chạy ${N} × ${year} = ${km} ki-lô-mét. Cứ 100 ki-lô-mét tốn ${L} lít, ` +
+    `nên ${km} ÷ 100 × ${L} = ${ans} lít.`,
+  etFuelMonth: "Đó mới là một tháng. Đề hỏi cả năm, và không câu nào trong đề nhân 12 sẵn cho bạn.",
 
   eAskCoffee: (tables, n, h, d) =>
-    `M\u1ed9t qu\u00e1n c\u00e0 ph\u00ea c\u00f3 ${tables} c\u00e1i b\u00e0n. Qu\u00e1n b\u00e1n kho\u1ea3ng ${n} c\u1ed1c m\u1ed9t gi\u1edd, m\u1edf ${h} ti\u1ebfng m\u1ed9t ng\u00e0y v\u00e0 b\u00e1n ` +
-    `${d} ng\u00e0y m\u1ed9t tu\u1ea7n. M\u1ed9t tu\u1ea7n kho\u1ea3ng bao nhi\u00eau c\u1ed1c?`,
+    `Một quán cà phê có ${tables} cái bàn. Quán bán khoảng ${n} cốc một giờ, mở ${h} tiếng một ngày và bán ` +
+    `${d} ngày một tuần. Một tuần khoảng bao nhiêu cốc?`,
 
   eAskTiles: (w, l, high, per) =>
-    `M\u1ed9t c\u0103n ph\u00f2ng ${w} m\u00e9t nh\u00e2n ${l} m\u00e9t v\u00e0 cao ${high} m\u00e9t, v\u00e0 ${per} vi\u00ean g\u1ea1ch ph\u1ee7 k\u00edn m\u1ed9t m\u00e9t vu\u00f4ng. ` +
-    `S\u00e0n ph\u00f2ng c\u1ea7n kho\u1ea3ng bao nhi\u00eau vi\u00ean?`,
+    `Một căn phòng rộng ${w} mét, dài ${l} mét và cao ${high} mét, và ${per} viên gạch phủ kín một mét vuông. ` +
+    `Sàn phòng cần khoảng bao nhiêu viên?`,
 
   eAskEggs: (P, farms, e) =>
-    `M\u1ed9t n\u01b0\u1edbc c\u00f3 ${P} tri\u1ec7u d\u00e2n v\u00e0 ${farms} ngh\u00ecn trang tr\u1ea1i tr\u1ee9ng, m\u1ed7i ng\u01b0\u1eddi \u0103n kho\u1ea3ng ${e} qu\u1ea3 tr\u1ee9ng m\u1ed9t tu\u1ea7n. ` +
-    `M\u1ed9t n\u0103m kho\u1ea3ng bao nhi\u00eau tri\u1ec7u qu\u1ea3 tr\u1ee9ng?`,
+    `Một nước có ${P} triệu dân và ${farms} nghìn trang trại trứng, mỗi người ăn khoảng ${e} quả trứng một tuần. ` +
+    `Một năm khoảng bao nhiêu triệu quả trứng?`,
 
   eAskWater: (P, res, l) =>
-    `M\u1ed9t th\u00e0nh ph\u1ed1 ${P} ngh\u00ecn d\u00e2n l\u1ea5y n\u01b0\u1edbc t\u1eeb ${res} h\u1ed3 ch\u1ee9a, m\u1ed7i ng\u01b0\u1eddi d\u00f9ng kho\u1ea3ng ${l} l\u00edt n\u01b0\u1edbc m\u1ed9t ng\u00e0y. ` +
-    `M\u1ed9t ng\u00e0y kho\u1ea3ng bao nhi\u00eau m\u00e9t kh\u1ed1i? M\u1ed9t m\u00e9t kh\u1ed1i l\u00e0 1000 l\u00edt.`,
+    `Một thành phố ${P} nghìn dân lấy nước từ ${res} hồ chứa, mỗi người dùng khoảng ${l} lít nước một ngày. ` +
+    `Một ngày khoảng bao nhiêu mét khối? Một mét khối là 1000 lít.`,
 
   eAskFlights: (F, staff, s, pct) =>
-    `M\u1ed9t h\u00e3ng bay c\u00f3 ${F} chuy\u1ebfn m\u1ed9t ng\u00e0y v\u00e0 ${staff} ngh\u00ecn nh\u00e2n vi\u00ean. M\u1ed7i m\u00e1y bay c\u00f3 ${s} ch\u1ed7 ` +
-    `v\u00e0 bay \u0111\u1ea7y kho\u1ea3ng ${pct}%. M\u1ed9t tu\u1ea7n h\u00e3ng ch\u1edf kho\u1ea3ng bao nhi\u00eau h\u00e0nh kh\u00e1ch?`,
+    `Một hãng bay có ${F} chuyến một ngày và ${staff} nghìn nhân viên. Mỗi máy bay có ${s} chỗ ` +
+    `và bay đầy khoảng ${pct}%. Một tuần hãng chở khoảng bao nhiêu hành khách?`,
   eSolFlights: (s, pct, perFlight, F, perDay, ans) =>
-    `M\u1ed9t m\u00e1y bay \u0111\u1ea7y l\u00e0 ${s} kh\u00e1ch, v\u00e0 ${pct}% c\u1ee7a n\u00f3 l\u00e0 ${s} × ${pct} ÷ 100 = ${perFlight}. ` +
-    `M\u1ed9t ng\u00e0y l\u00e0 ${F} × ${perFlight} = ${perDay}. \u0110\u1ec1 h\u1ecfi c\u1ea3 tu\u1ea7n, m\u00e0 kh\u00f4ng c\u00e2u n\u00e0o trong \u0111\u1ec1 \u0111\u1ebfm s\u1eb5n cho b\u1ea1n: ` +
+    `Một máy bay đầy là ${s} khách, và ${pct}% của nó là ${s} × ${pct} ÷ 100 = ${perFlight}. ` +
+    `Một ngày là ${F} × ${perFlight} = ${perDay}. Đề hỏi cả tuần, mà không câu nào trong đề đếm sẵn cho bạn: ` +
     `${perDay} × 7 = ${ans}.`,
-  etFlightsOneDay: "\u0110\u00f3 m\u1edbi l\u00e0 m\u1ed9t ng\u00e0y. \u0110\u1ec1 h\u1ecfi c\u1ea3 tu\u1ea7n, v\u00e0 con s\u1ed1 7 l\u00e0 b\u1ea1n ph\u1ea3i t\u1ef1 nh\u1edb.",
+  etFlightsOneDay: "Đó mới là một ngày. Đề hỏi cả tuần, và con số 7 là bạn phải tự nhớ.",
 
   eAskBarbers: (c, d, P, shops, w) =>
-    `M\u1ed9t th\u1ee3 c\u1eaft \u0111\u01b0\u1ee3c ${c} \u0111\u1ea7u m\u1ed9t ng\u00e0y v\u00e0 l\u00e0m ${d} ng\u00e0y m\u1ed9t tu\u1ea7n. M\u1ed9t th\u1ecb tr\u1ea5n ${P} ngh\u00ecn d\u00e2n c\u00f3 ${shops} ` +
-    `ti\u1ec7m c\u1eaft t\u00f3c, v\u00e0 m\u1ed7i ng\u01b0\u1eddi c\u1ea7n c\u1eaft t\u00f3c ${w} tu\u1ea7n m\u1ed9t l\u1ea7n. Th\u1ecb tr\u1ea5n c\u1ea7n kho\u1ea3ng bao nhi\u00eau th\u1ee3 c\u1eaft t\u00f3c?`,
+    `Một thợ cắt cho ${c} khách một ngày và làm ${d} ngày một tuần. Một thị trấn ${P} nghìn dân có ${shops} ` +
+    `tiệm cắt tóc, và mỗi người cần cắt tóc ${w} tuần một lần. Thị trấn cần khoảng bao nhiêu thợ cắt tóc?`,
 
   /* probability — event names, reused across prompts */
   pEvents: {

@@ -425,12 +425,12 @@ export const TIPS = [
         "Add the two piles of zeros together and stick them back on the end. Dividing subtracts the piles instead.",
       ],
       examples: [
-        { ask: "What is 300 \u00d7 6000?",
-          work: "digits first, 3 \u00d7 6 = 18; then 2 zeros and 3 zeros make 5 zeros, giving 1800000" },
-        { ask: "What is 4800000 \u00f7 600?",
-          work: "digits first, 48 \u00f7 6 = 8; then 5 zeros take away 2 zeros leaves 3 zeros, giving 8000" },
+        { ask: "What is 300 × 6000?",
+          work: "digits first, 3 × 6 = 18; then 2 zeros and 3 zeros make 5 zeros, giving 1800000" },
+        { ask: "What is 4800000 ÷ 600?",
+          work: "digits first, 48 ÷ 6 = 8; then 5 zeros take away 2 zeros leaves 3 zeros, giving 8000" },
       ],
-      why: "Nobody gets 3 \u00d7 6 wrong. What goes wrong is losing a zero somewhere in the middle, and keeping the two jobs apart means a slip in one cannot hide inside the other.",
+      why: "Nobody gets 3 × 6 wrong. What goes wrong is losing a zero somewhere in the middle, and keeping the two jobs apart means a slip in one cannot hide inside the other.",
     },
     vi: {
       title: "Đếm chữ số không tách riêng khỏi các chữ số khác",
@@ -441,12 +441,12 @@ export const TIPS = [
         "Cộng hai đống chữ số không lại rồi gắn vào đuôi. Phép chia thì trừ hai đống cho nhau.",
       ],
       examples: [
-        { ask: "300 \u00d7 6000 bằng bao nhiêu?",
-          work: "chữ số trước, 3 \u00d7 6 = 18; rồi 2 chữ số không với 3 chữ số không thành 5 chữ số không, được 1800000" },
-        { ask: "4800000 \u00f7 600 bằng bao nhiêu?",
-          work: "chữ số trước, 48 \u00f7 6 = 8; rồi 5 chữ số không trừ 2 chữ số không còn 3 chữ số không, được 8000" },
+        { ask: "300 × 6000 bằng bao nhiêu?",
+          work: "chữ số trước, 3 × 6 = 18; rồi 2 chữ số không với 3 chữ số không thành 5 chữ số không, được 1800000" },
+        { ask: "4800000 ÷ 600 bằng bao nhiêu?",
+          work: "chữ số trước, 48 ÷ 6 = 8; rồi 5 chữ số không trừ 2 chữ số không còn 3 chữ số không, được 8000" },
       ],
-      why: "Không ai tính sai 3 \u00d7 6. Cái hay sai là rơi mất một chữ số không ở giữa chừng, và tách hẳn hai việc ra thì lỗi của bên này không nấp được vào bên kia.",
+      why: "Không ai tính sai 3 × 6. Cái hay sai là rơi mất một chữ số không ở giữa chừng, và tách hẳn hai việc ra thì lỗi của bên này không nấp được vào bên kia.",
     },
   },
   {
@@ -462,9 +462,9 @@ export const TIPS = [
       ],
       examples: [
         { ask: "In a school of 800 students, each drinks 3 cups of water a day. How many cups a day?",
-          work: "students times cups each: 800 \u00d7 3 = 2400" },
+          work: "students times cups each: 800 × 3 = 2400" },
         { ask: "A city of 600 thousand people, 1 in 100 owns a piano, and one tuner covers 600 pianos a year. How many tuners?",
-          work: "people to pianos: 600000 \u00f7 100 = 6000; pianos to tuners: 6000 \u00f7 600 = 10" },
+          work: "people to pianos: 600000 ÷ 100 = 6000; pianos to tuners: 6000 ÷ 600 = 10" },
       ],
       why: "The arithmetic is almost never what goes wrong. What goes wrong is dropping a factor, or dividing where you meant to multiply, and both of those are visible in the chain before a single number is written down.",
     },
@@ -478,9 +478,9 @@ export const TIPS = [
       ],
       examples: [
         { ask: "Một trường 800 học sinh, mỗi em uống 3 cốc nước một ngày. Một ngày bao nhiêu cốc?",
-          work: "số học sinh nhân số cốc mỗi em: 800 \u00d7 3 = 2400" },
+          work: "số học sinh nhân số cốc mỗi em: 800 × 3 = 2400" },
         { ask: "Một thành phố 600 nghìn dân, 1 trên 100 người có đàn dương cầm, một thợ lo 600 cây một năm. Cần bao nhiêu thợ?",
-          work: "từ người ra đàn: 600000 \u00f7 100 = 6000; từ đàn ra thợ: 6000 \u00f7 600 = 10" },
+          work: "từ người ra đàn: 600000 ÷ 100 = 6000; từ đàn ra thợ: 6000 ÷ 600 = 10" },
       ],
       why: "Phần tính toán gần như không bao giờ là chỗ sai. Chỗ sai là bỏ sót một thừa số, hoặc chia trong khi đáng lẽ phải nhân, và cả hai đều hiện ra trên chuỗi trước khi bạn viết con số đầu tiên.",
     },
@@ -509,7 +509,7 @@ export const TIPS = [
       when: "Cộng hoặc trừ bất cứ gì có dấu phẩy thập phân.",
       steps: [
         "Cộng riêng phần nguyên. Đó là phần lớn của đáp án và là phần nhìn qua là kiểm được.",
-        "Rồi cộng riêng phần thập phân, coi chúng như những số phần trăm bình thường.",
+        "Rồi cộng riêng phần thập phân, coi chúng như những số bình thường.",
         "Ghép hai phần lại. Nếu phần thập phân vượt quá 1 thì số 1 đó chuyển lên phần nguyên.",
       ],
       examples: [
