@@ -734,6 +734,40 @@ test("an exam carries its own scoring rule through to the paper", () => {
   }
 });
 
+/* ── decimals ─────────────────────────────────────────────────────────── */
+
+test("every decimal answer follows from the two numbers in the prompt", () => {
+  let checked = 0;
+  for (const level of LEVELS) {
+    const { questions } = generateSet({ skill: "arith.decimals", level, count: 150, seed: `dec|${level}` });
+    for (const q of questions) {
+      const m = q.prompt.match(/^([\d.]+) ([+\u2212\u00d7\u00f7]) ([\d.]+)$/);
+      assert.ok(m, `not a two-number prompt: ${q.prompt}`);
+      const [a, b] = [Number(m[1]), Number(m[3])];
+      const want = { "+": a + b, "\u2212": a - b, "\u00d7": a * b, "\u00f7": a / b }[m[2]];
+      assert.ok(Math.abs(want - q.answer) < 1e-9, `${q.prompt} answers ${q.answer}, should be ${want}`);
+      // What the paper does: a decimal answer is typed as typed, not rounded.
+      assert.ok(String(q.answer).replace(".", "").length <= 7, `${q.prompt} answers ${q.answer}, too long to type`);
+      assert.ok(grade(q, String(q.answer)).correct);
+      checked++;
+    }
+  }
+  assert.ok(checked >= 450, `only ${checked} checked`);
+});
+
+test("a decimal question never asks for a negative answer or divides by a whole number", () => {
+  for (const level of LEVELS) {
+    const { questions } = generateSet({ skill: "arith.decimals", level, count: 150, seed: `sign|${level}` });
+    for (const q of questions) {
+      assert.ok(q.answer > 0, `${q.prompt} answers ${q.answer}`);
+      if (q.prompt.includes("\u00f7")) {
+        const divisor = q.prompt.split(" \u00f7 ")[1];
+        assert.ok(divisor.includes("."), `${q.prompt}: level 3 is about a decimal divisor`);
+      }
+    }
+  }
+});
+
 /* ── the RNG itself ──────────────────────────────────────────────────────── */
 
 test("the seeded generator is uniform enough to build papers from", () => {

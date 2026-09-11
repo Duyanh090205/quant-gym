@@ -48,6 +48,8 @@ export const CURRICULUM = [
         [lv(15, 100, 12), lv(12, 130, 9), lv(12, 120, 8)]),
       skill("arith.percent", "Percentages", "Phần trăm",
         [lv(15, 110, 12), lv(15, 140, 11), lv(12, 120, 8)]),
+      skill("arith.decimals", "Decimals", "Số thập phân",
+        [lv(15, 120, 12), lv(12, 120, 9), lv(12, 140, 8)]),
       skill("arith.estimate", "Rough answers", "Tính áng chừng",
         [lv(10, 100, 8), lv(10, 110, 7), lv(10, 120, 7)]),
       skill("arith.puzzles", "Number puzzles", "Câu đố số học",

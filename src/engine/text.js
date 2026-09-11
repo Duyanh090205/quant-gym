@@ -250,6 +250,28 @@ const en = {
   ttChainAdded: (up, down) => `Added the percentages: up ${up} and down ${down} as one net move. They act on different numbers, so they do not add.`,
   ttChainHalfDone: (down) => `That is after the increase only. The ${down}% decrease is still to come.`,
 
+  /* arithmetic — decimals */
+  dSolAdd: (wa, wb, wsum, fa, fb, fsum, ans) =>
+    `Whole parts first: ${wa} + ${wb} = ${wsum}. Then the decimal parts on their own: ${fa} + ${fb} = ${fsum}. ` +
+    `Put them together: ${wsum} + ${fsum} = ${ans}.`,
+  dSolSub: (a, wb, afterWhole, fb, ans) =>
+    `Take the whole part of the second number first: ${a} − ${wb} = ${afterWhole}. ` +
+    `Then its decimal part: ${afterWhole} − ${fb} = ${ans}.`,
+  dtForgotFraction: (fb) => `The whole part was handled and the ${fb} on the end of the second number was not.`,
+  dtPointRight: () => "The decimal point landed one place too far right, so this is ten times too big.",
+  dtPointLeft: () => "The decimal point landed one place too far left, so this is a tenth of the answer.",
+  dSolMul: (a, b, ia, ib, prod, ans) =>
+    `Ignore the points and multiply the whole numbers: ${ia} × ${ib} = ${prod}. ` +
+    `The question has two decimal places altogether, one in ${a} and one in ${b}, so move the point two places back: ${ans}.`,
+  dtPlacesShort: () => "Only one decimal place was put back. There is one in each number, so two altogether.",
+  dtPlacesOver: () => "Three decimal places were put back. Count them in the question: one in each number, two altogether.",
+  dSolMulFrac: (a, num, den, b, share, ans) =>
+    `${a} is ${num}/${den} in disguise, so take ${num}/${den} of ${b}: ${b} ÷ ${den} = ${share}` + (num === 1 ? `.` : `, and ${share} × ${num} = ${ans}.`),
+  dSolDiv: (a, d, scale, a2, d2, ans) =>
+    `Make the divisor a whole number first: multiply both sides by ${scale}, which does not change the answer. ` +
+    `${a} ÷ ${d} becomes ${a2} ÷ ${d2}, and ${a2} ÷ ${d2} = ${ans}.`,
+  dtDividendNotScaled: (a, d2) => `The divisor was scaled up to ${d2} but ${a} was left as it was. Whatever you do to one side you do to the other.`,
+
   /* estimation — unit names, prompts, solutions and traps */
   eUnits: {
     secMin:    { one: "minute",   many: "minutes",    small: "seconds" },
@@ -1067,6 +1089,28 @@ const vi = {
     `Giảm ${down}% là × ${downFactor}: ${mid} × ${downFactor} = ${end}. Hai phần trăm không triệt tiêu nhau, vì cái thứ hai tác động lên một con số khác.`,
   ttChainAdded: (up, down) => `Cộng hai phần trăm lại: tăng ${up} và giảm ${down} thành một bước ròng. Chúng tác động lên hai con số khác nhau, nên không cộng được.`,
   ttChainHalfDone: (down) => `Đó mới là sau bước tăng. Bước giảm ${down}% vẫn còn phía trước.`,
+
+  /* số học — số thập phân */
+  dSolAdd: (wa, wb, wsum, fa, fb, fsum, ans) =>
+    `Phần nguyên trước: ${wa} + ${wb} = ${wsum}. Rồi riêng phần thập phân: ${fa} + ${fb} = ${fsum}. ` +
+    `Ghép lại: ${wsum} + ${fsum} = ${ans}.`,
+  dSolSub: (a, wb, afterWhole, fb, ans) =>
+    `Trừ phần nguyên của số thứ hai trước: ${a} − ${wb} = ${afterWhole}. ` +
+    `Rồi trừ phần thập phân của nó: ${afterWhole} − ${fb} = ${ans}.`,
+  dtForgotFraction: (fb) => `Phần nguyên đã được xử lý, còn ${fb} ở đuôi số thứ hai thì bị bỏ quên.`,
+  dtPointRight: () => "Dấu phẩy rơi lệch một chỗ sang phải, nên con số này lớn gấp mười.",
+  dtPointLeft: () => "Dấu phẩy rơi lệch một chỗ sang trái, nên con số này chỉ bằng một phần mười đáp án.",
+  dSolMul: (a, b, ia, ib, prod, ans) =>
+    `Bỏ dấu phẩy đi và nhân hai số nguyên: ${ia} × ${ib} = ${prod}. ` +
+    `Đề có tổng cộng hai chữ số thập phân, một ở ${a} và một ở ${b}, nên lùi dấu phẩy hai chỗ: ${ans}.`,
+  dtPlacesShort: () => "Chỉ lùi một chữ số thập phân. Mỗi số có một chữ số, tổng cộng là hai.",
+  dtPlacesOver: () => "Lùi tới ba chữ số thập phân. Đếm trong đề: mỗi số một chữ số, tổng cộng hai.",
+  dSolMulFrac: (a, num, den, b, share, ans) =>
+    `${a} chính là ${num}/${den} trá hình, nên lấy ${num}/${den} của ${b}: ${b} ÷ ${den} = ${share}` + (num === 1 ? `.` : `, và ${share} × ${num} = ${ans}.`),
+  dSolDiv: (a, d, scale, a2, d2, ans) =>
+    `Làm cho số chia thành số nguyên trước: nhân cả hai vế với ${scale}, đáp án không đổi. ` +
+    `${a} ÷ ${d} thành ${a2} ÷ ${d2}, và ${a2} ÷ ${d2} = ${ans}.`,
+  dtDividendNotScaled: (a, d2) => `Số chia đã được nhân lên thành ${d2} nhưng ${a} thì để nguyên. Làm gì với vế này thì phải làm y hệt với vế kia.`,
 
   /* ước lượng — tên đơn vị, đề bài, lời giải và bẫy */
   eUnits: {

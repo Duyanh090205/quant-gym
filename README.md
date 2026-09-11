@@ -3,7 +3,7 @@
 A question engine for teaching high-school students the mental maths, estimation,
 sequence reasoning and probability that quantitative trading firms test for.
 
-Twenty-one skills, three levels each, ordered so a student who has never seen any
+Twenty-two skills, three levels each, ordered so a student who has never seen any
 of this can start at the top and never hit a wall they were not prepared for.
 Questions are generated, not stored, so nobody runs out and nobody can memorise
 an answer key.
@@ -69,7 +69,7 @@ listing all its triggers in one place.
 
 | Topic | Skills |
 |---|---|
-| Mental arithmetic | times tables · add and subtract · multiply · divide · squares · roots and powers · fractions · percentages · rough answers · number puzzles |
+| Mental arithmetic | times tables · add and subtract · multiply · divide · squares · roots and powers · fractions · percentages · decimals · rough answers · number puzzles |
 | Estimation | scale and units · Fermi estimates |
 | Sequences | find the rule · odd one out |
 | Probability and expected value | counting · expected value · conditional · Bayes · waiting times · symmetry · classic puzzles |

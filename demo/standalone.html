@@ -635,6 +635,28 @@ const en = {
   ttChainAdded: (up, down) => `Added the percentages: up ${up} and down ${down} as one net move. They act on different numbers, so they do not add.`,
   ttChainHalfDone: (down) => `That is after the increase only. The ${down}% decrease is still to come.`,
 
+  /* arithmetic — decimals */
+  dSolAdd: (wa, wb, wsum, fa, fb, fsum, ans) =>
+    `Whole parts first: ${wa} + ${wb} = ${wsum}. Then the decimal parts on their own: ${fa} + ${fb} = ${fsum}. ` +
+    `Put them together: ${wsum} + ${fsum} = ${ans}.`,
+  dSolSub: (a, wb, afterWhole, fb, ans) =>
+    `Take the whole part of the second number first: ${a} − ${wb} = ${afterWhole}. ` +
+    `Then its decimal part: ${afterWhole} − ${fb} = ${ans}.`,
+  dtForgotFraction: (fb) => `The whole part was handled and the ${fb} on the end of the second number was not.`,
+  dtPointRight: () => "The decimal point landed one place too far right, so this is ten times too big.",
+  dtPointLeft: () => "The decimal point landed one place too far left, so this is a tenth of the answer.",
+  dSolMul: (a, b, ia, ib, prod, ans) =>
+    `Ignore the points and multiply the whole numbers: ${ia} × ${ib} = ${prod}. ` +
+    `The question has two decimal places altogether, one in ${a} and one in ${b}, so move the point two places back: ${ans}.`,
+  dtPlacesShort: () => "Only one decimal place was put back. There is one in each number, so two altogether.",
+  dtPlacesOver: () => "Three decimal places were put back. Count them in the question: one in each number, two altogether.",
+  dSolMulFrac: (a, num, den, b, share, ans) =>
+    `${a} is ${num}/${den} in disguise, so take ${num}/${den} of ${b}: ${b} ÷ ${den} = ${share}` + (num === 1 ? `.` : `, and ${share} × ${num} = ${ans}.`),
+  dSolDiv: (a, d, scale, a2, d2, ans) =>
+    `Make the divisor a whole number first: multiply both sides by ${scale}, which does not change the answer. ` +
+    `${a} ÷ ${d} becomes ${a2} ÷ ${d2}, and ${a2} ÷ ${d2} = ${ans}.`,
+  dtDividendNotScaled: (a, d2) => `The divisor was scaled up to ${d2} but ${a} was left as it was. Whatever you do to one side you do to the other.`,
+
   /* estimation — unit names, prompts, solutions and traps */
   eUnits: {
     secMin:    { one: "minute",   many: "minutes",    small: "seconds" },
@@ -1452,6 +1474,28 @@ const vi = {
     `Giảm ${down}% là × ${downFactor}: ${mid} × ${downFactor} = ${end}. Hai phần trăm không triệt tiêu nhau, vì cái thứ hai tác động lên một con số khác.`,
   ttChainAdded: (up, down) => `Cộng hai phần trăm lại: tăng ${up} và giảm ${down} thành một bước ròng. Chúng tác động lên hai con số khác nhau, nên không cộng được.`,
   ttChainHalfDone: (down) => `Đó mới là sau bước tăng. Bước giảm ${down}% vẫn còn phía trước.`,
+
+  /* số học — số thập phân */
+  dSolAdd: (wa, wb, wsum, fa, fb, fsum, ans) =>
+    `Phần nguyên trước: ${wa} + ${wb} = ${wsum}. Rồi riêng phần thập phân: ${fa} + ${fb} = ${fsum}. ` +
+    `Ghép lại: ${wsum} + ${fsum} = ${ans}.`,
+  dSolSub: (a, wb, afterWhole, fb, ans) =>
+    `Trừ phần nguyên của số thứ hai trước: ${a} − ${wb} = ${afterWhole}. ` +
+    `Rồi trừ phần thập phân của nó: ${afterWhole} − ${fb} = ${ans}.`,
+  dtForgotFraction: (fb) => `Phần nguyên đã được xử lý, còn ${fb} ở đuôi số thứ hai thì bị bỏ quên.`,
+  dtPointRight: () => "Dấu phẩy rơi lệch một chỗ sang phải, nên con số này lớn gấp mười.",
+  dtPointLeft: () => "Dấu phẩy rơi lệch một chỗ sang trái, nên con số này chỉ bằng một phần mười đáp án.",
+  dSolMul: (a, b, ia, ib, prod, ans) =>
+    `Bỏ dấu phẩy đi và nhân hai số nguyên: ${ia} × ${ib} = ${prod}. ` +
+    `Đề có tổng cộng hai chữ số thập phân, một ở ${a} và một ở ${b}, nên lùi dấu phẩy hai chỗ: ${ans}.`,
+  dtPlacesShort: () => "Chỉ lùi một chữ số thập phân. Mỗi số có một chữ số, tổng cộng là hai.",
+  dtPlacesOver: () => "Lùi tới ba chữ số thập phân. Đếm trong đề: mỗi số một chữ số, tổng cộng hai.",
+  dSolMulFrac: (a, num, den, b, share, ans) =>
+    `${a} chính là ${num}/${den} trá hình, nên lấy ${num}/${den} của ${b}: ${b} ÷ ${den} = ${share}` + (num === 1 ? `.` : `, và ${share} × ${num} = ${ans}.`),
+  dSolDiv: (a, d, scale, a2, d2, ans) =>
+    `Làm cho số chia thành số nguyên trước: nhân cả hai vế với ${scale}, đáp án không đổi. ` +
+    `${a} ÷ ${d} thành ${a2} ÷ ${d2}, và ${a2} ÷ ${d2} = ${ans}.`,
+  dtDividendNotScaled: (a, d2) => `Số chia đã được nhân lên thành ${d2} nhưng ${a} thì để nguyên. Làm gì với vế này thì phải làm y hệt với vế kia.`,
 
   /* ước lượng — tên đơn vị, đề bài, lời giải và bẫy */
   eUnits: {
@@ -2536,6 +2580,78 @@ const TIPS = [
     },
   },
   {
+    id: "line-up-the-point",
+    skill: "arith.decimals",
+    en: {
+      title: "Whole parts first, decimal parts second, then put them together",
+      when: "Adding or subtracting anything with a decimal point in it.",
+      steps: [
+        "Add the whole parts on their own. They are most of the answer and the part you can check by eye.",
+        "Then add the decimal parts on their own, as if they were plain numbers of hundredths.",
+        "Put the two together. If the decimal parts pass 1, that 1 moves up into the whole part.",
+      ],
+      examples: [
+        { ask: "What is 12.75 + 8.46?",
+          work: "wholes 12 + 8 = 20; decimals 0.75 + 0.46 = 1.21; together 20 + 1.21 = 21.21" },
+        { ask: "What is 23.4 − 8.75?",
+          work: "the whole part of the second number first, 23.4 − 8 = 15.4; then its decimals, 15.4 − 0.75 = 14.65" },
+      ],
+      why: "The mistake with decimals is almost never the adding. It is lining a 0.4 up under a 0.75 as if they were the same size. Splitting whole from decimal means nothing has to be lined up at all.",
+    },
+    vi: {
+      title: "Phần nguyên trước, phần thập phân sau, rồi ghép lại",
+      when: "Cộng hoặc trừ bất cứ gì có dấu phẩy thập phân.",
+      steps: [
+        "Cộng riêng phần nguyên. Đó là phần lớn của đáp án và là phần nhìn qua là kiểm được.",
+        "Rồi cộng riêng phần thập phân, coi chúng như những số phần trăm bình thường.",
+        "Ghép hai phần lại. Nếu phần thập phân vượt quá 1 thì số 1 đó chuyển lên phần nguyên.",
+      ],
+      examples: [
+        { ask: "12,75 + 8,46 bằng bao nhiêu?",
+          work: "phần nguyên 12 + 8 = 20; phần thập phân 0,75 + 0,46 = 1,21; ghép lại 20 + 1,21 = 21,21" },
+        { ask: "23,4 − 8,75 bằng bao nhiêu?",
+          work: "trừ phần nguyên của số thứ hai trước, 23,4 − 8 = 15,4; rồi phần thập phân của nó, 15,4 − 0,75 = 14,65" },
+      ],
+      why: "Lỗi với số thập phân gần như không bao giờ nằm ở phép cộng. Nó nằm ở chỗ đặt 0,4 thẳng hàng dưới 0,75 như thể chúng cùng cỡ. Tách nguyên khỏi thập phân thì không còn gì phải đặt thẳng hàng nữa.",
+    },
+  },
+  {
+    id: "point-last",
+    skill: "arith.decimals",
+    en: {
+      title: "Multiply as whole numbers, and put the point back at the end",
+      when: "Multiplying or dividing when a number has a decimal point in it.",
+      steps: [
+        "Ignore the points and multiply the whole numbers you are left with.",
+        "Count the decimal places in the question, all of them together, and move the point that many places back into the answer.",
+        "Dividing goes the other way: multiply both numbers by 10 until the divisor is whole, then divide. Both by the same amount, so the answer does not change.",
+      ],
+      examples: [
+        { ask: "What is 4.5 × 7.2?",
+          work: "45 × 72 = 3240; the question has two decimal places altogether, so two places back: 32.4" },
+        { ask: "What is 12.6 ÷ 0.4?",
+          work: "both by 10 makes the divisor whole: 126 ÷ 4 = 31.5" },
+      ],
+      why: "A point in the middle of a multiplication is one more thing to track while you are already tracking the carries. Putting it back at the end is one job done once, and counting places is a check you can do without any arithmetic at all.",
+    },
+    vi: {
+      title: "Nhân như số nguyên, rồi đặt dấu phẩy vào sau cùng",
+      when: "Nhân hoặc chia khi có một số mang dấu phẩy thập phân.",
+      steps: [
+        "Bỏ dấu phẩy đi và nhân hai số nguyên còn lại.",
+        "Đếm tổng số chữ số thập phân trong đề, rồi lùi dấu phẩy vào đáp án đúng bấy nhiêu chỗ.",
+        "Chia thì ngược lại: nhân cả hai số với 10 cho tới khi số chia thành số nguyên, rồi chia. Cả hai cùng nhân một lượng, nên đáp án không đổi.",
+      ],
+      examples: [
+        { ask: "4,5 × 7,2 bằng bao nhiêu?",
+          work: "45 × 72 = 3240; đề có tổng cộng hai chữ số thập phân, nên lùi hai chỗ: 32,4" },
+        { ask: "12,6 ÷ 0,4 bằng bao nhiêu?",
+          work: "cả hai nhân 10 thì số chia thành số nguyên: 126 ÷ 4 = 31,5" },
+      ],
+      why: "Một dấu phẩy nằm giữa phép nhân là thêm một thứ phải theo dõi trong lúc bạn đã đang theo dõi số nhớ. Đặt nó vào sau cùng là một việc làm một lần, và đếm chỗ là cách kiểm tra không cần tính toán gì cả.",
+    },
+  },
+  {
     id: "sequence-differences",
     skill: "seq.find-rule",
     en: {
@@ -3056,6 +3172,8 @@ const CURRICULUM = [
         [lv(15, 100, 12), lv(12, 130, 9), lv(12, 120, 8)]),
       skill("arith.percent", "Percentages", "Phần trăm",
         [lv(15, 110, 12), lv(15, 140, 11), lv(12, 120, 8)]),
+      skill("arith.decimals", "Decimals", "Số thập phân",
+        [lv(15, 120, 12), lv(12, 120, 9), lv(12, 140, 8)]),
       skill("arith.estimate", "Rough answers", "Tính áng chừng",
         [lv(10, 100, 8), lv(10, 110, 7), lv(10, 120, 7)]),
       skill("arith.puzzles", "Number puzzles", "Câu đố số học",
@@ -3962,6 +4080,104 @@ function puzzles(rng, level, t) {
   });
 }
 
+/* ── 11. Decimals ────────────────────────────────────────────────────────── */
+
+/** A decimal with exactly `dp` places, built from an integer so it carries no float noise. */
+function decimalOf(rng, lo, hi, dp) {
+  const scale = 10 ** dp;
+  return rng.int(lo * scale, hi * scale) / scale;
+}
+
+/** The fractions that hide inside the decimals the paper likes to multiply by. */
+const FRACTION_OF = {
+  0.25: [1, 4], 0.5: [1, 2], 0.75: [3, 4], 1.5: [3, 2], 2.5: [5, 2],
+  0.2: [1, 5], 0.4: [2, 5], 0.125: [1, 8], 1.25: [5, 4], 0.05: [1, 20],
+};
+
+/**
+ * Three levels, one idea each: line the points up; multiply as whole numbers
+ * and put the point back; make the divisor whole before dividing. The sitting
+ * had all three, and the drill that matched it named decimal division as the
+ * single biggest gap against the real paper.
+ */
+function decimals(rng, level, t) {
+  if (level === 1) {
+    let a = decimalOf(rng, 1, 40, rng.pick([1, 2]));
+    let b = decimalOf(rng, 1, 40, rng.pick([1, 2]));
+    const plus = rng.chance(0.5);
+    if (!plus && b > a) [a, b] = [b, a];
+    // A whole number in a decimal question is a whole-number question; redraw.
+    if (a % 1 === 0 || b % 1 === 0 || (!plus && a === b)) return decimals(rng, level, t);
+    const ans = round4(plus ? a + b : a - b);
+    const wa = Math.floor(a), wb = Math.floor(b);
+    const fa = round4(a - wa), fb = round4(b - wb);
+    return q({
+      prompt: `${t.n(a)} ${plus ? "+" : "−"} ${t.n(b)}`,
+      answer: ans,
+      solution: plus
+        ? t.dSolAdd(wa, wb, wa + wb, t.n(fa), t.n(fb), t.n(round4(fa + fb)), t.n(ans))
+        : t.dSolSub(t.n(a), wb, t.n(round4(a - wb)), t.n(fb), t.n(ans)),
+      traps: [
+        { value: round4(plus ? a + wb : a - wb), why: t.dtForgotFraction(t.n(fb)) },
+        { value: round4(ans * 10), why: t.dtPointRight() },
+      ],
+      tip: "line-up-the-point",
+    });
+  }
+
+  if (level === 2) {
+    if (rng.chance(0.5)) {
+      // 4.5 × 7.2: whole numbers first, then count the places back in.
+      const a = decimalOf(rng, 1, 10, 1), b = decimalOf(rng, 1, 10, 1);
+      const ia = Math.round(a * 10), ib = Math.round(b * 10);
+      const prod = ia * ib;
+      const ans = round4(prod / 100);
+      return q({
+        prompt: `${t.n(a)} × ${t.n(b)}`,
+        answer: ans,
+        solution: t.dSolMul(t.n(a), t.n(b), ia, ib, prod, t.n(ans)),
+        traps: [
+          { value: round4(prod / 10), why: t.dtPlacesShort() },
+          { value: round4(prod / 1000), why: t.dtPlacesOver() },
+        ],
+        tip: "point-last",
+      });
+    }
+    const a = rng.pick(Object.keys(FRACTION_OF).map(Number));
+    const b = rng.pick([8, 12, 16, 24, 32, 40, 48, 64, 80, 96, 120, 36, 72]);
+    const [num, den] = FRACTION_OF[a];
+    const ans = round4(a * b);
+    return q({
+      prompt: `${t.n(a)} × ${b}`,
+      answer: ans,
+      solution: t.dSolMulFrac(t.n(a), num, den, b, t.n(round4(b / den)), t.n(ans)),
+      traps: [
+        { value: round4(ans * 10), why: t.dtPointRight() },
+        { value: round4(ans / 10), why: t.dtPointLeft() },
+      ],
+      tip: "point-last",
+    });
+  }
+
+  const d = rng.pick([0.2, 0.25, 0.4, 0.5, 0.8, 1.25, 2.5, 0.125]);
+  const quotient = rng.pick([4, 6, 7, 8, 9, 12, 14, 16, 18, 24, 32, 36, 48]);
+  const a = round4(d * quotient);
+  const places = String(d).split(".")[1].length;
+  const scale = 10 ** places;
+  const d2 = Math.round(d * scale), a2 = round4(a * scale);
+  return q({
+    prompt: `${t.n(a)} ÷ ${t.n(d)}`,
+    answer: quotient,
+    solution: t.dSolDiv(t.n(a), t.n(d), scale, t.n(a2), d2, quotient),
+    traps: [
+      { value: round4(a / d2), why: t.dtDividendNotScaled(t.n(a), d2) },
+      { value: round4(quotient / 10), why: t.dtPointLeft() },
+      { value: round4(a * d), why: t.ttMultipliedNotDivided() },
+    ],
+    tip: "point-last",
+  });
+}
+
 const ARITHMETIC = {
   "arith.times-tables": timesTables,
   "arith.add-subtract": addSubtract,
@@ -3973,9 +4189,10 @@ const ARITHMETIC = {
   "arith.percent": percent,
   "arith.estimate": estimate,
   "arith.puzzles": puzzles,
+  "arith.decimals": decimals,
 };
 
-Object.assign(__shared, { timesTables, addSubtract, multiply, divide, squares, roots, fractions, percent, estimate, puzzles, ARITHMETIC });
+Object.assign(__shared, { timesTables, addSubtract, multiply, divide, squares, roots, fractions, percent, estimate, puzzles, decimals, ARITHMETIC });
 })();
 
 /* ── src/engine/sequences.js ─────────────────────────────────── */
@@ -5771,9 +5988,9 @@ const { frac, fmt, parseAnswer, num } = __shared;
    spreads evenly across the seven ideas. */
 const MIXED = {
   "arith.mixed": [
-    ["arith.add-subtract", 22], ["arith.multiply", 18], ["arith.divide", 10],
-    ["arith.percent", 12], ["arith.fractions", 9], ["arith.squares", 8],
-    ["arith.roots", 7], ["arith.puzzles", 9], ["arith.estimate", 5],
+    ["arith.add-subtract", 18], ["arith.multiply", 16], ["arith.divide", 10],
+    ["arith.decimals", 10], ["arith.percent", 12], ["arith.fractions", 9],
+    ["arith.squares", 8], ["arith.roots", 7], ["arith.puzzles", 9], ["arith.estimate", 5],
   ],
   "prob.mixed": [
     ["prob.counting", 16], ["prob.expected-value", 16], ["prob.conditional", 14],

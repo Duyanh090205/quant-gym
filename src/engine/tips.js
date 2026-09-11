@@ -486,6 +486,78 @@ export const TIPS = [
     },
   },
   {
+    id: "line-up-the-point",
+    skill: "arith.decimals",
+    en: {
+      title: "Whole parts first, decimal parts second, then put them together",
+      when: "Adding or subtracting anything with a decimal point in it.",
+      steps: [
+        "Add the whole parts on their own. They are most of the answer and the part you can check by eye.",
+        "Then add the decimal parts on their own, as if they were plain numbers of hundredths.",
+        "Put the two together. If the decimal parts pass 1, that 1 moves up into the whole part.",
+      ],
+      examples: [
+        { ask: "What is 12.75 + 8.46?",
+          work: "wholes 12 + 8 = 20; decimals 0.75 + 0.46 = 1.21; together 20 + 1.21 = 21.21" },
+        { ask: "What is 23.4 − 8.75?",
+          work: "the whole part of the second number first, 23.4 − 8 = 15.4; then its decimals, 15.4 − 0.75 = 14.65" },
+      ],
+      why: "The mistake with decimals is almost never the adding. It is lining a 0.4 up under a 0.75 as if they were the same size. Splitting whole from decimal means nothing has to be lined up at all.",
+    },
+    vi: {
+      title: "Phần nguyên trước, phần thập phân sau, rồi ghép lại",
+      when: "Cộng hoặc trừ bất cứ gì có dấu phẩy thập phân.",
+      steps: [
+        "Cộng riêng phần nguyên. Đó là phần lớn của đáp án và là phần nhìn qua là kiểm được.",
+        "Rồi cộng riêng phần thập phân, coi chúng như những số phần trăm bình thường.",
+        "Ghép hai phần lại. Nếu phần thập phân vượt quá 1 thì số 1 đó chuyển lên phần nguyên.",
+      ],
+      examples: [
+        { ask: "12,75 + 8,46 bằng bao nhiêu?",
+          work: "phần nguyên 12 + 8 = 20; phần thập phân 0,75 + 0,46 = 1,21; ghép lại 20 + 1,21 = 21,21" },
+        { ask: "23,4 − 8,75 bằng bao nhiêu?",
+          work: "trừ phần nguyên của số thứ hai trước, 23,4 − 8 = 15,4; rồi phần thập phân của nó, 15,4 − 0,75 = 14,65" },
+      ],
+      why: "Lỗi với số thập phân gần như không bao giờ nằm ở phép cộng. Nó nằm ở chỗ đặt 0,4 thẳng hàng dưới 0,75 như thể chúng cùng cỡ. Tách nguyên khỏi thập phân thì không còn gì phải đặt thẳng hàng nữa.",
+    },
+  },
+  {
+    id: "point-last",
+    skill: "arith.decimals",
+    en: {
+      title: "Multiply as whole numbers, and put the point back at the end",
+      when: "Multiplying or dividing when a number has a decimal point in it.",
+      steps: [
+        "Ignore the points and multiply the whole numbers you are left with.",
+        "Count the decimal places in the question, all of them together, and move the point that many places back into the answer.",
+        "Dividing goes the other way: multiply both numbers by 10 until the divisor is whole, then divide. Both by the same amount, so the answer does not change.",
+      ],
+      examples: [
+        { ask: "What is 4.5 × 7.2?",
+          work: "45 × 72 = 3240; the question has two decimal places altogether, so two places back: 32.4" },
+        { ask: "What is 12.6 ÷ 0.4?",
+          work: "both by 10 makes the divisor whole: 126 ÷ 4 = 31.5" },
+      ],
+      why: "A point in the middle of a multiplication is one more thing to track while you are already tracking the carries. Putting it back at the end is one job done once, and counting places is a check you can do without any arithmetic at all.",
+    },
+    vi: {
+      title: "Nhân như số nguyên, rồi đặt dấu phẩy vào sau cùng",
+      when: "Nhân hoặc chia khi có một số mang dấu phẩy thập phân.",
+      steps: [
+        "Bỏ dấu phẩy đi và nhân hai số nguyên còn lại.",
+        "Đếm tổng số chữ số thập phân trong đề, rồi lùi dấu phẩy vào đáp án đúng bấy nhiêu chỗ.",
+        "Chia thì ngược lại: nhân cả hai số với 10 cho tới khi số chia thành số nguyên, rồi chia. Cả hai cùng nhân một lượng, nên đáp án không đổi.",
+      ],
+      examples: [
+        { ask: "4,5 × 7,2 bằng bao nhiêu?",
+          work: "45 × 72 = 3240; đề có tổng cộng hai chữ số thập phân, nên lùi hai chỗ: 32,4" },
+        { ask: "12,6 ÷ 0,4 bằng bao nhiêu?",
+          work: "cả hai nhân 10 thì số chia thành số nguyên: 126 ÷ 4 = 31,5" },
+      ],
+      why: "Một dấu phẩy nằm giữa phép nhân là thêm một thứ phải theo dõi trong lúc bạn đã đang theo dõi số nhớ. Đặt nó vào sau cùng là một việc làm một lần, và đếm chỗ là cách kiểm tra không cần tính toán gì cả.",
+    },
+  },
+  {
     id: "sequence-differences",
     skill: "seq.find-rule",
     en: {

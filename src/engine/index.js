@@ -27,9 +27,9 @@ import { frac, fmt, parseAnswer, num } from "./format.js";
    spreads evenly across the seven ideas. */
 const MIXED = {
   "arith.mixed": [
-    ["arith.add-subtract", 22], ["arith.multiply", 18], ["arith.divide", 10],
-    ["arith.percent", 12], ["arith.fractions", 9], ["arith.squares", 8],
-    ["arith.roots", 7], ["arith.puzzles", 9], ["arith.estimate", 5],
+    ["arith.add-subtract", 18], ["arith.multiply", 16], ["arith.divide", 10],
+    ["arith.decimals", 10], ["arith.percent", 12], ["arith.fractions", 9],
+    ["arith.squares", 8], ["arith.roots", 7], ["arith.puzzles", 9], ["arith.estimate", 5],
   ],
   "prob.mixed": [
     ["prob.counting", 16], ["prob.expected-value", 16], ["prob.conditional", 14],

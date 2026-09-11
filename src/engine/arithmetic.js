@@ -762,6 +762,104 @@ export function puzzles(rng, level, t) {
   });
 }
 
+/* ── 11. Decimals ────────────────────────────────────────────────────────── */
+
+/** A decimal with exactly `dp` places, built from an integer so it carries no float noise. */
+function decimalOf(rng, lo, hi, dp) {
+  const scale = 10 ** dp;
+  return rng.int(lo * scale, hi * scale) / scale;
+}
+
+/** The fractions that hide inside the decimals the paper likes to multiply by. */
+const FRACTION_OF = {
+  0.25: [1, 4], 0.5: [1, 2], 0.75: [3, 4], 1.5: [3, 2], 2.5: [5, 2],
+  0.2: [1, 5], 0.4: [2, 5], 0.125: [1, 8], 1.25: [5, 4], 0.05: [1, 20],
+};
+
+/**
+ * Three levels, one idea each: line the points up; multiply as whole numbers
+ * and put the point back; make the divisor whole before dividing. The sitting
+ * had all three, and the drill that matched it named decimal division as the
+ * single biggest gap against the real paper.
+ */
+export function decimals(rng, level, t) {
+  if (level === 1) {
+    let a = decimalOf(rng, 1, 40, rng.pick([1, 2]));
+    let b = decimalOf(rng, 1, 40, rng.pick([1, 2]));
+    const plus = rng.chance(0.5);
+    if (!plus && b > a) [a, b] = [b, a];
+    // A whole number in a decimal question is a whole-number question; redraw.
+    if (a % 1 === 0 || b % 1 === 0 || (!plus && a === b)) return decimals(rng, level, t);
+    const ans = round4(plus ? a + b : a - b);
+    const wa = Math.floor(a), wb = Math.floor(b);
+    const fa = round4(a - wa), fb = round4(b - wb);
+    return q({
+      prompt: `${t.n(a)} ${plus ? "+" : "−"} ${t.n(b)}`,
+      answer: ans,
+      solution: plus
+        ? t.dSolAdd(wa, wb, wa + wb, t.n(fa), t.n(fb), t.n(round4(fa + fb)), t.n(ans))
+        : t.dSolSub(t.n(a), wb, t.n(round4(a - wb)), t.n(fb), t.n(ans)),
+      traps: [
+        { value: round4(plus ? a + wb : a - wb), why: t.dtForgotFraction(t.n(fb)) },
+        { value: round4(ans * 10), why: t.dtPointRight() },
+      ],
+      tip: "line-up-the-point",
+    });
+  }
+
+  if (level === 2) {
+    if (rng.chance(0.5)) {
+      // 4.5 × 7.2: whole numbers first, then count the places back in.
+      const a = decimalOf(rng, 1, 10, 1), b = decimalOf(rng, 1, 10, 1);
+      const ia = Math.round(a * 10), ib = Math.round(b * 10);
+      const prod = ia * ib;
+      const ans = round4(prod / 100);
+      return q({
+        prompt: `${t.n(a)} × ${t.n(b)}`,
+        answer: ans,
+        solution: t.dSolMul(t.n(a), t.n(b), ia, ib, prod, t.n(ans)),
+        traps: [
+          { value: round4(prod / 10), why: t.dtPlacesShort() },
+          { value: round4(prod / 1000), why: t.dtPlacesOver() },
+        ],
+        tip: "point-last",
+      });
+    }
+    const a = rng.pick(Object.keys(FRACTION_OF).map(Number));
+    const b = rng.pick([8, 12, 16, 24, 32, 40, 48, 64, 80, 96, 120, 36, 72]);
+    const [num, den] = FRACTION_OF[a];
+    const ans = round4(a * b);
+    return q({
+      prompt: `${t.n(a)} × ${b}`,
+      answer: ans,
+      solution: t.dSolMulFrac(t.n(a), num, den, b, t.n(round4(b / den)), t.n(ans)),
+      traps: [
+        { value: round4(ans * 10), why: t.dtPointRight() },
+        { value: round4(ans / 10), why: t.dtPointLeft() },
+      ],
+      tip: "point-last",
+    });
+  }
+
+  const d = rng.pick([0.2, 0.25, 0.4, 0.5, 0.8, 1.25, 2.5, 0.125]);
+  const quotient = rng.pick([4, 6, 7, 8, 9, 12, 14, 16, 18, 24, 32, 36, 48]);
+  const a = round4(d * quotient);
+  const places = String(d).split(".")[1].length;
+  const scale = 10 ** places;
+  const d2 = Math.round(d * scale), a2 = round4(a * scale);
+  return q({
+    prompt: `${t.n(a)} ÷ ${t.n(d)}`,
+    answer: quotient,
+    solution: t.dSolDiv(t.n(a), t.n(d), scale, t.n(a2), d2, quotient),
+    traps: [
+      { value: round4(a / d2), why: t.dtDividendNotScaled(t.n(a), d2) },
+      { value: round4(quotient / 10), why: t.dtPointLeft() },
+      { value: round4(a * d), why: t.ttMultipliedNotDivided() },
+    ],
+    tip: "point-last",
+  });
+}
+
 export const ARITHMETIC = {
   "arith.times-tables": timesTables,
   "arith.add-subtract": addSubtract,
@@ -773,4 +871,5 @@ export const ARITHMETIC = {
   "arith.percent": percent,
   "arith.estimate": estimate,
   "arith.puzzles": puzzles,
+  "arith.decimals": decimals,
 };
