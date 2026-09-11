@@ -13,14 +13,14 @@
 
 import {
   CURRICULUM, generateSet, generateExam, EXAMS, grade, gradeSet,
-  displayAnswer, getTip, getSkill, skillName, nextSkill, TIPS,
+  displayAnswer, getTip, getSkill, skillName, nextSkill, SKILL_ORDER, TIPS,
   generateReview, weakSpots, accumulate,
 } from "../src/engine/index.js";
 
 /* ── translations for the shell itself ───────────────────────────────────── */
 const T = {
   en: {
-    tagline: "Mental maths, sequences and probability, the way trading firms ask them.",
+    tagline: "Mental maths, estimation, sequences and probability, the way trading firms ask them.",
     ladder: "The ladder", practice: "Practice", noClock: "no clock, feedback every question",
     beatClock: "Beat the clock", mastered: "mastered", level: "Level",
     back: "Back", next: "Next question", check: "Check", submit: "Submit",
@@ -43,6 +43,7 @@ const T = {
     weakStart: "Start",
     reviewDone: "Weak-spot practice",
     whichOne: "Which idea does a question want?",
+    nextUp: "Next up",
     whyItWorks: "Why it works",
     blankWarn: (n, penalty) => penalty
       ? `${n} still blank. A wrong answer costs ${penalty} point here and a blank costs nothing, so only fill one in if you can actually work it out.`
@@ -53,7 +54,7 @@ const T = {
     typeHint: "Fractions like 3/8, decimals like 0.375, or 37.5% all count.",
   },
   vi: {
-    tagline: "Tính nhẩm, dãy số và xác suất, đúng kiểu các công ty giao dịch hỏi.",
+    tagline: "Tính nhẩm, ước lượng, dãy số và xác suất, đúng kiểu các công ty giao dịch hỏi.",
     ladder: "Cái thang", practice: "Luyện tập", noClock: "không đồng hồ, phản hồi từng câu",
     beatClock: "Chạy với đồng hồ", mastered: "đã thạo", level: "Cấp",
     back: "Quay lại", next: "Câu tiếp", check: "Kiểm tra", submit: "Nộp bài",
@@ -76,6 +77,7 @@ const T = {
     weakStart: "Bắt đầu",
     reviewDone: "Luyện chỗ yếu",
     whichOne: "Câu hỏi đang cần ý nào?",
+    nextUp: "Tiếp theo",
     whyItWorks: "Vì sao dùng được",
     blankWarn: (n, penalty) => penalty
       ? `Còn ${n} ô trống. Ở đây một câu sai mất ${penalty} điểm còn bỏ trống không mất gì, nên chỉ điền khi bạn thật sự tính ra.`
@@ -83,7 +85,7 @@ const T = {
     autoSubmit: (penalty) => penalty
       ? `Hết giờ tự nộp. Một câu sai mất ${penalty} điểm; bỏ trống không mất gì.`
       : "Hết giờ tự nộp. Sai không bị trừ điểm.",
-    typeHint: "Gõ phân số như 3/8, thập phân như 0.375, hay 37.5% đều được.",
+    typeHint: "Gõ phân số như 3/8, thập phân như 0,375, hay 37,5% đều được.",
   },
 };
 
@@ -122,7 +124,7 @@ const btn = (label, cls, onClick) => {
 const clock = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 /** Only arithmetic has genuine shortcuts. The rest have ways of seeing. */
 const isTrickTopic = (skillId) => String(skillId).startsWith("arith.");
-const PREFIX = { arithmetic: "arith.", sequences: "seq.", probability: "prob." };
+const PREFIX = { arithmetic: "arith.", estimation: "est.", sequences: "seq.", probability: "prob." };
 /** Word problems need prose type; bare arithmetic needs tabular figures. */
 const isWordy = (q) => q.prompt.length > 40 || /[a-z]{4}/.test(q.prompt);
 
@@ -161,6 +163,21 @@ function topbar() {
 
 /* ── screen 1: the ladder ────────────────────────────────────────────────── */
 function ladder(app) {
+  // Twenty-two skills, three rungs each, is a wall to a first-year student. One
+  // card at the top names the next rung not yet cleared, in ladder order.
+  const next = SKILL_ORDER.flatMap((id) => [1, 2, 3].map((lv) => [id, lv])).find(([id, lv]) => !isMastered(id, lv));
+  if (next) {
+    const box = el("div", "topic");
+    const card = el("div", "skill");
+    card.style.borderColor = "var(--accent)";
+    card.appendChild(el("h3", "", `${t().nextUp}: ${skillName(next[0], S.lang)} · ${t().level} ${next[1]}`));
+    card.appendChild(btn(t().practice, "primary", () => { S.skill = next[0]; S.level = next[1]; S.screen = "level"; render(); }));
+    const grid = el("div", "skills");
+    grid.appendChild(card);
+    box.appendChild(grid);
+    app.appendChild(box);
+  }
+
   for (const topic of CURRICULUM) {
     const box = el("div", "topic");
     const head = el("div", "topic-head");

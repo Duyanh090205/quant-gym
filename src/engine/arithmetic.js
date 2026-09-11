@@ -79,7 +79,7 @@ export function timesTables(rng, level, t) {
         { value: a * (b - 1), why: t.ttRowEarly(a, b - 1) },
         { value: a + b, why: t.ttAddedNotMultiplied() },
       ],
-      tip: "split-and-add",
+      tip: "teens-times-teens",
     });
   }
   const hi = level === 1 ? 9 : 12;
@@ -94,7 +94,7 @@ export function timesTables(rng, level, t) {
       { value: a * (b + 1), why: t.ttRowLate(a, b + 1) },
       { value: a + b, why: t.ttAddedNotMultiplied() },
     ],
-    tip: "split-and-add",
+    tip: "times-five-and-eleven",
   });
 }
 

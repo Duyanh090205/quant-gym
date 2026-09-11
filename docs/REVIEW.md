@@ -3,7 +3,7 @@
 Read this before trusting the content. Most of the engine is checked by machine,
 and the parts that are not are listed here rather than left for you to find.
 
-Last read end to end: 11 September 2026 — all 28 tip cards and every generator's
+Last read end to end: 11 September 2026 — all 29 tip cards and every generator's
 questions, solutions and traps, in both languages.
 
 ---
@@ -20,7 +20,7 @@ Every run of `npm test` re-checks all of this. None of it is a spot check.
 | `solution-arithmetic.test.js` | both sides of every equation printed inside a solution or a trap | 7,054 equations, plus 490 in traps |
 | `sequence-ambiguity.test.js` | whether a sequence admits two defensible answers, using rules fitted from scratch | 1,079 sequences, 789 odd-one-out |
 | `question-pool.test.js` | that every skill can fill its own paper without repeating a question | all 66 skill-levels |
-| `tip-arithmetic.test.js` | the hand-written tip cards, evaluating every equation printed on them | 164 equations across 28 cards |
+| `tip-arithmetic.test.js` | the hand-written tip cards, evaluating every equation printed on them | 184 equations across 29 cards |
 | `bilingual.test.js` | that the two languages never disagree about a number | every prompt, both languages |
 
 Three of these are worth a note. `simulate.test.js` fails if a probability shape
@@ -33,7 +33,7 @@ figure its question never gave the student.
 ## What no machine checks
 
 **Prose reasoning.** Around 150 instruction steps, plus a "why it works" and a
-"use it when" line on each of 28 cards in two languages, are arguments made in
+"use it when" line on each of 29 cards in two languages, are arguments made in
 words. The numbers inside them are checked; the arguments are not, and cannot be.
 They have been read end to end on the date above. If you change one, nothing will
 catch a new mistake in it.

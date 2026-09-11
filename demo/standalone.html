@@ -2120,6 +2120,42 @@ Object.assign(__shared, { TEXT });
 
 const TIPS = [
   {
+    id: "teens-times-teens",
+    skill: "arith.times-tables",
+    en: {
+      title: "Teens times teens: add the units across, times ten, then add the units' product",
+      when: "Both numbers are between 11 and 19.",
+      steps: [
+        "Take one number whole and add the other's units digit to it. 17 × 19: take 17 and add 9, which is 26.",
+        "Multiply that by ten: 260. This is most of the answer.",
+        "Multiply the two units digits together and add it on: 7 × 9 = 63, so 260 + 63 = 323.",
+      ],
+      examples: [
+        { ask: "What is 17 × 19?",
+          work: "17 + 9 = 26, so 26 × 10 = 260; the units are 7 × 9 = 63; 260 + 63 = 323" },
+        { ask: "What is 13 × 14?",
+          work: "13 + 4 = 17, so 17 × 10 = 170; the units are 3 × 4 = 12; 170 + 12 = 182" },
+      ],
+      why: "Both numbers are 10 plus something. Multiplying (10 + a)(10 + b) gives 100 + 10a + 10b + ab, and the first three pieces are exactly ten times (10 + a + b). Only the little product ab is left over, which is why it goes on at the end.",
+    },
+    vi: {
+      title: "Hai số từ 11 tới 19: cộng chéo hàng đơn vị, nhân mười, rồi cộng tích hai hàng đơn vị",
+      when: "Cả hai số đều nằm trong khoảng 11 tới 19.",
+      steps: [
+        "Lấy nguyên một số và cộng hàng đơn vị của số kia vào. 17 × 19: lấy 17 cộng 9, được 26.",
+        "Nhân số đó với mười: 260. Đây là phần lớn của đáp án.",
+        "Nhân hai hàng đơn vị với nhau rồi cộng vào: 7 × 9 = 63, nên 260 + 63 = 323.",
+      ],
+      examples: [
+        { ask: "17 × 19 bằng bao nhiêu?",
+          work: "17 + 9 = 26, nên 26 × 10 = 260; hàng đơn vị là 7 × 9 = 63; 260 + 63 = 323" },
+        { ask: "13 × 14 bằng bao nhiêu?",
+          work: "13 + 4 = 17, nên 17 × 10 = 170; hàng đơn vị là 3 × 4 = 12; 170 + 12 = 182" },
+      ],
+      why: "Cả hai số đều là 10 cộng thêm một chút. Nhân (10 + a)(10 + b) ra 100 + 10a + 10b + ab, và ba phần đầu đúng bằng mười lần (10 + a + b). Chỉ còn lại tích nhỏ ab, nên nó được cộng vào sau cùng.",
+    },
+  },
+  {
     id: "subtract-hundreds-first",
     skill: "arith.add-subtract",
     en: {
@@ -3157,7 +3193,7 @@ const CURRICULUM = [
     },
     skills: [
       skill("arith.times-tables", "Times tables", "Bảng cửu chương",
-        [lv(20, 90, 17), lv(20, 80, 17), lv(20, 120, 15)]),
+        [lv(20, 90, 17), lv(20, 100, 17), lv(20, 120, 15)]),
       skill("arith.add-subtract", "Add and subtract", "Cộng và trừ",
         [lv(20, 120, 16), lv(20, 150, 16), lv(15, 120, 11)]),
       skill("arith.multiply", "Multiply", "Nhân",
@@ -3168,7 +3204,7 @@ const CURRICULUM = [
         [lv(15, 90, 13), lv(15, 100, 12), lv(12, 100, 9)]),
       skill("arith.roots", "Roots and powers", "Căn và luỹ thừa",
         [lv(12, 100, 10), lv(12, 120, 9), lv(10, 150, 7)]),
-      skill("arith.fractions", "Fractions and decimals", "Phân số và thập phân",
+      skill("arith.fractions", "Fractions", "Phân số",
         [lv(15, 100, 12), lv(12, 130, 9), lv(12, 120, 8)]),
       skill("arith.percent", "Percentages", "Phần trăm",
         [lv(15, 110, 12), lv(15, 140, 11), lv(12, 120, 8)]),
@@ -3397,7 +3433,7 @@ function timesTables(rng, level, t) {
         { value: a * (b - 1), why: t.ttRowEarly(a, b - 1) },
         { value: a + b, why: t.ttAddedNotMultiplied() },
       ],
-      tip: "split-and-add",
+      tip: "teens-times-teens",
     });
   }
   const hi = level === 1 ? 9 : 12;
@@ -3412,7 +3448,7 @@ function timesTables(rng, level, t) {
       { value: a * (b + 1), why: t.ttRowLate(a, b + 1) },
       { value: a + b, why: t.ttAddedNotMultiplied() },
     ],
-    tip: "split-and-add",
+    tip: "times-five-and-eleven",
   });
 }
 
@@ -5966,8 +6002,8 @@ Object.assign(__shared, { displayAnswer, grade, gradeSet });
  * Quant Gym engine, public API.
  *
  * No DOM, no framework, no dependencies. Give it a skill, a level and a seed;
- * it gives you questions as plain objects. Render them however you like, or use
- * the React module in `src/ui`.
+ * it gives you questions as plain objects. Render them however you like;
+ * `demo/app.js` shows the whole surface in use, in six hundred lines of plain DOM.
  *
  *   import { generateSet, gradeSet } from "quant-gym/engine";
  *
@@ -6323,14 +6359,14 @@ Object.assign(__shared, { generate, generateSet, weakSpots, generateReview, accu
 
 const {
   CURRICULUM, generateSet, generateExam, EXAMS, grade, gradeSet,
-  displayAnswer, getTip, getSkill, skillName, nextSkill, TIPS,
+  displayAnswer, getTip, getSkill, skillName, nextSkill, SKILL_ORDER, TIPS,
   generateReview, weakSpots, accumulate,
 } = __shared;
 
 /* ── translations for the shell itself ───────────────────────────────────── */
 const T = {
   en: {
-    tagline: "Mental maths, sequences and probability, the way trading firms ask them.",
+    tagline: "Mental maths, estimation, sequences and probability, the way trading firms ask them.",
     ladder: "The ladder", practice: "Practice", noClock: "no clock, feedback every question",
     beatClock: "Beat the clock", mastered: "mastered", level: "Level",
     back: "Back", next: "Next question", check: "Check", submit: "Submit",
@@ -6353,6 +6389,7 @@ const T = {
     weakStart: "Start",
     reviewDone: "Weak-spot practice",
     whichOne: "Which idea does a question want?",
+    nextUp: "Next up",
     whyItWorks: "Why it works",
     blankWarn: (n, penalty) => penalty
       ? `${n} still blank. A wrong answer costs ${penalty} point here and a blank costs nothing, so only fill one in if you can actually work it out.`
@@ -6363,7 +6400,7 @@ const T = {
     typeHint: "Fractions like 3/8, decimals like 0.375, or 37.5% all count.",
   },
   vi: {
-    tagline: "Tính nhẩm, dãy số và xác suất, đúng kiểu các công ty giao dịch hỏi.",
+    tagline: "Tính nhẩm, ước lượng, dãy số và xác suất, đúng kiểu các công ty giao dịch hỏi.",
     ladder: "Cái thang", practice: "Luyện tập", noClock: "không đồng hồ, phản hồi từng câu",
     beatClock: "Chạy với đồng hồ", mastered: "đã thạo", level: "Cấp",
     back: "Quay lại", next: "Câu tiếp", check: "Kiểm tra", submit: "Nộp bài",
@@ -6386,6 +6423,7 @@ const T = {
     weakStart: "Bắt đầu",
     reviewDone: "Luyện chỗ yếu",
     whichOne: "Câu hỏi đang cần ý nào?",
+    nextUp: "Tiếp theo",
     whyItWorks: "Vì sao dùng được",
     blankWarn: (n, penalty) => penalty
       ? `Còn ${n} ô trống. Ở đây một câu sai mất ${penalty} điểm còn bỏ trống không mất gì, nên chỉ điền khi bạn thật sự tính ra.`
@@ -6393,7 +6431,7 @@ const T = {
     autoSubmit: (penalty) => penalty
       ? `Hết giờ tự nộp. Một câu sai mất ${penalty} điểm; bỏ trống không mất gì.`
       : "Hết giờ tự nộp. Sai không bị trừ điểm.",
-    typeHint: "Gõ phân số như 3/8, thập phân như 0.375, hay 37.5% đều được.",
+    typeHint: "Gõ phân số như 3/8, thập phân như 0,375, hay 37,5% đều được.",
   },
 };
 
@@ -6432,7 +6470,7 @@ const btn = (label, cls, onClick) => {
 const clock = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 /** Only arithmetic has genuine shortcuts. The rest have ways of seeing. */
 const isTrickTopic = (skillId) => String(skillId).startsWith("arith.");
-const PREFIX = { arithmetic: "arith.", sequences: "seq.", probability: "prob." };
+const PREFIX = { arithmetic: "arith.", estimation: "est.", sequences: "seq.", probability: "prob." };
 /** Word problems need prose type; bare arithmetic needs tabular figures. */
 const isWordy = (q) => q.prompt.length > 40 || /[a-z]{4}/.test(q.prompt);
 
@@ -6471,6 +6509,21 @@ function topbar() {
 
 /* ── screen 1: the ladder ────────────────────────────────────────────────── */
 function ladder(app) {
+  // Twenty-two skills, three rungs each, is a wall to a first-year student. One
+  // card at the top names the next rung not yet cleared, in ladder order.
+  const next = SKILL_ORDER.flatMap((id) => [1, 2, 3].map((lv) => [id, lv])).find(([id, lv]) => !isMastered(id, lv));
+  if (next) {
+    const box = el("div", "topic");
+    const card = el("div", "skill");
+    card.style.borderColor = "var(--accent)";
+    card.appendChild(el("h3", "", `${t().nextUp}: ${skillName(next[0], S.lang)} · ${t().level} ${next[1]}`));
+    card.appendChild(btn(t().practice, "primary", () => { S.skill = next[0]; S.level = next[1]; S.screen = "level"; render(); }));
+    const grid = el("div", "skills");
+    grid.appendChild(card);
+    box.appendChild(grid);
+    app.appendChild(box);
+  }
+
   for (const topic of CURRICULUM) {
     const box = el("div", "topic");
     const head = el("div", "topic-head");

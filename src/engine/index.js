@@ -2,8 +2,8 @@
  * Quant Gym engine, public API.
  *
  * No DOM, no framework, no dependencies. Give it a skill, a level and a seed;
- * it gives you questions as plain objects. Render them however you like, or use
- * the React module in `src/ui`.
+ * it gives you questions as plain objects. Render them however you like;
+ * `demo/app.js` shows the whole surface in use, in six hundred lines of plain DOM.
  *
  *   import { generateSet, gradeSet } from "quant-gym/engine";
  *

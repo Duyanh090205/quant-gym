@@ -26,6 +26,42 @@
 
 export const TIPS = [
   {
+    id: "teens-times-teens",
+    skill: "arith.times-tables",
+    en: {
+      title: "Teens times teens: add the units across, times ten, then add the units' product",
+      when: "Both numbers are between 11 and 19.",
+      steps: [
+        "Take one number whole and add the other's units digit to it. 17 × 19: take 17 and add 9, which is 26.",
+        "Multiply that by ten: 260. This is most of the answer.",
+        "Multiply the two units digits together and add it on: 7 × 9 = 63, so 260 + 63 = 323.",
+      ],
+      examples: [
+        { ask: "What is 17 × 19?",
+          work: "17 + 9 = 26, so 26 × 10 = 260; the units are 7 × 9 = 63; 260 + 63 = 323" },
+        { ask: "What is 13 × 14?",
+          work: "13 + 4 = 17, so 17 × 10 = 170; the units are 3 × 4 = 12; 170 + 12 = 182" },
+      ],
+      why: "Both numbers are 10 plus something. Multiplying (10 + a)(10 + b) gives 100 + 10a + 10b + ab, and the first three pieces are exactly ten times (10 + a + b). Only the little product ab is left over, which is why it goes on at the end.",
+    },
+    vi: {
+      title: "Hai số từ 11 tới 19: cộng chéo hàng đơn vị, nhân mười, rồi cộng tích hai hàng đơn vị",
+      when: "Cả hai số đều nằm trong khoảng 11 tới 19.",
+      steps: [
+        "Lấy nguyên một số và cộng hàng đơn vị của số kia vào. 17 × 19: lấy 17 cộng 9, được 26.",
+        "Nhân số đó với mười: 260. Đây là phần lớn của đáp án.",
+        "Nhân hai hàng đơn vị với nhau rồi cộng vào: 7 × 9 = 63, nên 260 + 63 = 323.",
+      ],
+      examples: [
+        { ask: "17 × 19 bằng bao nhiêu?",
+          work: "17 + 9 = 26, nên 26 × 10 = 260; hàng đơn vị là 7 × 9 = 63; 260 + 63 = 323" },
+        { ask: "13 × 14 bằng bao nhiêu?",
+          work: "13 + 4 = 17, nên 17 × 10 = 170; hàng đơn vị là 3 × 4 = 12; 170 + 12 = 182" },
+      ],
+      why: "Cả hai số đều là 10 cộng thêm một chút. Nhân (10 + a)(10 + b) ra 100 + 10a + 10b + ab, và ba phần đầu đúng bằng mười lần (10 + a + b). Chỉ còn lại tích nhỏ ab, nên nó được cộng vào sau cùng.",
+    },
+  },
+  {
     id: "subtract-hundreds-first",
     skill: "arith.add-subtract",
     en: {

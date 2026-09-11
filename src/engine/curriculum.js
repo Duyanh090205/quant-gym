@@ -33,7 +33,7 @@ export const CURRICULUM = [
     },
     skills: [
       skill("arith.times-tables", "Times tables", "Bảng cửu chương",
-        [lv(20, 90, 17), lv(20, 80, 17), lv(20, 120, 15)]),
+        [lv(20, 90, 17), lv(20, 100, 17), lv(20, 120, 15)]),
       skill("arith.add-subtract", "Add and subtract", "Cộng và trừ",
         [lv(20, 120, 16), lv(20, 150, 16), lv(15, 120, 11)]),
       skill("arith.multiply", "Multiply", "Nhân",
@@ -44,7 +44,7 @@ export const CURRICULUM = [
         [lv(15, 90, 13), lv(15, 100, 12), lv(12, 100, 9)]),
       skill("arith.roots", "Roots and powers", "Căn và luỹ thừa",
         [lv(12, 100, 10), lv(12, 120, 9), lv(10, 150, 7)]),
-      skill("arith.fractions", "Fractions and decimals", "Phân số và thập phân",
+      skill("arith.fractions", "Fractions", "Phân số",
         [lv(15, 100, 12), lv(12, 130, 9), lv(12, 120, 8)]),
       skill("arith.percent", "Percentages", "Phần trăm",
         [lv(15, 110, 12), lv(15, 140, 11), lv(12, 120, 8)]),

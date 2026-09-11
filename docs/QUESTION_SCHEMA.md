@@ -11,7 +11,7 @@ sent over the wire, or rendered by any framework.
 | `id` | string | yes | `"prob.bayes.L2#3"`. Unique within a paper, stable for a given seed. |
 | `skill` | string | yes | The generator that produced it, e.g. `"prob.bayes"`. |
 | `requested` | string | yes | What the caller asked for. Differs from `skill` only for the mixed pseudo-skills. |
-| `topic` | string | yes | `"arithmetic"`, `"sequences"` or `"probability"`. |
+| `topic` | string | yes | `"arithmetic"`, `"estimation"`, `"sequences"` or `"probability"`. |
 | `level` | 1 \| 2 \| 3 | yes | Difficulty. |
 | `prompt` | string | yes | The question as the student reads it. Already localised into symbols, not markup. |
 | `answer` | number \| string | yes | The value. Do not string-compare it; call `grade()`. |
@@ -26,6 +26,7 @@ sent over the wire, or rendered by any framework.
 | `shouldBe` | string | no | Odd-one-out only: what that position should have contained. |
 | `family` | string | no | Sequences only: which rule generated it, e.g. `"geometric differences"`. |
 | `note` | string | no | An explanation shown when the question has no per-value traps. |
+| `hint` | string | no | `"digit"` on missing-digit puzzles: the answer is one digit, not the whole number. |
 
 ## Formats
 
@@ -92,16 +93,27 @@ assessments use, a blank and a wrong answer both score nothing, but they mean ve
 different things about the student: one ran out of time or nerve, the other tried
 and misunderstood. Report them separately or you will coach the wrong problem.
 
-`gradeSet(questions, answers)` returns `{ results, score, total, answered, blank,
-wrong, trapped }`. `trapped` counts the wrong answers that landed on a known
-mistake, which is the most useful single number for a teacher.
+`gradeSet(questions, answers, { penalty })` returns `{ results, score, total,
+answered, blank, wrong, trapped, penalty, net }`. `trapped` counts the wrong
+answers that landed on a known mistake, which is the most useful single number
+for a teacher. `net` is `score − penalty × wrong`; with no penalty it equals
+`score`. Some first-round papers charge a point for a wrong answer and nothing
+for a blank, and the advice to a student flips with it.
 
 ## Papers
 
 ```js
 generateSet({ skill, level, count, seed, seconds });
-// → { seed, code, skill, level, seconds, questions, distinct }
+// → { seed, code, skill, level, levels: null, seconds, questions, distinct }
+
+generateSet({ skill, levels: { 1: 25, 2: 55, 3: 20 }, count, seed });
+// → { …, level: null, levels: { 1: 25, 2: 55, 3: 20 }, … }
 ```
+
+`levels` draws each question's level by weight, which is what an exam wants: the
+real papers blend levels, and a paper pinned to one could never show a level-1
+idea next to a level-3 one. The weights govern what lands on the paper, not what
+gets drawn and discarded as a repeat.
 
 `code` is the shareable assignment code derived from the seed, like `QG-7A3F`.
 `distinct` is how many of the questions are unique; it is below `count` only when

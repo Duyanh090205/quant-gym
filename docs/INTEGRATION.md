@@ -27,7 +27,10 @@ Node too, which is what the tests do.
 
 ## The component contract
 
-The React module in phase 2 takes props in and sends events out. Nothing else.
+There is no React component in this repository. `demo/app.js` is the reference:
+six hundred lines of plain DOM that exercise the whole engine, and the contract
+below is the one it follows. A wrapper for your framework takes props in and
+sends events out. Nothing else.
 
 ```jsx
 <QuantGym
@@ -44,7 +47,7 @@ function handleEvent(e) {
   // e.type is one of:
   //   "question-answered"  { skill, level, questionId, correct, trapHit, seconds }
   //   "level-complete"     { skill, level, score, total, blank, trapped, seconds, mastered }
-  //   "exam-complete"      { examId, parts: [{ skill, score, total, blank }], seconds }
+  //   "exam-complete"      { examId, parts: [{ skill, score, total, blank, wrong, net }], penalty, seconds }
   //   "tip-opened"         { tipId, skill }
   fetch("/api/quant/progress", { method: "POST", body: JSON.stringify(e) });
 }
@@ -93,8 +96,8 @@ most of the teaching value is:
    timer with sums in it.
 2. **Show the tip card on a miss**, via `getTip(question.tip, lang)`. A trick
    lands when the mistake is still warm. The card is
-   `{ title, when, steps[], example: { ask, work }, why }`. Render `when` before
-   the steps and `example.ask` before `example.work`: recognising which idea a
+   `{ title, when, steps[], examples: [{ ask, work }], why }`. Render `when` before
+   the steps and each `ask` before its `work`: recognising which idea a
    question wants is the skill, and working shown without its question is an
    answer key nobody can read.
 
