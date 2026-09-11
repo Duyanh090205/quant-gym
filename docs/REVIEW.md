@@ -3,7 +3,7 @@
 Read this before trusting the content. Most of the engine is checked by machine,
 and the parts that are not are listed here rather than left for you to find.
 
-Last read end to end: 11 September 2026 — all 26 tip cards and every generator's
+Last read end to end: 11 September 2026 — all 28 tip cards and every generator's
 questions, solutions and traps, in both languages.
 
 ---
@@ -17,10 +17,10 @@ Every run of `npm test` re-checks all of this. None of it is a spot check.
 | `engine.test.js` | every generated answer, re-derived from a formula written separately from the generator | ~1,000 questions per run |
 | `simulate.test.js` | the same answers again, by playing the game rather than computing it | 348 distinct shapes, 120,000 trials each |
 | `estimation.test.js` | estimation answers, read back out of the sentence the student sees | 720 answers, conversions written from scratch |
-| `solution-arithmetic.test.js` | both sides of every equation printed inside a solution or a trap | 6,344 equations, plus 490 in traps |
+| `solution-arithmetic.test.js` | both sides of every equation printed inside a solution or a trap | 7,054 equations, plus 490 in traps |
 | `sequence-ambiguity.test.js` | whether a sequence admits two defensible answers, using rules fitted from scratch | 1,079 sequences, 789 odd-one-out |
-| `question-pool.test.js` | that every skill can fill its own paper without repeating a question | all 63 skill-levels |
-| `tip-arithmetic.test.js` | the hand-written tip cards, evaluating every equation printed on them | 150 equations across 26 cards |
+| `question-pool.test.js` | that every skill can fill its own paper without repeating a question | all 66 skill-levels |
+| `tip-arithmetic.test.js` | the hand-written tip cards, evaluating every equation printed on them | 164 equations across 28 cards |
 | `bilingual.test.js` | that the two languages never disagree about a number | every prompt, both languages |
 
 Three of these are worth a note. `simulate.test.js` fails if a probability shape
@@ -33,7 +33,7 @@ figure its question never gave the student.
 ## What no machine checks
 
 **Prose reasoning.** Around 150 instruction steps, plus a "why it works" and a
-"use it when" line on each of 26 cards in two languages, are arguments made in
+"use it when" line on each of 28 cards in two languages, are arguments made in
 words. The numbers inside them are checked; the arguments are not, and cannot be.
 They have been read end to end on the date above. If you change one, nothing will
 catch a new mistake in it.
@@ -54,6 +54,15 @@ outside this repository:
   down immediately afterwards from memory. The format is right. The difficulty of
   the arithmetic section is a judgement call, and the person who sat it reported
   that the real thing was harder than this trainer was at the time.
+- Level 3 of every arithmetic skill is pitched from the drill that matched the
+  Maven sitting and from the three questions photographed during it: a digit
+  missing from a three-digit multiplier, `2 × 232 = 16 × ?`, and which of
+  `7^4, 6^5, 5^6, 222, 4^7` is largest. The drill's own notes named decimal
+  division and arbitrary percentages as its gaps against the real paper; both
+  are now in. The paper blends the three levels in measured proportion for
+  probability — three level-1 ideas, seven level-2, two level-3 among the
+  thirteen questions recalled — and in proportions set by feel for arithmetic
+  and sequences, where nothing was photographed.
 - The 80-in-8 paper with penalties follows what candidates report of Optiver's
   first round, including the pass mark of 55. That is community reporting, not an
   official specification. What it teaches — that a guess you are not confident in

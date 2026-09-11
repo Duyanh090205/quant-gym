@@ -72,6 +72,11 @@ will look native rather than like an embedded product.
 ```js
 const paper = generateSet({ skill: "prob.mixed", level: 2, count: 15, seed: assignmentCode });
 
+// A drill pins one level. An exam blends them, the way the real papers do:
+// each question's level is drawn by weight, and the weights govern what lands
+// on the paper rather than what gets drawn and discarded as a repeat.
+const exam = generateSet({ skill: "prob.mixed", levels: { 1: 25, 2: 55, 3: 20 }, count: 15, seed: assignmentCode });
+
 // render paper.questions with your own components
 // collect answers into an array in the same order
 
