@@ -297,13 +297,15 @@ export function fermi(rng, level, t) {
         const P = r.pick([300, 400, 600, 800, 900]);
         const A = r.pick([100, 150, 200]);
         const S = r.pick([500, 600, 800]);
-        return { P, A, S, pianos: (P * 1000) / A, answer: (P * 1000) / A / S };
+        const shops = r.pick([12, 18, 25, 40]);     // nothing to do with the answer
+        return { P, A, S, shops, pianos: (P * 1000) / A, answer: (P * 1000) / A / S };
       });
       if (got) {
         return q({
-          prompt: t.eAskTuners(got.P, got.A, got.S),
+          prompt: t.eAskTuners(got.S, got.P, got.shops, got.A),
           answer: got.answer,
-          solution: t.eSolTuners(got.P, got.P * 1000, got.A, got.pianos, got.S, got.answer),
+          solution: t.eSolTuners(got.P, got.P * 1000, got.A, got.pianos, got.S, got.answer)
+            + " " + t.eIgnored(t.eNoise.shops),
           traps: [
             { value: got.pianos, why: t.etTunersPianos },
             { value: got.P * 1000, why: t.etTunersPeople },
@@ -314,16 +316,20 @@ export function fermi(rng, level, t) {
     }
 
     if (shape === "fuel") {
+      const pop = rng.pick([9, 12, 20, 30]);        // thousand people, and noise
       const N = rng.pick([2000, 4000, 5000, 8000]);
-      const K = rng.pick([8000, 10000, 12000]);
+      const K = rng.pick([800, 1000, 1200, 1500]);  // a month, not a year
       const L = rng.pick([6, 7, 8, 9]);
+      const year = K * 12;
       return q({
-        prompt: t.eAskFuel(N, K, L),
-        answer: (N * K * L) / 100,
-        solution: t.eSolFuel(N, K, N * K, L, (N * K * L) / 100),
+        prompt: t.eAskFuel(pop, N, L, K),
+        answer: (N * year * L) / 100,
+        solution: t.eSolFuel(K, year, N, N * year, L, (N * year * L) / 100)
+          + " " + t.eIgnored(t.eNoise.people),
         traps: [
-          { value: N * K, why: t.etFuelDistance },
-          { value: N * K * L, why: t.etFuelPerHundred },
+          { value: (N * K * L) / 100, why: t.etFuelMonth },
+          { value: N * year, why: t.etFuelDistance },
+          { value: N * year * L, why: t.etFuelPerHundred },
         ],
         tip: "chain-the-factors",
       });
@@ -333,10 +339,11 @@ export function fermi(rng, level, t) {
       const n = rng.pick([8, 10, 12, 15]);
       const h = rng.pick([8, 10, 12]);
       const d = rng.pick([5, 6, 7]);
+      const tables = rng.pick([8, 12, 14, 20]);     // noise
       return q({
-        prompt: t.eAskCoffee(n, h, d),
+        prompt: t.eAskCoffee(tables, n, h, d),
         answer: n * h * d,
-        solution: t.eSolCoffee(n, h, n * h, d, n * h * d),
+        solution: t.eSolCoffee(n, h, n * h, d, n * h * d) + " " + t.eIgnored(t.eNoise.tables),
         traps: [{ value: n * h, why: t.etCoffeeOneDay }, { value: n * d, why: t.etCoffeeNoHours }],
         tip: "chain-the-factors",
       });
@@ -345,24 +352,49 @@ export function fermi(rng, level, t) {
     const w = rng.pick([4, 5, 6, 8]);
     const l = rng.pick([5, 6, 8, 10]);
     const per = rng.pick([4, 9, 16, 25]);
+    const high = rng.pick([3, 4]);                  // a floor does not care
     return q({
-      prompt: t.eAskTiles(w, l, per),
+      prompt: t.eAskTiles(w, l, high, per),
       answer: w * l * per,
-      solution: t.eSolTiles(w, l, w * l, per, w * l * per),
+      solution: t.eSolTiles(w, l, w * l, per, w * l * per) + " " + t.eIgnored(t.eNoise.ceiling),
       traps: [{ value: w * l, why: t.etTilesArea }, { value: 2 * (w + l), why: t.etTilesPerimeter }],
       tip: "chain-the-factors",
     });
   }
 
-  const shape = rng.pick(["eggs", "water", "flights", "barbers"]);
+  const shape = rng.pick(["eggs", "water", "flights", "barbers", "packing", "packing"]);
+
+  if (shape === "packing") {
+    // Volume over volume, with the two given in different units. Nothing here is
+    // a new idea; what makes it hard is that four separate things have to go
+    // right and a single slipped factor of a hundred ruins it.
+    const box = rng.pick([[40, 30, 25], [50, 40, 20], [60, 50, 40], [25, 20, 20]]);
+    const hold = rng.pick([[12, 2, 3], [12, 2, 2], [6, 2, 3], [12, 3, 3]]);
+    const kg = rng.pick([8, 12, 15, 20]);           // weight is ruled out by the question
+    const boxCm = box[0] * box[1] * box[2];
+    const holdM = hold[0] * hold[1] * hold[2];
+    return q({
+      prompt: t.eAskPacking(hold[0], hold[1], hold[2], box[0], box[1], box[2], kg),
+      answer: (holdM * 1000000) / boxCm,
+      solution: t.eSolPacking(hold[0], hold[1], hold[2], holdM, box[0], box[1], box[2],
+                              boxCm, holdM * 1000000, (holdM * 1000000) / boxCm)
+        + " " + t.eIgnored(t.eNoise.weight),
+      traps: [
+        { value: holdM / (boxCm / 1000000) / 1000, why: t.etPackingThousand },
+        { value: Math.round(holdM / (box[0] / 100)), why: t.etPackingOneEdge },
+      ],
+      tip: "chain-the-factors",
+    });
+  }
 
   if (shape === "eggs") {
     const P = rng.pick([40, 60, 90, 100, 120]);
     const e = rng.int(2, 5);
+    const farms = rng.pick([3, 6, 9, 14]);          // thousand farms, and noise
     return q({
-      prompt: t.eAskEggs(P, e),
+      prompt: t.eAskEggs(P, farms, e),
       answer: P * e * 52,
-      solution: t.eSolEggs(P, e, P * e, P * e * 52),
+      solution: t.eSolEggs(P, e, P * e, P * e * 52) + " " + t.eIgnored(t.eNoise.farms),
       traps: [
         { value: P * e, why: t.etEggsWeek },
         { value: P * e * 365, why: t.etEggsDays },
@@ -374,10 +406,11 @@ export function fermi(rng, level, t) {
   if (shape === "water") {
     const P = rng.pick([100, 200, 400, 500, 800]);
     const l = rng.pick([120, 150, 200, 250]);
+    const res = rng.pick([3, 4, 6, 8]);             // reservoirs, and noise
     return q({
-      prompt: t.eAskWater(P, l),
+      prompt: t.eAskWater(P, res, l),
       answer: P * l,
-      solution: t.eSolWater(P, l, P * 1000 * l, P * l),
+      solution: t.eSolWater(P, l, P * 1000 * l, P * l) + " " + t.eIgnored(t.eNoise.reservoirs),
       traps: [
         { value: P * 1000 * l, why: t.etWaterLitres },
         { value: P * 1000, why: t.etWaterPeople },
@@ -391,19 +424,24 @@ export function fermi(rng, level, t) {
       const F = r.pick([400, 600, 800, 1000]);
       const s = r.pick([150, 180, 200]);
       const pct = r.pick([70, 75, 80, 90]);
+      const staff = r.pick([4, 6, 9, 12]);          // thousand staff, and noise
       const perFlight = (s * pct) / 100;
       // Half a passenger on a plane is not an estimate, it is a typo with a
       // reason. Redraw rather than print one.
       if (!Number.isInteger(perFlight)) return null;
-      return { F, s, pct, perFlight, answer: (F * s * pct) / 100 };
+      // Asked for a week, so the student has to reach for the 7 themselves.
+      return { F, s, pct, staff, perFlight, answer: ((F * s * pct) / 100) * 7 };
     });
     if (got) {
       return q({
-        prompt: t.eAskFlights(got.F, got.s, got.pct),
+        prompt: t.eAskFlights(got.F, got.staff, got.s, got.pct),
         answer: got.answer,
-        solution: t.eSolFlights(got.s, got.pct, got.perFlight, got.F, got.answer),
+        solution: t.eSolFlights(got.s, got.pct, got.perFlight, got.F,
+                                got.F * got.perFlight, got.answer)
+          + " " + t.eIgnored(t.eNoise.staff),
         traps: [
-          { value: got.F * got.s, why: t.etFlightsSeats },
+          { value: got.F * got.perFlight, why: t.etFlightsOneDay },
+          { value: got.F * got.s * 7, why: t.etFlightsSeats },
           { value: got.perFlight, why: t.etFlightsOneFlight },
         ],
         tip: "chain-the-factors",
@@ -416,14 +454,16 @@ export function fermi(rng, level, t) {
     const w = r.pick([6, 8, 10, 12]);                  // weeks between haircuts
     const c = r.pick([10, 12, 15]);                    // cuts a day
     const d = r.pick([5, 6]);                          // days a week
+    const shops = r.pick([14, 22, 35, 60]);            // noise
     const cuts = (P * 1000) / w;                       // haircuts wanted each week
-    return { P, w, c, d, cuts, perBarber: c * d, answer: cuts / (c * d) };
+    return { P, w, c, d, shops, cuts, perBarber: c * d, answer: cuts / (c * d) };
   });
   if (got) {
     return q({
-      prompt: t.eAskBarbers(got.P, got.w, got.c, got.d),
+      prompt: t.eAskBarbers(got.c, got.d, got.P, got.shops, got.w),
       answer: got.answer,
-      solution: t.eSolBarbers(got.P, got.P * 1000, got.w, got.cuts, got.c, got.d, got.perBarber, got.answer),
+      solution: t.eSolBarbers(got.P, got.P * 1000, got.w, got.cuts, got.c, got.d, got.perBarber, got.answer)
+        + " " + t.eIgnored(t.eNoise.barbershops),
       traps: [
         { value: got.cuts, why: t.etBarbersCuts },
         { value: got.perBarber, why: t.etBarbersOneBarber },

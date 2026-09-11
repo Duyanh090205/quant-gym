@@ -307,9 +307,9 @@ const en = {
   etOnePerPerson: (subj, noun) =>
     `That is just the number of ${subj.many}. Each ${subj.one} accounts for several ${noun}, so the answer has to be bigger.`,
 
-  eAskTuners: (P, A, S) =>
-    `A city has ${P} thousand people. About 1 in ${A} of them owns a piano, and one tuner looks after ${S} pianos a year. ` +
-    `Roughly how many piano tuners does the city keep busy?`,
+  eAskTuners: (S, P, shops, A) =>
+    `One piano tuner looks after ${S} pianos a year. A city of ${P} thousand people has ${shops} music shops, ` +
+    `and about 1 person in ${A} owns a piano. Roughly how many tuners does the city keep busy?`,
   eSolTuners: (P, people, A, pianos, S, ans) =>
     `Take one step at a time. ${P} thousand people is ${P} \u00d7 1000 = ${people}. ` +
     `One piano for every ${A} of them gives ${people} \u00f7 ${A} = ${pianos} pianos. ` +
@@ -317,62 +317,96 @@ const en = {
   etTunersPianos: "That is how many pianos the city has, not how many tuners. One tuner looks after hundreds of them.",
   etTunersPeople: "That is the whole population. Only a small share of them owns a piano at all.",
 
-  eAskFuel: (N, K, L) =>
-    `A town has ${N} cars. Each drives about ${K} kilometres a year and burns ${L} litres of fuel per 100 kilometres. ` +
-    `Roughly how many litres does the town burn in a year?`,
-  eSolFuel: (N, K, km, L, ans) =>
-    `The cars cover ${N} \u00d7 ${K} = ${km} kilometres between them. Every 100 of those kilometres costs ${L} litres, ` +
-    `so ${km} \u00f7 100 \u00d7 ${L} = ${ans} litres.`,
   etFuelDistance: "That is the distance the town drives, not the fuel it burns. Those kilometres still have to be turned into litres.",
   etFuelPerHundred: "The rate is per 100 kilometres, not per kilometre, so this answer is a hundred times too big.",
 
-  eAskCoffee: (n, h, d) =>
-    `A coffee shop sells about ${n} cups an hour, opens ${h} hours a day and trades ${d} days a week. Roughly how many cups a week?`,
   eSolCoffee: (n, h, perDay, d, ans) =>
     `A day is ${n} \u00d7 ${h} = ${perDay} cups, and a week is ${d} of those days: ${perDay} \u00d7 ${d} = ${ans}.`,
   etCoffeeOneDay: "That is a single day. The question asks about a week.",
   etCoffeeNoHours: "You multiplied the days in but left the opening hours out, and each day is several hours long.",
 
-  eAskTiles: (w, l, per) =>
-    `A room is ${w} metres by ${l} metres, and ${per} tiles cover a square metre. Roughly how many tiles does the floor take?`,
   eSolTiles: (w, l, area, per, ans) =>
     `The floor is ${w} \u00d7 ${l} = ${area} square metres, and each square metre takes ${per} tiles: ${area} \u00d7 ${per} = ${ans}.`,
   etTilesArea: "That is the floor area in square metres, not the number of tiles standing on it.",
   etTilesPerimeter: "That is the distance round the edge of the room. A floor is covered by its area, not by its border.",
 
-  eAskEggs: (P, e) => `In a country of ${P} million people, each person eats about ${e} eggs a week. Roughly how many million eggs a year?`,
   eSolEggs: (P, e, perWeek, ans) =>
     `A week takes ${P} \u00d7 ${e} = ${perWeek} million eggs, and a year is 52 weeks: ${perWeek} \u00d7 52 = ${ans} million.`,
   etEggsWeek: "That is one week. A year is fifty-two of them.",
   etEggsDays: "You multiplied by the days in a year, but the rate you were given is per week.",
 
-  eAskWater: (P, l) =>
-    `In a city of ${P} thousand people, each person uses about ${l} litres of water a day. Roughly how many cubic metres a day is that? ` +
-    `A cubic metre is 1000 litres.`,
   eSolWater: (P, l, litres, ans) =>
     `The city uses ${P} \u00d7 1000 \u00d7 ${l} = ${litres} litres. A cubic metre is 1000 litres, ` +
     `so ${litres} \u00f7 1000 = ${ans} cubic metres. The two thousands cancel, which is why the answer is simply ${P} times ${l}.`,
   etWaterLitres: "That is the answer in litres. The question asks for cubic metres, and each of those holds a thousand litres.",
   etWaterPeople: "That is how many people live there, with nothing about how much water each of them drinks.",
 
-  eAskFlights: (F, s, pct) =>
-    `An airport handles ${F} flights a day. Each plane holds ${s} passengers and flies about ${pct}% full. ` +
-    `Roughly how many passengers a day?`,
-  eSolFlights: (s, pct, perFlight, F, ans) =>
-    `A full plane is ${s} passengers, and ${pct}% of that is ${s} \u00d7 ${pct} \u00f7 100 = ${perFlight}. ` +
-    `Then ${F} flights carry ${F} \u00d7 ${perFlight} = ${ans}.`,
   etFlightsSeats: "That is every seat on offer. The planes do not fly full, which is the whole reason the percentage is there.",
   etFlightsOneFlight: "That is a single flight. The airport runs many of them a day.",
 
-  eAskBarbers: (P, w, c, d) =>
-    `In a town of ${P} thousand people, each person gets a haircut every ${w} weeks. A barber does ${c} cuts a day and works ${d} days a week. ` +
-    `Roughly how many barbers does the town need?`,
   eSolBarbers: (P, people, w, cuts, c, d, perBarber, ans) =>
     `${P} thousand people is ${P} \u00d7 1000 = ${people}, and each wants a cut every ${w} weeks, ` +
     `so one week brings ${people} \u00f7 ${w} = ${cuts} haircuts. ` +
     `One barber manages ${c} \u00d7 ${d} = ${perBarber} cuts a week, so the town needs ${cuts} \u00f7 ${perBarber} = ${ans}.`,
   etBarbersCuts: "That is how many haircuts the town wants each week, not how many barbers it takes to give them.",
   etBarbersOneBarber: "That is one barber's week. The town needs a good many barbers.",
+
+  eNoise: {
+    shops: "music shops", people: "people", tables: "tables", ceiling: "ceiling height",
+    farms: "farms", reservoirs: "reservoirs", staff: "staff", barbershops: "barbershops",
+    weight: "weight of a box",
+  },
+  eIgnored: (noun) => `The ${noun} never enters the calculation. A question can hand you a number you do not need, and deciding what to leave out is part of the work.`,
+
+  eAskPacking: (a, b, c, x, y, z, kg) =>
+    `A shipping container measures ${a} metres by ${b} metres by ${c} metres. A box measures ${x} centimetres ` +
+    `by ${y} centimetres by ${z} centimetres and weighs ${kg} kilograms when full. Ignoring the weight and the ` +
+    `space wasted between boxes, roughly how many boxes fit in the container?`,
+  eSolPacking: (a, b, c, holdM, x, y, z, boxCm, holdCm, ans) =>
+    `Volume over volume, but the two are in different units, and that is where this goes wrong. ` +
+    `The container is ${a} × ${b} × ${c} = ${holdM} cubic metres. The box is ${x} × ${y} × ${z} = ${boxCm} cubic centimetres. ` +
+    `A metre is 100 centimetres, so a cubic metre is 100 × 100 × 100 = 1000000 cubic centimetres, ` +
+    `which makes the container ${holdM} × 1000000 = ${holdCm} cubic centimetres. Then ${holdCm} ÷ ${boxCm} = ${ans}.`,
+  etPackingThousand: "A cubic metre is not a thousand cubic centimetres. Cubing the metre cubes the hundred as well, so it is a million.",
+  etPackingOneEdge: "That compares one edge against one edge. A box takes up room in three directions at once, so all three have to be multiplied in.",
+
+  eAskFuel: (pop, N, L, K) =>
+    `A town of ${pop} thousand people owns ${N} cars. A car burns ${L} litres of fuel every 100 kilometres, ` +
+    `and covers about ${K} kilometres a month. Roughly how many litres does the town burn in a year?`,
+  eSolFuel: (K, year, N, km, L, ans) =>
+    `The rate is monthly and the question is yearly, so start there: ${K} × 12 = ${year} kilometres a car. ` +
+    `All the cars together cover ${N} × ${year} = ${km} kilometres. Every 100 of those costs ${L} litres, ` +
+    `so ${km} ÷ 100 × ${L} = ${ans} litres.`,
+  etFuelMonth: "That is one month. The question asks for a year, and nothing in the sentence says twelve for you.",
+
+  eAskCoffee: (tables, n, h, d) =>
+    `A coffee shop has ${tables} tables. It sells about ${n} cups an hour, opens ${h} hours a day and trades ` +
+    `${d} days a week. Roughly how many cups a week?`,
+
+  eAskTiles: (w, l, high, per) =>
+    `A room is ${w} metres by ${l} metres and ${high} metres high, and ${per} tiles cover a square metre. ` +
+    `Roughly how many tiles does the floor take?`,
+
+  eAskEggs: (P, farms, e) =>
+    `A country of ${P} million people has ${farms} thousand egg farms, and each person eats about ${e} eggs a week. ` +
+    `Roughly how many million eggs a year?`,
+
+  eAskWater: (P, res, l) =>
+    `A city of ${P} thousand people draws from ${res} reservoirs, and each person uses about ${l} litres of water a day. ` +
+    `Roughly how many cubic metres a day is that? A cubic metre is 1000 litres.`,
+
+  eAskFlights: (F, staff, s, pct) =>
+    `An airline runs ${F} flights a day and employs ${staff} thousand people. Each aircraft seats ${s} passengers ` +
+    `and flies about ${pct}% full. Roughly how many passengers does it carry in a week?`,
+  eSolFlights: (s, pct, perFlight, F, perDay, ans) =>
+    `A full aircraft is ${s} passengers, and ${pct}% of that is ${s} × ${pct} ÷ 100 = ${perFlight}. ` +
+    `A day is ${F} × ${perFlight} = ${perDay}. The question asks for a week, which nothing in the sentence ` +
+    `counts for you: ${perDay} × 7 = ${ans}.`,
+  etFlightsOneDay: "That is a single day. The question asks for a week, and the seven is yours to supply.",
+
+  eAskBarbers: (c, d, P, shops, w) =>
+    `A barber cuts ${c} heads a day and works ${d} days a week. A town of ${P} thousand people has ${shops} ` +
+    `barbershops, and each person needs a cut every ${w} weeks. Roughly how many barbers does the town need?`,
 
   /* probability — event names, reused across prompts */
   pEvents: {
@@ -621,7 +655,7 @@ const en = {
     `and then it is A's turn again with nothing changed, so A's chance is P once more. That gives P = ${p} + ${both}·P, ` +
     `and solving it gives P = ${ans}. Going first is worth a little over half.`,
   pSolDerange: (n, fact, D, none, asksNone, other) =>
-    `There are ${n}! = ${fact} ways to fill the envelopes, all equally likely. Of those, ${D} have every letter in the wrong envelope. ` +
+    `There are ${n}! = ${fact} ways to fill the envelopes, all equally likely. Of those, ÷ have every letter in the wrong envelope. ` +
     `So the chance of no letter being right is ${none}` +
     (asksNone ? "." : `, and at least one is 1 − ${none} = ${other}.`),
   pSolWalk: (steps, n, c, total, ans) =>
@@ -1058,9 +1092,9 @@ const vi = {
   etOnePerPerson: (subj, noun) =>
     `Đó mới là số ${subj.many}. Mỗi ${subj.one} ứng với nhiều ${noun}, nên đáp án phải lớn hơn thế.`,
 
-  eAskTuners: (P, A, S) =>
-    `Một thành phố có ${P} nghìn dân. Khoảng 1 trên ${A} người sở hữu một cây đàn dương cầm, và một thợ chỉnh đàn lo được ${S} cây mỗi năm. ` +
-    `Thành phố nuôi sống khoảng bao nhiêu thợ chỉnh đàn?`,
+  eAskTuners: (S, P, shops, A) =>
+    `Một thợ chỉnh đàn lo được ${S} cây dương cầm mỗi năm. Một thành phố ${P} nghìn dân có ${shops} cửa hàng nhạc cụ, ` +
+    `và khoảng 1 người trong ${A} người sở hữu một cây đàn. Thành phố nuôi sống khoảng bao nhiêu thợ chỉnh đàn?`,
   eSolTuners: (P, people, A, pianos, S, ans) =>
     `Đi từng bước một. ${P} nghìn dân là ${P} \u00d7 1000 = ${people}. ` +
     `Cứ ${A} người có một cây đàn thì được ${people} \u00f7 ${A} = ${pianos} cây. ` +
@@ -1068,62 +1102,96 @@ const vi = {
   etTunersPianos: "Đó là số cây đàn trong thành phố, không phải số thợ. Một người thợ lo hàng trăm cây.",
   etTunersPeople: "Đó là toàn bộ dân số. Chỉ một phần nhỏ trong đó có đàn dương cầm.",
 
-  eAskFuel: (N, K, L) =>
-    `Một thị trấn có ${N} xe hơi. Mỗi xe chạy khoảng ${K} ki-lô-mét một năm và tốn ${L} lít nhiên liệu cho mỗi 100 ki-lô-mét. ` +
-    `Một năm cả thị trấn đốt khoảng bao nhiêu lít?`,
-  eSolFuel: (N, K, km, L, ans) =>
-    `Các xe cộng lại chạy ${N} \u00d7 ${K} = ${km} ki-lô-mét. Cứ 100 ki-lô-mét tốn ${L} lít, ` +
-    `nên ${km} \u00f7 100 \u00d7 ${L} = ${ans} lít.`,
   etFuelDistance: "Đó là quãng đường cả thị trấn chạy, không phải lượng nhiên liệu. Số ki-lô-mét đó còn phải đổi ra lít.",
   etFuelPerHundred: "Mức tiêu hao là cho mỗi 100 ki-lô-mét chứ không phải mỗi ki-lô-mét, nên đáp án này lớn gấp một trăm lần.",
 
-  eAskCoffee: (n, h, d) =>
-    `Một quán cà phê bán khoảng ${n} cốc một giờ, mở ${h} tiếng một ngày và bán ${d} ngày một tuần. Một tuần khoảng bao nhiêu cốc?`,
   eSolCoffee: (n, h, perDay, d, ans) =>
     `Một ngày là ${n} \u00d7 ${h} = ${perDay} cốc, và một tuần là ${d} ngày như vậy: ${perDay} \u00d7 ${d} = ${ans}.`,
   etCoffeeOneDay: "Đó mới là một ngày. Đề hỏi cả tuần.",
   etCoffeeNoHours: "Bạn đã nhân số ngày vào nhưng bỏ quên số giờ mở cửa, mà mỗi ngày dài mấy tiếng.",
 
-  eAskTiles: (w, l, per) =>
-    `Một căn phòng ${w} mét nhân ${l} mét, và ${per} viên gạch phủ kín một mét vuông. Sàn phòng cần khoảng bao nhiêu viên?`,
   eSolTiles: (w, l, area, per, ans) =>
     `Sàn rộng ${w} \u00d7 ${l} = ${area} mét vuông, mỗi mét vuông cần ${per} viên: ${area} \u00d7 ${per} = ${ans}.`,
   etTilesArea: "Đó là diện tích sàn tính theo mét vuông, không phải số viên gạch nằm trên đó.",
   etTilesPerimeter: "Đó là chu vi quanh mép phòng. Sàn được phủ bằng diện tích chứ không phải bằng đường viền.",
 
-  eAskEggs: (P, e) => `Một nước có ${P} triệu dân, mỗi người ăn khoảng ${e} quả trứng một tuần. Một năm khoảng bao nhiêu triệu quả trứng?`,
   eSolEggs: (P, e, perWeek, ans) =>
     `Một tuần tốn ${P} \u00d7 ${e} = ${perWeek} triệu quả, và một năm là 52 tuần: ${perWeek} \u00d7 52 = ${ans} triệu.`,
   etEggsWeek: "Đó mới là một tuần. Một năm có năm mươi hai tuần.",
   etEggsDays: "Bạn đã nhân với số ngày trong năm, nhưng mức đề cho là mỗi tuần.",
 
-  eAskWater: (P, l) =>
-    `Một thành phố ${P} nghìn dân, mỗi người dùng khoảng ${l} lít nước một ngày. Một ngày khoảng bao nhiêu mét khối? ` +
-    `Một mét khối là 1000 lít.`,
   eSolWater: (P, l, litres, ans) =>
     `Thành phố dùng ${P} \u00d7 1000 \u00d7 ${l} = ${litres} lít. Một mét khối là 1000 lít, ` +
     `nên ${litres} \u00f7 1000 = ${ans} mét khối. Hai con số nghìn triệt tiêu nhau, nên đáp án đơn giản là ${P} nhân ${l}.`,
   etWaterLitres: "Đó là đáp án tính theo lít. Đề hỏi mét khối, mà mỗi mét khối chứa một nghìn lít.",
   etWaterPeople: "Đó là số người sống ở đó, chưa nói gì tới lượng nước mỗi người dùng.",
 
-  eAskFlights: (F, s, pct) =>
-    `Một sân bay có ${F} chuyến bay một ngày. Mỗi máy bay chở ${s} khách và bay đầy khoảng ${pct}%. ` +
-    `Một ngày khoảng bao nhiêu hành khách?`,
-  eSolFlights: (s, pct, perFlight, F, ans) =>
-    `Một máy bay đầy là ${s} khách, và ${pct}% của nó là ${s} \u00d7 ${pct} \u00f7 100 = ${perFlight}. ` +
-    `Rồi ${F} chuyến chở ${F} \u00d7 ${perFlight} = ${ans}.`,
   etFlightsSeats: "Đó là toàn bộ số ghế có sẵn. Máy bay không bay đầy, và đó chính là lý do đề cho phần trăm.",
   etFlightsOneFlight: "Đó mới là một chuyến. Sân bay chạy rất nhiều chuyến mỗi ngày.",
 
-  eAskBarbers: (P, w, c, d) =>
-    `Một thị trấn ${P} nghìn dân, mỗi người cắt tóc ${w} tuần một lần. Một thợ cắt ${c} người một ngày và làm ${d} ngày một tuần. ` +
-    `Thị trấn cần khoảng bao nhiêu thợ cắt tóc?`,
   eSolBarbers: (P, people, w, cuts, c, d, perBarber, ans) =>
     `${P} nghìn dân là ${P} \u00d7 1000 = ${people}, mỗi người cắt ${w} tuần một lần, ` +
     `nên một tuần có ${people} \u00f7 ${w} = ${cuts} lượt cắt. ` +
     `Một thợ làm được ${c} \u00d7 ${d} = ${perBarber} lượt một tuần, nên thị trấn cần ${cuts} \u00f7 ${perBarber} = ${ans}.`,
   etBarbersCuts: "Đó là số lượt cắt tóc thị trấn cần mỗi tuần, không phải số thợ để cắt hết chúng.",
   etBarbersOneBarber: "Đó mới là một tuần của một người thợ. Thị trấn cần khá nhiều thợ.",
+
+  eNoise: {
+    shops: "s\u1ed1 c\u1eeda h\u00e0ng nh\u1ea1c c\u1ee5", people: "d\u00e2n s\u1ed1", tables: "s\u1ed1 b\u00e0n", ceiling: "chi\u1ec1u cao tr\u1ea7n",
+    farms: "s\u1ed1 trang tr\u1ea1i", reservoirs: "s\u1ed1 h\u1ed3 ch\u1ee9a", staff: "s\u1ed1 nh\u00e2n vi\u00ean", barbershops: "s\u1ed1 ti\u1ec7m c\u1eaft t\u00f3c",
+    weight: "c\u00e2n n\u1eb7ng c\u1ee7a m\u1ed9t th\u00f9ng",
+  },
+  eIgnored: (noun) => `${noun} kh\u00f4ng h\u1ec1 tham gia v\u00e0o ph\u00e9p t\u00ednh. \u0110\u1ec1 c\u00f3 th\u1ec3 \u0111\u01b0a cho b\u1ea1n m\u1ed9t con s\u1ed1 kh\u00f4ng c\u1ea7n d\u00f9ng, v\u00e0 quy\u1ebft \u0111\u1ecbnh b\u1ecf c\u00e1i g\u00ec ra c\u0169ng l\u00e0 m\u1ed9t ph\u1ea7n c\u1ee7a vi\u1ec7c.`,
+
+  eAskPacking: (a, b, c, x, y, z, kg) =>
+    `M\u1ed9t th\u00f9ng container d\u00e0i ${a} m\u00e9t, r\u1ed9ng ${b} m\u00e9t, cao ${c} m\u00e9t. M\u1ed9t chi\u1ebfc h\u1ed9p c\u00f3 k\u00edch th\u01b0\u1edbc ${x} x\u0103ng-ti-m\u00e9t ` +
+    `nh\u00e2n ${y} x\u0103ng-ti-m\u00e9t nh\u00e2n ${z} x\u0103ng-ti-m\u00e9t v\u00e0 n\u1eb7ng ${kg} ki-l\u00f4-gam khi \u0111\u1ea7y. B\u1ecf qua c\u00e2n n\u1eb7ng v\u00e0 ph\u1ea7n kho\u1ea3ng tr\u1ed1ng ` +
+    `gi\u1eefa c\u00e1c h\u1ed9p, x\u1ebfp \u0111\u01b0\u1ee3c kho\u1ea3ng bao nhi\u00eau h\u1ed9p v\u00e0o container?`,
+  eSolPacking: (a, b, c, holdM, x, y, z, boxCm, holdCm, ans) =>
+    `Th\u1ec3 t\u00edch chia th\u1ec3 t\u00edch, nh\u01b0ng hai b\u00ean kh\u00e1c \u0111\u01a1n v\u1ecb, v\u00e0 \u0111\u00f3 ch\u00ednh l\u00e0 ch\u1ed7 hay h\u1ecfng. ` +
+    `Container l\u00e0 ${a} × ${b} × ${c} = ${holdM} m\u00e9t kh\u1ed1i. H\u1ed9p l\u00e0 ${x} × ${y} × ${z} = ${boxCm} x\u0103ng-ti-m\u00e9t kh\u1ed1i. ` +
+    `M\u1ed9t m\u00e9t l\u00e0 100 x\u0103ng-ti-m\u00e9t, n\u00ean m\u1ed9t m\u00e9t kh\u1ed1i l\u00e0 100 × 100 × 100 = 1000000 x\u0103ng-ti-m\u00e9t kh\u1ed1i, ` +
+    `t\u1ee9c container b\u1eb1ng ${holdM} × 1000000 = ${holdCm} x\u0103ng-ti-m\u00e9t kh\u1ed1i. R\u1ed3i ${holdCm} ÷ ${boxCm} = ${ans}.`,
+  etPackingThousand: "M\u1ed9t m\u00e9t kh\u1ed1i kh\u00f4ng ph\u1ea3i m\u1ed9t ngh\u00ecn x\u0103ng-ti-m\u00e9t kh\u1ed1i. L\u1eadp ph\u01b0\u01a1ng m\u00e9t th\u00ec l\u1eadp ph\u01b0\u01a1ng lu\u00f4n c\u1ea3 tr\u0103m, n\u00ean n\u00f3 l\u00e0 m\u1ed9t tri\u1ec7u.",
+  etPackingOneEdge: "\u0110\u00f3 l\u00e0 so m\u1ed9t c\u1ea1nh v\u1edbi m\u1ed9t c\u1ea1nh. M\u1ed9t chi\u1ebfc h\u1ed9p chi\u1ebfm ch\u1ed7 theo c\u1ea3 ba chi\u1ec1u c\u00f9ng l\u00fac, n\u00ean ph\u1ea3i nh\u00e2n c\u1ea3 ba v\u00e0o.",
+
+  eAskFuel: (pop, N, L, K) =>
+    `M\u1ed9t th\u1ecb tr\u1ea5n ${pop} ngh\u00ecn d\u00e2n s\u1edf h\u1eefu ${N} xe h\u01a1i. M\u1ed9t chi\u1ebfc xe t\u1ed1n ${L} l\u00edt nhi\u00ean li\u1ec7u cho m\u1ed7i 100 ki-l\u00f4-m\u00e9t, ` +
+    `v\u00e0 ch\u1ea1y kho\u1ea3ng ${K} ki-l\u00f4-m\u00e9t m\u1ed9t th\u00e1ng. M\u1ed9t n\u0103m c\u1ea3 th\u1ecb tr\u1ea5n \u0111\u1ed1t kho\u1ea3ng bao nhi\u00eau l\u00edt?`,
+  eSolFuel: (K, year, N, km, L, ans) =>
+    `M\u1ee9c \u0111\u1ec1 cho l\u00e0 theo th\u00e1ng c\u00f2n c\u00e2u h\u1ecfi l\u00e0 theo n\u0103m, n\u00ean b\u1eaft \u0111\u1ea7u t\u1eeb \u0111\u00f3: ${K} × 12 = ${year} ki-l\u00f4-m\u00e9t m\u1ed9t xe. ` +
+    `T\u1ea5t c\u1ea3 xe c\u1ed9ng l\u1ea1i ch\u1ea1y ${N} × ${year} = ${km} ki-l\u00f4-m\u00e9t. C\u1ee9 100 ki-l\u00f4-m\u00e9t t\u1ed1n ${L} l\u00edt, ` +
+    `n\u00ean ${km} ÷ 100 × ${L} = ${ans} l\u00edt.`,
+  etFuelMonth: "\u0110\u00f3 m\u1edbi l\u00e0 m\u1ed9t th\u00e1ng. \u0110\u1ec1 h\u1ecfi c\u1ea3 n\u0103m, v\u00e0 kh\u00f4ng c\u00e2u n\u00e0o trong \u0111\u1ec1 nh\u00e2n 12 s\u1eb5n cho b\u1ea1n.",
+
+  eAskCoffee: (tables, n, h, d) =>
+    `M\u1ed9t qu\u00e1n c\u00e0 ph\u00ea c\u00f3 ${tables} c\u00e1i b\u00e0n. Qu\u00e1n b\u00e1n kho\u1ea3ng ${n} c\u1ed1c m\u1ed9t gi\u1edd, m\u1edf ${h} ti\u1ebfng m\u1ed9t ng\u00e0y v\u00e0 b\u00e1n ` +
+    `${d} ng\u00e0y m\u1ed9t tu\u1ea7n. M\u1ed9t tu\u1ea7n kho\u1ea3ng bao nhi\u00eau c\u1ed1c?`,
+
+  eAskTiles: (w, l, high, per) =>
+    `M\u1ed9t c\u0103n ph\u00f2ng ${w} m\u00e9t nh\u00e2n ${l} m\u00e9t v\u00e0 cao ${high} m\u00e9t, v\u00e0 ${per} vi\u00ean g\u1ea1ch ph\u1ee7 k\u00edn m\u1ed9t m\u00e9t vu\u00f4ng. ` +
+    `S\u00e0n ph\u00f2ng c\u1ea7n kho\u1ea3ng bao nhi\u00eau vi\u00ean?`,
+
+  eAskEggs: (P, farms, e) =>
+    `M\u1ed9t n\u01b0\u1edbc c\u00f3 ${P} tri\u1ec7u d\u00e2n v\u00e0 ${farms} ngh\u00ecn trang tr\u1ea1i tr\u1ee9ng, m\u1ed7i ng\u01b0\u1eddi \u0103n kho\u1ea3ng ${e} qu\u1ea3 tr\u1ee9ng m\u1ed9t tu\u1ea7n. ` +
+    `M\u1ed9t n\u0103m kho\u1ea3ng bao nhi\u00eau tri\u1ec7u qu\u1ea3 tr\u1ee9ng?`,
+
+  eAskWater: (P, res, l) =>
+    `M\u1ed9t th\u00e0nh ph\u1ed1 ${P} ngh\u00ecn d\u00e2n l\u1ea5y n\u01b0\u1edbc t\u1eeb ${res} h\u1ed3 ch\u1ee9a, m\u1ed7i ng\u01b0\u1eddi d\u00f9ng kho\u1ea3ng ${l} l\u00edt n\u01b0\u1edbc m\u1ed9t ng\u00e0y. ` +
+    `M\u1ed9t ng\u00e0y kho\u1ea3ng bao nhi\u00eau m\u00e9t kh\u1ed1i? M\u1ed9t m\u00e9t kh\u1ed1i l\u00e0 1000 l\u00edt.`,
+
+  eAskFlights: (F, staff, s, pct) =>
+    `M\u1ed9t h\u00e3ng bay c\u00f3 ${F} chuy\u1ebfn m\u1ed9t ng\u00e0y v\u00e0 ${staff} ngh\u00ecn nh\u00e2n vi\u00ean. M\u1ed7i m\u00e1y bay c\u00f3 ${s} ch\u1ed7 ` +
+    `v\u00e0 bay \u0111\u1ea7y kho\u1ea3ng ${pct}%. M\u1ed9t tu\u1ea7n h\u00e3ng ch\u1edf kho\u1ea3ng bao nhi\u00eau h\u00e0nh kh\u00e1ch?`,
+  eSolFlights: (s, pct, perFlight, F, perDay, ans) =>
+    `M\u1ed9t m\u00e1y bay \u0111\u1ea7y l\u00e0 ${s} kh\u00e1ch, v\u00e0 ${pct}% c\u1ee7a n\u00f3 l\u00e0 ${s} × ${pct} ÷ 100 = ${perFlight}. ` +
+    `M\u1ed9t ng\u00e0y l\u00e0 ${F} × ${perFlight} = ${perDay}. \u0110\u1ec1 h\u1ecfi c\u1ea3 tu\u1ea7n, m\u00e0 kh\u00f4ng c\u00e2u n\u00e0o trong \u0111\u1ec1 \u0111\u1ebfm s\u1eb5n cho b\u1ea1n: ` +
+    `${perDay} × 7 = ${ans}.`,
+  etFlightsOneDay: "\u0110\u00f3 m\u1edbi l\u00e0 m\u1ed9t ng\u00e0y. \u0110\u1ec1 h\u1ecfi c\u1ea3 tu\u1ea7n, v\u00e0 con s\u1ed1 7 l\u00e0 b\u1ea1n ph\u1ea3i t\u1ef1 nh\u1edb.",
+
+  eAskBarbers: (c, d, P, shops, w) =>
+    `M\u1ed9t th\u1ee3 c\u1eaft \u0111\u01b0\u1ee3c ${c} \u0111\u1ea7u m\u1ed9t ng\u00e0y v\u00e0 l\u00e0m ${d} ng\u00e0y m\u1ed9t tu\u1ea7n. M\u1ed9t th\u1ecb tr\u1ea5n ${P} ngh\u00ecn d\u00e2n c\u00f3 ${shops} ` +
+    `ti\u1ec7m c\u1eaft t\u00f3c, v\u00e0 m\u1ed7i ng\u01b0\u1eddi c\u1ea7n c\u1eaft t\u00f3c ${w} tu\u1ea7n m\u1ed9t l\u1ea7n. Th\u1ecb tr\u1ea5n c\u1ea7n kho\u1ea3ng bao nhi\u00eau th\u1ee3 c\u1eaft t\u00f3c?`,
 
   /* probability — event names, reused across prompts */
   pEvents: {
@@ -1372,7 +1440,7 @@ const vi = {
     `rồi tới lượt A với mọi thứ y như cũ, nên cơ hội của A lại là P. Từ đó P = ${p} + ${both}·P, ` +
     `giải ra được P = ${ans}. Đi trước đáng giá hơn một nửa một chút.`,
   pSolDerange: (n, fact, D, none, asksNone, other) =>
-    `Có ${n}! = ${fact} cách bỏ thư vào phong bì, tất cả đồng khả năng. Trong số đó, ${D} cách có mọi lá thư đều sai phong bì. ` +
+    `Có ${n}! = ${fact} cách bỏ thư vào phong bì, tất cả đồng khả năng. Trong số đó, ÷ cách có mọi lá thư đều sai phong bì. ` +
     `Vậy xác suất không lá nào đúng là ${none}` +
     (asksNone ? "." : `, và xác suất có ít nhất một lá đúng là 1 − ${none} = ${other}.`),
   pSolWalk: (steps, n, c, total, ans) =>

@@ -70,30 +70,40 @@ function derive(p) {
   if ((m = p.match(/^A depot keeps (\d+) buses with (\d+) seats each/))) return +m[1] * +m[2];
   if ((m = p.match(/^A library has (\d+) shelves holding about (\d+) books each/))) return +m[1] * +m[2];
 
-  /* fermi — a chain, sometimes through a division */
-  if ((m = p.match(/^A city has (\d+) thousand people\. About 1 in (\d+) of them owns a piano, and one tuner looks after (\d+) pianos/))) {
-    return (+m[1] * 1000) / +m[2] / +m[3];
+  /* fermi - a chain, sometimes through a division. Several of these hand over a
+     number that is not needed, and withhold one that is; the arithmetic below
+     supplies the missing one and ignores the spare, exactly as a student must. */
+  if ((m = p.match(/^One piano tuner looks after (\d+) pianos a year\. A city of (\d+) thousand people has (\d+) music shops, and about 1 person in (\d+) owns a piano/))) {
+    const [S, P2, A] = [+m[1], +m[2], +m[4]];      // m[3], the shops, is spare
+    return (P2 * 1000) / A / S;
   }
-  if ((m = p.match(/^A town has (\d+) cars\. Each drives about (\d+) kilometres a year and burns (\d+) litres/))) {
-    return (+m[1] * +m[2] * +m[3]) / 100;
+  if ((m = p.match(/^A town of (\d+) thousand people owns (\d+) cars\. A car burns (\d+) litres of fuel every 100 kilometres, and covers about (\d+) kilometres a month/))) {
+    const [N, L, K] = [+m[2], +m[3], +m[4]];       // m[1], the population, is spare
+    return (N * K * 12 * L) / 100;                 // 12 months is not in the question
   }
-  if ((m = p.match(/^A coffee shop sells about (\d+) cups an hour, opens (\d+) hours a day and trades (\d+) days/))) {
-    return +m[1] * +m[2] * +m[3];
+  if ((m = p.match(/^A coffee shop has (\d+) tables\. It sells about (\d+) cups an hour, opens (\d+) hours a day and trades (\d+) days a week/))) {
+    return +m[2] * +m[3] * +m[4];                  // m[1], the tables, is spare
   }
-  if ((m = p.match(/^A room is (\d+) metres by (\d+) metres, and (\d+) tiles cover a square metre/))) {
-    return +m[1] * +m[2] * +m[3];
+  if ((m = p.match(/^A room is (\d+) metres by (\d+) metres and (\d+) metres high, and (\d+) tiles cover a square metre/))) {
+    return +m[1] * +m[2] * +m[4];                  // m[3], the ceiling, is spare
   }
-  if ((m = p.match(/^In a country of (\d+) million people, each person eats about (\d+) eggs a week/))) {
-    return +m[1] * +m[2] * 52;    // answer is in millions
+  if ((m = p.match(/^A shipping container measures (\d+) metres by (\d+) metres by (\d+) metres\. A box measures (\d+) centimetres by (\d+) centimetres by (\d+) centimetres/))) {
+    const holdCm = +m[1] * +m[2] * +m[3] * 100 * 100 * 100;
+    return holdCm / (+m[4] * +m[5] * +m[6]);
   }
-  if ((m = p.match(/^In a city of (\d+) thousand people, each person uses about (\d+) litres/))) {
-    return (+m[1] * 1000 * +m[2]) / 1000;   // litres to cubic metres
+  if ((m = p.match(/^A country of (\d+) million people has (\d+) thousand egg farms, and each person eats about (\d+) eggs a week/))) {
+    return +m[1] * +m[3] * 52;                     // m[2], the farms, is spare
   }
-  if ((m = p.match(/^An airport handles (\d+) flights a day\. Each plane holds (\d+) passengers and flies about (\d+)% full/))) {
-    return (+m[1] * +m[2] * +m[3]) / 100;
+  if ((m = p.match(/^A city of (\d+) thousand people draws from (\d+) reservoirs, and each person uses about (\d+) litres/))) {
+    return (+m[1] * 1000 * +m[3]) / 1000;          // m[2], the reservoirs, is spare
   }
-  if ((m = p.match(/^In a town of (\d+) thousand people, each person gets a haircut every (\d+) weeks\. A barber does (\d+) cuts a day and works (\d+) days a week/))) {
-    return (+m[1] * 1000) / +m[2] / (+m[3] * +m[4]);
+  if ((m = p.match(/^An airline runs (\d+) flights a day and employs (\d+) thousand people\. Each aircraft seats (\d+) passengers and flies about (\d+)% full/))) {
+    const [F, seats, pct] = [+m[1], +m[3], +m[4]]; // m[2], the staff, is spare
+    return ((F * seats * pct) / 100) * 7;          // 7 days is not in the question
+  }
+  if ((m = p.match(/^A barber cuts (\d+) heads a day and works (\d+) days a week\. A town of (\d+) thousand people has (\d+) barbershops, and each person needs a cut every (\d+) weeks/))) {
+    const [c, d, P2, w] = [+m[1], +m[2], +m[3], +m[5]];  // m[4], the shops, is spare
+    return (P2 * 1000) / w / (c * d);
   }
 
   return null;
