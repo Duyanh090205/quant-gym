@@ -124,10 +124,14 @@ export const EXAMS = [
       en: "The real format: 50 arithmetic in 5 minutes, 20 odd-one-out in 12, 15 probability in 15. +1 for correct, 0 for wrong, 0 for blank.",
       vi: "Format thật: 50 câu tính nhẩm trong 5 phút, 20 câu tìm số lạc trong 12, 15 câu xác suất trong 15. Đúng +1, sai 0, bỏ trống 0.",
     },
+    // Each part is a blend of rungs, not one rung. The probability split is
+    // measured: of the thirteen questions recalled from the sitting, three were
+    // level-1 ideas, seven level-2, two level-3. The other two are set to feel
+    // like the sitting rather than measured from it.
     parts: [
-      { skill: "arith.mixed", level: 3, count: 50, seconds: 300 },
-      { skill: "seq.odd-one-out", level: 3, count: 20, seconds: 720 },
-      { skill: "prob.mixed", level: 2, count: 15, seconds: 900 },
+      { skill: "arith.mixed", levels: { 1: 20, 2: 40, 3: 40 }, count: 50, seconds: 300 },
+      { skill: "seq.odd-one-out", levels: { 1: 20, 2: 30, 3: 50 }, count: 20, seconds: 720 },
+      { skill: "prob.mixed", levels: { 1: 25, 2: 55, 3: 20 }, count: 15, seconds: 900 },
     ],
   },
   {

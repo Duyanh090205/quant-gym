@@ -457,6 +457,36 @@ test("the Maven paper matches the format that was actually sat", () => {
   }
 });
 
+test("the Maven paper draws from every rung of the ladder, as the real one did", () => {
+  // Of the thirteen probability questions recalled from the sitting, three were
+  // level-1 ideas, seven level-2, two level-3. A paper pinned to one level could
+  // never reproduce that, and did not: five of the thirteen were unreachable.
+  const exam = generateExam("maven-round-1", "rungs");
+  for (const part of exam.parts) {
+    const rungs = new Set(part.questions.map((q) => q.level));
+    assert.deepEqual([...rungs].sort(), [1, 2, 3], `${part.skill} paper is missing a level: ${[...rungs]}`);
+  }
+
+  // And the blend follows the weights, within what a few hundred draws allow.
+  // Quotas, not luck, set the blend, so the check can be tight. Two hundred
+  // questions keeps every level inside the size of its pool.
+  const big = generateSet({ skill: "prob.mixed", levels: { 1: 25, 2: 55, 3: 20 }, count: 200, seed: "blend" });
+  const share = (l) => big.questions.filter((q) => q.level === l).length / big.questions.length;
+  assert.ok(Math.abs(share(1) - 0.25) < 0.03, `level 1 share ${share(1)}`);
+  assert.ok(Math.abs(share(2) - 0.55) < 0.03, `level 2 share ${share(2)}`);
+  assert.ok(Math.abs(share(3) - 0.20) < 0.03, `level 3 share ${share(3)}`);
+  assert.equal(big.level, null, "a blended paper has no single level to report");
+  assert.deepEqual(big.levels, { 1: 25, 2: 55, 3: 20 });
+});
+
+test("a blended paper is reproducible from its seed, and distinct from the pinned one", () => {
+  const a = generateSet({ skill: "arith.mixed", levels: { 1: 20, 2: 40, 3: 40 }, count: 30, seed: "same" });
+  const b = generateSet({ skill: "arith.mixed", levels: { 1: 20, 2: 40, 3: 40 }, count: 30, seed: "same" });
+  assert.deepEqual(a.questions.map((q) => q.prompt), b.questions.map((q) => q.prompt));
+  const pinned = generateSet({ skill: "arith.mixed", level: 3, count: 30, seed: "same" });
+  assert.notDeepEqual(a.questions.map((q) => q.prompt), pinned.questions.map((q) => q.prompt));
+});
+
 test("every exam listed can actually be generated", () => {
   for (const e of EXAMS) {
     const built = generateExam(e.id, "x");

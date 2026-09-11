@@ -122,33 +122,77 @@ function cleanTraps(qn) {
 }
 
 /**
+ * Chooses the rung for the next question of a blended paper.
+ *
+ * The weights have to describe what lands on the paper, not what gets drawn.
+ * Those are different things: a level-1 pool is small, so its draws are often
+ * rejected as repeats, and a picker that only weighted the draws would quietly
+ * hand the paper over to levels 2 and 3. So each level carries a quota of
+ * accepted questions, and a level whose pool has stopped yielding anything new
+ * gives its remaining quota up rather than stalling the paper.
+ */
+function rungPicker(rng, mix, level, count) {
+  if (!mix) return { pick: () => level, accept() {}, reject() {} };
+  const total = mix.reduce((a, [, w]) => a + w, 0);
+  const quota = Object.fromEntries(mix.map(([l, w]) => [l, (w / total) * count]));
+  const taken = Object.fromEntries(mix.map(([l]) => [l, 0]));
+  const stalled = Object.fromEntries(mix.map(([l]) => [l, 0]));
+  let last = null;
+  return {
+    pick() {
+      const open = mix.filter(([l]) => taken[l] < quota[l] && stalled[l] < 40);
+      const pool = open.length ? open : mix.filter(([l]) => stalled[l] < 40);
+      const pairs = (pool.length ? pool : mix).map(([l]) => [l, Math.max(quota[l] - taken[l], 0.01)]);
+      last = pickWeighted(rng, pairs);
+      return last;
+    },
+    accept() { taken[last]++; stalled[last] = 0; },
+    reject() { stalled[last]++; },
+  };
+}
+
+/**
  * A whole paper, with no repeated prompt and a cap of `Math.ceil(count/6)`
  * questions from any one skill, so a mixed paper is never nine divisions.
  *
- * @returns {{seed:string, code:string, skill:string, level:number,
- *            seconds:number|null, questions:object[]}}
+ * `level` pins every question to one rung of the ladder, which is what a drill
+ * wants. `levels` draws each question's rung by weight instead — `{1: 25, 2: 55,
+ * 3: 20}` — which is what an exam wants, because the real papers are a blend:
+ * of the thirteen probability questions recalled from one sitting, three were
+ * level-1 ideas, seven level-2 and two level-3. A paper pinned to level 2 could
+ * never show five of them.
+ *
+ * @returns {{seed:string, code:string, skill:string, level:number|null,
+ *            levels:object|null, seconds:number|null, questions:object[]}}
  */
-export function generateSet({ skill, level = 1, count = 10, seed, seconds = null, lang = "en" }) {
+export function generateSet({ skill, level = 1, levels = null, count = 10, seed, seconds = null, lang = "en" }) {
   const useSeed = seed ?? makeCode();
-  const rng = makeRng(`${skill}|${level}|${useSeed}`);
+  const mix = levels ? Object.entries(levels).map(([l, w]) => [Number(l), w]) : null;
+  const levelKey = mix ? mix.map(([l, w]) => `${l}:${w}`).join(",") : String(level);
+  const rng = makeRng(`${skill}|${levelKey}|${useSeed}`);
   const cap = Math.max(2, Math.ceil(count / 6));
+  const rung = rungPicker(rng, mix, level, count);
 
   const questions = [];
   const seen = new Set();
   const perSkill = {};
 
   for (let guard = 0; questions.length < count && guard < count * 120; guard++) {
-    const qn = build(skill, level, rng, questions.length, lang);
-    if (seen.has(qn.prompt)) continue;
-    if (MIXED[skill] && (perSkill[qn.skill] || 0) >= cap) continue;
+    const qn = build(skill, rung.pick(), rng, questions.length, lang);
+    if (seen.has(qn.prompt) || (MIXED[skill] && (perSkill[qn.skill] || 0) >= cap)) {
+      rung.reject();
+      continue;
+    }
+    rung.accept();
     seen.add(qn.prompt);
     perSkill[qn.skill] = (perSkill[qn.skill] || 0) + 1;
     questions.push(qn);
   }
   // If the pool ran dry, lift the per-skill cap before giving up on variety.
   for (let guard = 0; questions.length < count && guard < count * 200; guard++) {
-    const qn = build(skill, level, rng, questions.length, lang);
-    if (seen.has(qn.prompt)) continue;
+    const qn = build(skill, rung.pick(), rng, questions.length, lang);
+    if (seen.has(qn.prompt)) { rung.reject(); continue; }
+    rung.accept();
     seen.add(qn.prompt);
     questions.push(qn);
   }
@@ -157,11 +201,16 @@ export function generateSet({ skill, level = 1, count = 10, seed, seconds = null
   // questions in it. Repeating one is better than handing back a short paper,
   // because a short paper silently changes what the class was scored out of.
   while (questions.length < count) {
-    const qn = build(skill, level, rng, questions.length, lang);
+    const qn = build(skill, rung.pick(), rng, questions.length, lang);
+    rung.accept();
     questions.push(qn);
   }
 
-  return { seed: String(useSeed), code: makeCode(useSeed), skill, level, seconds, lang, questions, distinct };
+  return {
+    seed: String(useSeed), code: makeCode(useSeed), skill,
+    level: mix ? null : level, levels: levels || null,
+    seconds, lang, questions, distinct,
+  };
 }
 
 /* ══════ practice aimed at weak spots ═══════════════════════════════════════
