@@ -117,6 +117,21 @@ export const EXAMS = [
     ],
   },
   {
+    id: "penalty-80in8",
+    name: { en: "80 in 8, with penalties", vi: "80 câu trong 8 phút, có trừ điểm" },
+    note: {
+      en: "80 arithmetic questions in 8 minutes: +1 for a correct answer, −1 for a wrong one, 0 for a blank. " +
+          "This is the shape candidates report from Optiver's first round. The penalty is the whole point — a guess " +
+          "you are not confident in loses on average, and knowing when not to trade is the job.",
+      vi: "80 câu tính nhẩm trong 8 phút: đúng +1, sai −1, bỏ trống 0. " +
+          "Đây là dạng các ứng viên kể lại từ vòng 1 của Optiver. Việc trừ điểm mới là điểm mấu chốt — một cú đoán " +
+          "mà bạn không chắc thì trung bình là lỗ, và biết lúc nào không nên vào lệnh mới là nghề.",
+    },
+    penalty: 1,
+    pass: 55,
+    parts: [{ skill: "arith.mixed", level: 3, count: 80, seconds: 480 }],
+  },
+  {
     id: "sprint-60",
     name: { en: "Sixty-second sprint", vi: "Chạy nước rút 60 giây" },
     note: {

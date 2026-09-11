@@ -274,6 +274,8 @@ export function generateExam(examId, seed = makeCode(), lang = "en") {
     id: exam.id,
     name: exam.name,
     note: exam.note,
+    penalty: exam.penalty || 0,
+    pass: exam.pass ?? null,
     seed: String(seed),
     code: makeCode(seed),
     parts: exam.parts.map((p, i) =>

@@ -662,6 +662,48 @@ test("the exported parser reads a comma the way marking does", () => {
     }
   }
 });
+/* ── scoring rules ───────────────────────────────────────────────────── */
+
+test("a wrong answer can be made to cost something, and a blank never does", () => {
+  // Some first-round papers charge for a wrong answer. That changes which paper
+  // is the better one to hand in, so the marking has to be able to express it.
+  const { questions } = generateSet({ skill: "arith.mixed", level: 2, count: 12, seed: "penalty" });
+  const answers = questions.map((q, i) => (i < 6 ? String(q.answer) : i < 9 ? "999999" : ""));
+
+  const plain = gradeSet(questions, answers);
+  assert.equal(plain.score, 6);
+  assert.equal(plain.wrong, 3);
+  assert.equal(plain.blank, 3);
+  assert.equal(plain.penalty, 0);
+  assert.equal(plain.net, 6, "with no penalty the net score is just the score");
+
+  const charged = gradeSet(questions, answers, { penalty: 1 });
+  assert.equal(charged.score, 6, "the raw count of correct answers does not move");
+  assert.equal(charged.net, 3, "six right, three wrong, three blank: 6 - 3");
+
+  // The blanks are the point: filling them in wrongly would have cost more.
+  const allGuessed = questions.map((q, i) => (i < 6 ? String(q.answer) : "999999"));
+  assert.ok(gradeSet(questions, allGuessed, { penalty: 1 }).net < charged.net,
+    "guessing the blanks has to score worse under a penalty, or the paper teaches the wrong habit");
+
+  // And better when nothing is charged, which is why the advice cannot be fixed.
+  assert.ok(gradeSet(questions, allGuessed).net >= plain.net,
+    "with no penalty a guess can only help");
+});
+
+test("an exam carries its own scoring rule through to the paper", () => {
+  for (const e of EXAMS) {
+    const built = generateExam(e.id, `scoring|${e.id}`);
+    assert.equal(built.penalty, e.penalty || 0, `${e.id} lost its penalty`);
+    assert.equal(built.pass, e.pass ?? null, `${e.id} lost its pass mark`);
+    if (built.penalty) {
+      assert.ok(built.pass != null, `${e.id} charges for a wrong answer but says nothing about passing`);
+      const total = built.parts.reduce((a, p) => a + p.questions.length, 0);
+      assert.ok(built.pass < total, `${e.id} needs ${built.pass} of ${total}, which is not reachable`);
+    }
+  }
+});
+
 /* ── the RNG itself ──────────────────────────────────────────────────────── */
 
 test("the seeded generator is uniform enough to build papers from", () => {

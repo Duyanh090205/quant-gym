@@ -26,6 +26,10 @@ const T = {
     back: "Back", next: "Next question", check: "Check", submit: "Submit",
     yourAnswer: "your answer", correct: "Correct", notQuite: "Not quite",
     answerIs: "The answer is", score: "Score", blank: "blank", trapped: "known mistakes",
+    wrong: "wrong", net: "Net score",
+    penaltyHint: (wrong, lost) =>
+      `Those ${wrong} wrong answers cost ${lost} points. Left blank they would have cost nothing, ` +
+      `so anything you could not work out was worth skipping.`,
     timeLeft: "time left", review: "Review", again: "Again", exams: "Full papers",
     startExam: "Start", part: "Part", of: "of", questions: "questions",
     minuteLeft: "One minute left", halfMinute: "Thirty seconds left",
@@ -39,8 +43,13 @@ const T = {
     weakStart: "Start",
     reviewDone: "Weak-spot practice",
     whichOne: "Which idea does a question want?",
-    whyItWorks: "Why it works", blankWarn: (n) => `${n} still blank. A blank is a guaranteed zero, so guess.`,
-    autoSubmit: "Runs out on its own. Nothing is deducted for a wrong answer.",
+    whyItWorks: "Why it works",
+    blankWarn: (n, penalty) => penalty
+      ? `${n} still blank. A wrong answer costs ${penalty} point here and a blank costs nothing, so only fill one in if you can actually work it out.`
+      : `${n} still blank. A blank is a guaranteed zero, so guess.`,
+    autoSubmit: (penalty) => penalty
+      ? `Runs out on its own. A wrong answer costs ${penalty} point; a blank costs nothing.`
+      : "Runs out on its own. Nothing is deducted for a wrong answer.",
     typeHint: "Fractions like 3/8, decimals like 0.375, or 37.5% all count.",
   },
   vi: {
@@ -50,6 +59,10 @@ const T = {
     back: "Quay lại", next: "Câu tiếp", check: "Kiểm tra", submit: "Nộp bài",
     yourAnswer: "bạn trả lời", correct: "Đúng", notQuite: "Chưa đúng",
     answerIs: "Đáp án là", score: "Điểm", blank: "bỏ trống", trapped: "lỗi đã biết",
+    wrong: "sai", net: "Điểm ròng",
+    penaltyHint: (wrong, lost) =>
+      `${wrong} câu sai đó làm bạn mất ${lost} điểm. Bỏ trống thì chúng không mất gì cả, ` +
+      `nên câu nào không tính ra được thì đáng bỏ qua.`,
     timeLeft: "thời gian còn", review: "Xem lại", again: "Làm lại", exams: "Đề đầy đủ",
     startExam: "Bắt đầu", part: "Phần", of: "trên", questions: "câu",
     minuteLeft: "Còn một phút", halfMinute: "Còn ba mươi giây",
@@ -63,8 +76,13 @@ const T = {
     weakStart: "Bắt đầu",
     reviewDone: "Luyện chỗ yếu",
     whichOne: "Câu hỏi đang cần ý nào?",
-    whyItWorks: "Vì sao dùng được", blankWarn: (n) => `Còn ${n} ô trống. Bỏ trống chắc chắn 0 điểm, nên cứ đoán.`,
-    autoSubmit: "Hết giờ tự nộp. Sai không bị trừ điểm.",
+    whyItWorks: "Vì sao dùng được",
+    blankWarn: (n, penalty) => penalty
+      ? `Còn ${n} ô trống. Ở đây một câu sai mất ${penalty} điểm còn bỏ trống không mất gì, nên chỉ điền khi bạn thật sự tính ra.`
+      : `Còn ${n} ô trống. Bỏ trống chắc chắn 0 điểm, nên cứ đoán.`,
+    autoSubmit: (penalty) => penalty
+      ? `Hết giờ tự nộp. Một câu sai mất ${penalty} điểm; bỏ trống không mất gì.`
+      : "Hết giờ tự nộp. Sai không bị trừ điểm.",
     typeHint: "Gõ phân số như 3/8, thập phân như 0.375, hay 37.5% đều được.",
   },
 };
@@ -402,6 +420,9 @@ function clockScreen(app) {
   // Set once, when the part opens, and kept on the part itself. A re-render must
   // not hand back spent time: switching language mid-paper used to put every
   // second back on the clock, which made the timing worth nothing.
+  // A paper can charge for a wrong answer. It changes how the paper should be
+  // played, so it has to reach the warnings and the marking, not just the score.
+  const penalty = S.exam?.penalty || 0;
   if (part.deadline == null) part.deadline = Date.now() + seconds * 1000;
   const deadline = part.deadline;
   const remaining = () => Math.max(0, (deadline - Date.now()) / 1000);
@@ -468,7 +489,7 @@ function clockScreen(app) {
 
   const foot = el("div", "row");
   foot.appendChild(btn(t().submit, "primary", finish));
-  foot.appendChild(el("span", "muted small", t().autoSubmit));
+  foot.appendChild(el("span", "muted small", t().autoSubmit(penalty)));
   stack.appendChild(foot);
   app.appendChild(stack);
   setTimeout(() => inputs[0]?.focus(), 0);
@@ -491,10 +512,10 @@ function clockScreen(app) {
     if (part.marked) return;   // already submitted: scoring it again would count it again
     if (!auto) {
       const blank = part.answers.filter((a) => !a.trim()).length;
-      if (blank && !confirm(t().blankWarn(blank))) return;
+      if (blank && !confirm(t().blankWarn(blank, penalty))) return;
     }
     stopTimer();
-    part.marked = gradeSet(questions, part.answers);
+    part.marked = gradeSet(questions, part.answers, { penalty });
     if (S.partIndex + 1 < S.parts.length) { S.partIndex++; render(); return; }
     S.screen = "results";
     recordProgress();
@@ -526,20 +547,40 @@ function recordProgress() {
 function results(app) {
   const stack = el("div", "stack");
 
+  const penalty = S.exam?.penalty || 0;
   const totals = S.parts.reduce(
     (a, p) => ({
       score: a.score + p.marked.score, total: a.total + p.marked.total,
       blank: a.blank + p.marked.blank, trapped: a.trapped + p.marked.trapped,
+      wrong: a.wrong + p.marked.wrong, net: a.net + p.marked.net,
     }),
-    { score: 0, total: 0, blank: 0, trapped: 0 }
+    { score: 0, total: 0, blank: 0, trapped: 0, wrong: 0, net: 0 }
   );
 
   const tiles = el("div", "tiles");
   const tile = (v, l) => { const d = el("div", "tile"); d.appendChild(el("div", "tv", v)); d.appendChild(el("div", "tl", l)); return d; };
-  tiles.appendChild(tile(`${totals.score}/${totals.total}`, t().score));
-  tiles.appendChild(tile(String(totals.blank), t().blank));
-  tiles.appendChild(tile(String(totals.trapped), t().trapped));
+  if (penalty) {
+    // The net score is the one that counts, so it leads.
+    tiles.appendChild(tile(String(totals.net), t().net));
+    tiles.appendChild(tile(`${totals.score}/${totals.total}`, t().score));
+    tiles.appendChild(tile(String(totals.wrong), t().wrong));
+    tiles.appendChild(tile(String(totals.blank), t().blank));
+  } else {
+    tiles.appendChild(tile(`${totals.score}/${totals.total}`, t().score));
+    tiles.appendChild(tile(String(totals.blank), t().blank));
+    tiles.appendChild(tile(String(totals.trapped), t().trapped));
+  }
   stack.appendChild(tiles);
+
+  if (S.exam && S.exam.pass != null) {
+    const passed = totals.net >= S.exam.pass;
+    const note = el("div", "verdict " + (passed ? "ok" : "no"));
+    note.appendChild(el("strong", "", passed ? t().done : `${S.exam.pass} ${t().needed}`));
+    if (penalty && totals.wrong) {
+      note.appendChild(el("p", "small", t().penaltyHint(totals.wrong, penalty * totals.wrong)));
+    }
+    stack.appendChild(note);
+  }
 
   if (!S.exam && !S.review) {
     const cfg = getSkill(S.skill).levels[S.level - 1];

@@ -116,19 +116,31 @@ export function grade(qn, raw) {
   return { ...base, correct: false, trap, why: trap ? trap.why : null };
 }
 
-/** Mark a whole paper. Blanks score zero and are counted separately. */
-export function gradeSet(questions, answers) {
+/**
+ * Mark a whole paper.
+ *
+ * `penalty` is what a wrong answer costs. Zero is the ordinary case and leaves
+ * `net === score`. Some first-round tests charge a point for a wrong answer and
+ * nothing for a blank, which turns a speed test into a risk test: a guess you
+ * are not confident in loses on average, so the right move is to leave it
+ * alone. A trainer that marks those papers the ordinary way teaches the exact
+ * opposite habit, and does it silently.
+ */
+export function gradeSet(questions, answers, { penalty = 0 } = {}) {
   const results = questions.map((qn, i) => grade(qn, answers[i]));
   const score = results.filter((r) => r.correct).length;
   const answered = results.filter((r) => r.answered).length;
   const trapped = results.filter((r) => r.trap).length;
+  const wrong = answered - score;
   return {
     results,
     score,
     total: questions.length,
     answered,
     blank: questions.length - answered,
-    wrong: answered - score,
+    wrong,
     trapped,
+    penalty,
+    net: score - penalty * wrong,
   };
 }
