@@ -1,9 +1,9 @@
 # Quant Gym
 
-A question engine for teaching high-school students the mental maths, sequence
-reasoning and probability that quantitative trading firms test for.
+A question engine for teaching high-school students the mental maths, estimation,
+sequence reasoning and probability that quantitative trading firms test for.
 
-Nineteen skills, three levels each, ordered so a student who has never seen any
+Twenty-one skills, three levels each, ordered so a student who has never seen any
 of this can start at the top and never hit a wall they were not prepared for.
 Questions are generated, not stored, so nobody runs out and nobody can memorise
 an answer key.
@@ -69,7 +69,8 @@ listing all its triggers in one place.
 
 | Topic | Skills |
 |---|---|
-| Mental arithmetic | times tables · add and subtract · multiply · divide · squares · roots and powers · fractions · percentages · estimation · number puzzles |
+| Mental arithmetic | times tables · add and subtract · multiply · divide · squares · roots and powers · fractions · percentages · rough answers · number puzzles |
+| Estimation | scale and units · Fermi estimates |
 | Sequences | find the rule · odd one out |
 | Probability and expected value | counting · expected value · conditional · Bayes · waiting times · symmetry · classic puzzles |
 
@@ -82,9 +83,22 @@ every question. **Beat the clock** puts every question of the level on one page
 with a countdown, which is how the real assessments work. Clearing a level
 unlocks the next.
 
-Two full papers sit at the end of the ladder. One reproduces a Maven Securities
+Estimation states every assumption it wants used, which is a deliberate limit.
+A question that leaves a student to invent the assumptions has no single right
+answer, so a machine cannot mark it without presenting a made-up number as the
+truth. Inventing the assumptions is the next step up and it needs a teacher on
+the other side of the table; what is here is the half that can be practised
+alone, and it is the half students get wrong.
+
+Three full papers sit at the end of the ladder. One reproduces a Maven Securities
 first round sat on 9 September 2026: 50 arithmetic in 5 minutes, 20 odd-one-out
 in 12, 15 probability in 15, with no negative marking anywhere.
+
+Another charges for a wrong answer: 80 questions in 8 minutes, +1 right, −1
+wrong, 0 blank, which is the shape candidates report from Optiver's first round.
+The penalty changes what the paper is. A guess you are not confident in loses on
+average, so the right move is to leave it, and the warning before you submit says
+so — the opposite of what it says on a paper that charges nothing.
 
 ## Using the engine
 
@@ -128,8 +142,9 @@ src/engine/     the whole engine. No React, no DOM, no dependencies.
   curriculum.js   the ladder: topics, skills, levels, pass marks
   tips.js         tip cards, English and Vietnamese
   arithmetic.js   \
-  sequences.js     ) question generators
-  probability.js  /
+  estimation.js    \
+  sequences.js      ) question generators
+  probability.js   /
   grade.js        marking, and the explanation for a wrong answer
   rng.js          seeded randomness, so a paper is reproducible
 demo/           a vanilla-JS shell showing the engine in use
@@ -155,14 +170,24 @@ its paper, that no trap can be confused with a right answer, that every trap and
 every worked solution reaches the answer it claims, and that the writing stays
 inside a beginner's vocabulary.
 
-Correctness is checked three ways, because each check misses what the others catch.
+Correctness is checked several ways, because each check misses what the others catch.
 
 - `engine.test.js` re-derives every answer from a formula written separately from
   the generator, and requires each worked solution to reach the answer it claims.
 - `simulate.test.js` throws the formulas away and plays the games: rolling the
   dice, drawing the balls, walking the walks, running the duels, a hundred
-  thousand trials each. All 265 distinct probability question shapes are covered.
+  thousand trials each. All 348 distinct probability question shapes are covered,
+  and a shape with no simulator fails the suite rather than passing quietly.
   A formula and a generator can be wrong in the same way; a simulation cannot join in.
+- `estimation.test.js` cannot simulate anything — an estimate is a chain of
+  factors, not an experiment — so it reads the numbers back out of the sentence
+  the student sees and insists the engine agrees. It also holds the topic to its
+  own promises: every answer is a whole number, and no worked solution may use a
+  figure the question withheld.
+- `solution-arithmetic.test.js` evaluates both sides of every equation the engine
+  prints, in both languages, across every skill and level.
+- `question-pool.test.js` compares what each skill can actually build against what
+  the curriculum asks of it, so a paper never asks the same question twice.
 - `tip-arithmetic.test.js` reads the tip cards themselves, which are hand-written
   prose in two languages, and evaluates both sides of every equation printed on
   them. It also confirms each arithmetic example answers its own question, and that
