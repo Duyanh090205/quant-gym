@@ -9,7 +9,8 @@ Questions are generated, not stored, so nobody runs out and nobody can memorise
 an answer key.
 
 **Try it in ten seconds:** open `demo/standalone.html` in any browser. One file,
-no install, works offline.
+no install, works offline. (`demo/index.html` is the unbundled source and needs a web
+server: browsers block module imports opened straight from a folder.)
 
 ---
 

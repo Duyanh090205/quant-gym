@@ -141,7 +141,18 @@ input[type=text]{font-family:var(--mono);font-size:19px;padding:10px 12px;backgr
 </style>
 </head>
 <body>
-<div class="wrap" id="app"></div>
+<div class="wrap" id="app">
+  <!-- Shown only when the module script cannot load, which is what happens when this
+       file is opened straight from a folder: browsers block module imports over file://.
+       render() clears this the moment the app runs. -->
+  <p class="muted small" style="padding:24px 18px;max-width:56ch">
+    This page needs a web server to load its modules; opened straight from a folder, the browser blocks them.
+    Open <a href="./standalone.html">standalone.html</a> instead, which works anywhere, or serve this folder
+    (<code>npx serve demo</code>).<br>
+    Trang này cần chạy qua máy chủ web; mở thẳng từ thư mục thì trình duyệt chặn.
+    Hãy mở <a href="./standalone.html">standalone.html</a>.
+  </p>
+</div>
 <script type="module" src="./app.js"></script>
 </body>
 </html>
